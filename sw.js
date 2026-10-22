@@ -1,5 +1,5 @@
 // Marginalia offline support. When you upload a new version, change VERSION so phones and iPads pick it up.
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 const CACHE = 'marginalia-' + VERSION;
 const DATA = 'marginalia-bibles';
 const SHELL = ['./', 'index.html', 'app.js', 'app.css', 'config.js', 'manifest.webmanifest', 'vendor/msal-browser.min.js', 'icons/apple-touch-icon.png', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/favicon-32.png', 'fonts/fonts.css','fonts/inter-latin-400-normal.woff2','fonts/inter-latin-500-normal.woff2','fonts/inter-latin-600-normal.woff2','fonts/literata-latin-400-italic.woff2','fonts/literata-latin-400-normal.woff2','fonts/literata-latin-600-normal.woff2','fonts/source-serif-4-latin-400-italic.woff2','fonts/source-serif-4-latin-400-normal.woff2','fonts/source-serif-4-latin-600-normal.woff2'];

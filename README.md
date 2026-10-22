@@ -1,4 +1,4 @@
-# Marginalia for iPad and phone (version 1.0)
+# Marginalia for iPad and phone (version 1.1)
 
 Reads your Marginalia studies from OneDrive, lets you mark and annotate them, and saves the changes back into the same study files the desktop app uses. It also has a devotional that syncs between your phone and iPad.
 
@@ -12,32 +12,37 @@ Reads your Marginalia studies from OneDrive, lets you mark and annotate them, an
 
 ## 2. Register the app with Microsoft (one time, about 10 minutes)
 
-Your studies are in your Christian Light OneDrive, so the app has to be registered in that Microsoft 365 organization.
+The app signs in with your **personal Microsoft account** and uses your personal OneDrive.
 
-1. Go to **https://entra.microsoft.com** and sign in with your work account.
+1. Go to **https://entra.microsoft.com** and sign in with your personal Microsoft account (the one your personal OneDrive uses).
+   If it says your account has no directory, you need a free Azure account first (https://azure.microsoft.com/free); Microsoft no longer lets personal accounts register apps without one.
 2. Applications > App registrations > **New registration**.
    - Name: `Marginalia`
-   - Supported account types: **Accounts in this organizational directory only**
+   - Supported account types: **Personal Microsoft accounts only**
    - Redirect URI: choose **Single-page application (SPA)** and enter `https://jamesgoering.github.io/Marginalia/` (with the slash at the end)
    - Register.
-3. On the app's Overview page, copy the **Application (client) ID** and the **Directory (tenant) ID**.
+3. On the app's Overview page, copy the **Application (client) ID**.
 4. API permissions > Add a permission > Microsoft Graph > Delegated permissions: add **Files.ReadWrite** (User.Read is already there).
-5. Put the two IDs in `config.js` (or paste them into the app's first screen):
+5. Put the ID in `config.js` (or paste it into the app's first screen):
 
 ```js
 window.MARGINALIA_CONFIG = {
   clientId: 'paste the Application (client) ID',
-  tenant: 'paste the Directory (tenant) ID',
-  folder: 'Documents/Marginalia'
+  account: 'personal',
+  tenant: '',
+  folder: 'Documents/Marginalia',
+  keysPath: 'Apps/Marginalia/keys.json'
 };
 ```
 
-If you can't create app registrations, or signing in later says the app **needs admin approval**, your organization requires IT to do this step or approve the permission. Show them this section; the app only asks to read and write your own files.
+`folder` is the OneDrive folder that holds the `studies` folder, counted from the top of your personal OneDrive. `keysPath` is where the desktop app keeps keys.json; the app reads your ESV and API.Bible keys from it, so you don't have to type them.
+
+A work or school account still works: choose "Work or school" on the first screen (or set `account: 'work'` and fill in `tenant` with the Directory (tenant) ID).
 
 ## 3. Install on the iPad or iPhone
 
 1. Open https://jamesgoering.github.io/Marginalia/ in Safari.
-2. Sign in with your work account.
+2. Sign in with your personal Microsoft account.
 3. Share > **Add to Home Screen**, and use the Home Screen icon from then on.
 
 The sign-in lasts about a day. When it runs out, the app keeps showing your saved studies and asks you to sign in again to sync.
@@ -46,13 +51,13 @@ The sign-in lasts about a day. When it runs out, the app keeps showing your save
 
 - **KJV and WEB** are included and work offline.
 - **NET** comes from the NET Bible website (no key needed).
-- **ESV** needs your ESV API key, and **NKJV, CSB and NLT** need your API.Bible key. Paste them in Settings; they are the same keys as in the desktop app's keys.json. They stay on that device.
+- **ESV** needs your ESV API key, and **NKJV, CSB and NLT** need your API.Bible key. They're read from the desktop app's keys.json in OneDrive; if that doesn't work, paste them in Settings. They stay on that device.
 - A chapter is saved on the device the first time it's opened, so it works offline after that.
 - BSB and ASV aren't available yet.
 
 ## How saving works
 
-- Marks, notes, tags and deletions are saved straight into the study file in `Documents/Marginalia/studies`, in the desktop app's format.
+- Marks, notes, tags and deletions are saved straight into the study file in the `studies` folder, in the desktop app's format.
 - Each save checks that the file hasn't changed since it was read. If the desktop saved it in between, the app reads the new version and adds its changes on top, so nothing from the desktop is lost.
 - Without internet, changes wait on the device and sync later.
 - **Close a study on the computer before marking it on the iPad.** A study that is open on the computer is held in the desktop app's memory, and the next save there can overwrite changes made on the iPad.

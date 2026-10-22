@@ -1,6 +1,6 @@
 'use strict';
 /* Marginalia for iPad and phone. Reads and writes the desktop app's study files in OneDrive. */
-const VERSION='1.0.0';
+const VERSION='1.1.0';
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const cap=s=>s?s[0].toUpperCase()+s.slice(1):s;
@@ -20,8 +20,9 @@ function refStr(r){if(!r)return '';const n=bname(r.b,true);if(r.c1===r.c2){if(r.
 
 /* ---------- settings ---------- */
 const LS={get:(k,d)=>{try{const v=localStorage.getItem('mg-'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set:(k,v)=>{try{localStorage.setItem('mg-'+k,JSON.stringify(v))}catch(e){}}};
-const CFG=Object.assign({clientId:'',tenant:'',folder:'Documents/Marginalia'},window.MARGINALIA_CONFIG||{},LS.get('cfg',{}));
-CFG.tenant=CFG.tenant||'organizations';CFG.authority='https://login.microsoftonline.com/'+CFG.tenant;
+const CFG=Object.assign({clientId:'',account:'personal',tenant:'',folder:'Documents/Marginalia',keysPath:'Apps/Marginalia/keys.json'},window.MARGINALIA_CONFIG||{},LS.get('cfg',{}));
+CFG.personal=CFG.account!=='work';
+CFG.authority='https://login.microsoftonline.com/'+(CFG.personal?'consumers':(CFG.tenant&&CFG.tenant!=='organizations'?CFG.tenant:'organizations'));
 const SET=Object.assign({theme:'auto',side:true,devoTr:'web',esvKey:'',abKey:'',tr:{}},LS.get('set',{}));
 const saveSet=()=>LS.set('set',SET);
 
@@ -184,6 +185,7 @@ async function sync(manual){
   for(const id of Object.keys(S.studies))if(!seen.has(id)&&!S.pending.some(o=>o.sid===id))delete S.studies[id];
   await saveStudies();
   await syncDevo();
+  await loadKeys();
   LS.set('lastSync',Date.now());needSignIn=false;
   setStatus('');render();
  }catch(e){
@@ -211,6 +213,18 @@ async function pushPending(){
   }
   if(!done)throw new Error('The study kept changing while saving; will try again');
  }
+}
+async function loadKeys(){
+ if(SET.esvKey&&SET.abKey)return;
+ try{
+  const r=await gfetch(`/me/drive/root:/${encPath(CFG.keysPath||'Apps/Marginalia/keys.json')}:/content`);if(!r.ok)return;
+  const k=await r.json();let ch=false;
+  const flat=(o,pre='')=>Object.entries(o||{}).flatMap(([a,v])=>v&&typeof v==='object'?flat(v,pre+a+'.'):[[ (pre+a).toLowerCase(),v]]);
+  for(const [name,v] of flat(k)){if(typeof v!=='string'||!v.trim())continue;
+   if(!SET.esvKey&&name.includes('esv')){SET.esvKey=v.trim();ch=true}
+   else if(!SET.abKey&&/apibible|api\.bible|scripture|(^|\.)ab(key)?$|abkey/.test(name)){SET.abKey=v.trim();ch=true}}
+  if(ch){saveSet();Object.keys(CHERR).forEach(x=>delete CHERR[x])}
+ }catch(e){}
 }
 async function syncDevo(){
  const p=`/me/drive/root:/${encPath(CFG.folder)}/mobile-devotional.json:/content`;
@@ -305,12 +319,13 @@ function syncLine(){
  if(!kind&&p)kind='warn';
  return `<div class="sync ${kind}" id="syncline">${ic(kind==='err'?'off':'cloud',14)}<span>${esc(msg)}</span></div>`;
 }
+const acctSeg=()=>`<div class="lbl" style="margin-top:10px">Account type</div><div class="seg" id="acct" data-v="${CFG.personal?'personal':'work'}"><button class="${CFG.personal?'on':''}" data-act="acct" data-v="personal">Personal (OneDrive)</button><button class="${CFG.personal?'':'on'}" data-act="acct" data-v="work">Work or school</button></div>`;
 const back=(v,l)=>`<button class="back narrow" data-act="nav" data-v="${v}">${ic('chevL',18)}${l}</button>`;
 function vSetup(){
- return {bar:`<div class="bt">Marginalia</div>`,body:`<div class="setup"><h2>Connect to your studies</h2><p>Marginalia reads your studies from OneDrive. Paste the Application (client) ID from your app registration (the README explains how to make one), then sign in.</p><label class="fld"><span>Application (client) ID</span><input id="cfg-client" value="${esc(CFG.clientId)}" placeholder="00000000-0000-0000-0000-000000000000" autocomplete="off" autocapitalize="off" spellcheck="false"></label><label class="fld"><span>Directory (tenant) ID</span><input id="cfg-tenant" value="${esc(CFG.tenant==='organizations'?'':CFG.tenant)}" placeholder="00000000-0000-0000-0000-000000000000" autocomplete="off" autocapitalize="off" spellcheck="false"><small>From the same page in Entra. Leave empty only if the app was registered for any organization.</small></label><label class="fld"><span>Studies folder in OneDrive</span><input id="cfg-folder" value="${esc(CFG.folder)}" autocomplete="off" autocapitalize="off" spellcheck="false"><small>The folder that holds “studies”, counted from the top of your OneDrive.</small></label><button class="btn" data-act="savecfg">Save and continue</button></div>`};
+ return {bar:`<div class="bt">Marginalia</div>`,body:`<div class="setup"><h2>Connect to your studies</h2><p>Marginalia reads your studies from OneDrive. Paste the Application (client) ID from your app registration (the README explains how to make one), then sign in.</p>${acctSeg()}<label class="fld"><span>Application (client) ID</span><input id="cfg-client" value="${esc(CFG.clientId)}" placeholder="00000000-0000-0000-0000-000000000000" autocomplete="off" autocapitalize="off" spellcheck="false"></label><label class="fld" id="tenant-fld"${CFG.personal?' hidden':''}><span>Directory (tenant) ID</span><input id="cfg-tenant" value="${esc(CFG.tenant==='organizations'?'':CFG.tenant)}" placeholder="00000000-0000-0000-0000-000000000000" autocomplete="off" autocapitalize="off" spellcheck="false"><small>Work accounts only: from the same page in Entra.</small></label><label class="fld"><span>Studies folder in OneDrive</span><input id="cfg-folder" value="${esc(CFG.folder)}" autocomplete="off" autocapitalize="off" spellcheck="false"><small>The folder that holds the “studies” folder, counted from the top of your OneDrive (for example Documents/Marginalia).</small></label><button class="btn" data-act="savecfg">Save and continue</button></div>`};
 }
 function vSignin(){
- return {bar:`<div class="bt">Marginalia</div>`,body:`<div class="setup"><h2>Sign in to see your studies</h2><p>Use the Microsoft account whose OneDrive has your Marginalia folder.</p><button class="btn" data-act="signin">Sign in with Microsoft</button><p style="margin-top:18px"><button class="btn2" data-act="nav" data-v="settings">Settings</button></p></div>`};
+ return {bar:`<div class="bt">Marginalia</div>`,body:`<div class="setup"><h2>Sign in to see your studies</h2><p>Use the ${CFG.personal?'personal Microsoft account':'work account'} whose OneDrive has your Marginalia folder.</p><button class="btn" data-act="signin">Sign in with Microsoft</button><p style="margin-top:18px"><button class="btn2" data-act="nav" data-v="settings">Settings</button></p></div>`};
 }
 function vStudies(){
  const list=studyList();
@@ -449,8 +464,8 @@ function vSettings(){
  const th=SET.theme;
  return {bar:`${back('studies','Studies')}<div class="bt">Settings</div>`,body:`<div class="setup" style="padding-top:16px">
  <div class="lbl">Account</div><div class="card" style="margin-bottom:16px">${account?`<div style="font-weight:600">${esc(S.me||'Signed in')}</div><div style="margin:6px 0 10px">${syncLine()}</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="syncnow">${ic('sync',15)}Sync now</button><button class="btn2" data-act="signout">Sign out</button></div>`:`<p style="margin:0 0 10px">Not signed in.</p><button class="btn" data-act="signin">Sign in with Microsoft</button>`}</div>
- <div class="lbl">OneDrive</div><div class="card" style="margin-bottom:16px"><label class="fld" style="margin-top:0"><span>Studies folder</span><input id="cfg-folder" value="${esc(CFG.folder)}" autocapitalize="off" spellcheck="false"><small>Counted from the top of your OneDrive; it holds the “studies” folder.</small></label><label class="fld"><span>Application (client) ID</span><input id="cfg-client" value="${esc(CFG.clientId)}" autocapitalize="off" spellcheck="false"></label><label class="fld"><span>Directory (tenant) ID</span><input id="cfg-tenant" value="${esc(CFG.tenant==='organizations'?'':CFG.tenant)}" autocapitalize="off" spellcheck="false"></label><button class="btn2" data-act="savecfg">Save</button></div>
- <div class="lbl">Bible text keys</div><div class="card" style="margin-bottom:16px"><p style="font-size:13.5px;margin:0 0 6px" class="muted">KJV, WEB and NET work without a key. The keys are the same ones the desktop app uses (in keys.json) and stay on this device.</p><label class="fld"><span>ESV API key</span><input id="k-esv" value="${esc(SET.esvKey)}" autocapitalize="off" spellcheck="false" autocomplete="off"></label><label class="fld"><span>API.Bible key (NKJV, CSB, NLT)</span><input id="k-ab" value="${esc(SET.abKey)}" autocapitalize="off" spellcheck="false" autocomplete="off"></label><button class="btn2" data-act="savekeys">Save keys</button></div>
+ <div class="lbl">OneDrive</div><div class="card" style="margin-bottom:16px"><label class="fld" style="margin-top:0"><span>Studies folder</span><input id="cfg-folder" value="${esc(CFG.folder)}" autocapitalize="off" spellcheck="false"><small>Counted from the top of your OneDrive; it holds the “studies” folder.</small></label>${acctSeg()}<label class="fld"><span>Application (client) ID</span><input id="cfg-client" value="${esc(CFG.clientId)}" autocapitalize="off" spellcheck="false"></label><label class="fld" id="tenant-fld"${CFG.personal?' hidden':''}><span>Directory (tenant) ID</span><input id="cfg-tenant" value="${esc(CFG.tenant==='organizations'?'':CFG.tenant)}" autocapitalize="off" spellcheck="false"></label><button class="btn2" data-act="savecfg">Save</button></div>
+ <div class="lbl">Bible text keys</div><div class="card" style="margin-bottom:16px"><p style="font-size:13.5px;margin:0 0 6px" class="muted">KJV, WEB and NET work without a key. The keys are read automatically from the desktop app’s keys.json (OneDrive, Apps/Marginalia) when it’s there; otherwise paste them here. They stay on this device.</p><label class="fld"><span>ESV API key</span><input id="k-esv" value="${esc(SET.esvKey)}" autocapitalize="off" spellcheck="false" autocomplete="off"></label><label class="fld"><span>API.Bible key (NKJV, CSB, NLT)</span><input id="k-ab" value="${esc(SET.abKey)}" autocapitalize="off" spellcheck="false" autocomplete="off"></label><button class="btn2" data-act="savekeys">Save keys</button></div>
  <div class="lbl">Devotional translation</div><div class="seg" style="margin-bottom:16px;flex-wrap:wrap">${['web','kjv','esv','net','nkjv'].filter(trAvailable).map(t=>`<button class="${devoTr()===t?'on':''}" data-act="devotr" data-tr="${t}">${trName(t)}</button>`).join('')}</div>
  <div class="lbl">Appearance</div><div class="seg" style="margin-bottom:16px">${[['auto','Automatic'],['light','Light'],['dark','Dark']].map(([k,l])=>`<button class="${th===k?'on':''}" data-act="theme" data-t="${k}">${l}</button>`).join('')}</div>
  <p class="muted" style="font-size:12.5px">Marginalia for iPad and phone, version ${VERSION}. Changes you make here are saved into the same study files the desktop app uses. Close a study on the computer before marking it here, or the computer may save over your changes.</p></div>`};
@@ -582,7 +597,8 @@ const A={
  signin:()=>signIn(),
  signout:()=>signOut(),
  syncnow:()=>sync(true),
- savecfg:()=>{const c=$('#cfg-client'),f=$('#cfg-folder'),tn=$('#cfg-tenant');const n={...LS.get('cfg',{})};if(c)n.clientId=c.value.trim();if(tn)n.tenant=tn.value.trim()||'organizations';if(f)n.folder=f.value.trim().replace(/^\/+|\/+$/g,'')||'Documents/Marginalia';LS.set('cfg',n);toast('Saved');setTimeout(()=>location.reload(),400)},
+ acct:el=>{const g=$('#acct');g.dataset.v=el.dataset.v;g.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===el));const t=$('#tenant-fld');if(t)t.hidden=el.dataset.v!=='work'},
+ savecfg:()=>{const c=$('#cfg-client'),f=$('#cfg-folder'),tn=$('#cfg-tenant'),ac=$('#acct');const n={...LS.get('cfg',{})};if(ac)n.account=ac.dataset.v;if(c)n.clientId=c.value.trim();if(tn)n.tenant=tn.value.trim()||'organizations';if(f)n.folder=f.value.trim().replace(/^\/+|\/+$/g,'')||'Documents/Marginalia';LS.set('cfg',n);toast('Saved');setTimeout(()=>location.reload(),400)},
  savekeys:()=>{SET.esvKey=$('#k-esv').value.trim();SET.abKey=$('#k-ab').value.trim();saveSet();Object.keys(CHERR).forEach(k=>delete CHERR[k]);toast('Keys saved');render()},
  devotr:el=>{SET.devoTr=el.dataset.tr;saveSet();render()},
  start:()=>startRead(dkey(new Date()),todayRead()),

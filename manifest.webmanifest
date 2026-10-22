@@ -1,7 +1,7 @@
 {
   "name": "Marginalia",
   "short_name": "Marginalia",
-  "description": "Marginalia companion for iPad and phone: read your studies, mark and annotate, and keep a devotional.",
+  "description": "Marginalia for iPad and phone: your studies from OneDrive, with marking, notes and a devotional.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

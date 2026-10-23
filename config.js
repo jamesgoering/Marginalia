@@ -6,7 +6,7 @@
 // folder:   the folder that holds the "studies" folder, from the top of your OneDrive.
 // keysPath: where the desktop app's keys.json is, so the ESV and API.Bible keys load by themselves.
 window.MARGINALIA_CONFIG = {
-  clientId: '',
+  clientId: '3b1a6763-e1b0-4b99-8b14-b6b4ff612799',
   account: 'personal',
   tenant: '',
   folder: 'Documents/Marginalia',

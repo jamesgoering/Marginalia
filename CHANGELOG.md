@@ -1,5 +1,15 @@
 # Marginalia for iPad and phone: changelog
 
+## 1.4.0 (2026-10-25)
+New
+- The desktop's look and layout, simplified: the desktop's Refined colors (light and dark), its slim frosted top bar (sidebar, title, sync dot, Focus, search, settings, right panel), the sidebar with Studies · Devotional (the open study as a raised card with its passage chip; docked on a wide iPad, floating on iPad portrait and phone), the study title on the page, the column header in the desktop's order (Verses ▾, translation ▾ | Margin ▾, Filter, Collapse), note cards whose marked words show in their own mark style, and the right panel with Study notes · Guide (Guide: summary, tags, every note with a jump to its verse). The bottom tab bar is gone.
+- Focus: one tap for just the page at a reading width, with a floating pill (leave Focus, translation, Notes, Filter, Aa, ⋯) that fades while you scroll down; ⋯ opens Studies, Devotional, Search, Guide, Collapse notes, Settings and Leave Focus. Remembered per study.
+- Marginalia's own text selection: press and hold a word, then drag (word by word, with handles); the Copy / Look Up menu no longer appears. Apple Pencil selects by drawing; a mouse or trackpad by dragging. Note boxes keep the normal selection.
+- Verse menu: long-press (or right-click) a verse number: Note on this verse, Copy verse, Copy the reference.
+- Devotional home like the desktop's: greeting and date, verse of the day (366-verse list, Read in context), the reading card with its ribbon (Begin / Another; Continue with when you started, what you last wrote and Start over; done with your counts, See my notes, Read again), template pill, Choose your own passage (type a reference or A Psalm / A Proverb / A Gospel passage / A letter), From your past readings, Recent with template dots, and the morning, afternoon, sunset and starry-night skies. Calendar and plan: in the sidebar on a wide iPad, behind a calendar icon on the phone.
+Fixes
+- Android: dark-mode colors for the app window (manifest), so the strip under the app should no longer show white in dark mode.
+
 ## 1.3.3 (2026-10-25)
 Tweaks
 - Devotional: every comment shows beside its verse (iPad: in the margin; phone: under the verse) in the desktop's margin-writing style, with the marked words as a small heading. Choosing Comment on selected words opens the box right there with the cursor in it; tap outside to finish (an empty new comment is removed). On an iPad each comment lines up with its own verse, even in the middle of a paragraph; on a phone it appears right after that verse (the paragraph continues below it). Replaces the comment bubbles and the separate tap-the-verse-number writing (still works, but no longer needed). Aa and ⋯ have Show / Hide comments instead of bubbles.

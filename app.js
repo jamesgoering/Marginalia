@@ -1,10 +1,11 @@
 'use strict';
 /* Marginalia for iPad and phone. Reads and writes the desktop app's study files in OneDrive. */
-const VERSION='1.3.3';
-const CSS_VER='133';
+const VERSION='1.4.0';
+const CSS_VER='140';
 const $=s=>document.querySelector(s);
 /* Older index.html files lack some parts; add any that are missing so a partial upload can't break menus. */
-[['mbar','toolbar'],['scrim',''],['menu','menu'],['ed','dialog'],['tx','dialog'],['toast','status'],['wn','dialog']].forEach(([id,role])=>{if(!document.getElementById(id)){const d=document.createElement('div');d.id=id;if(role)d.setAttribute('role',role);if(id==='scrim')d.dataset.act='scrim';document.body.appendChild(d)}});
+[['mbar','toolbar'],['scrim',''],['menu','menu'],['ed','dialog'],['tx','dialog'],['toast','status'],['wn','dialog'],['pill','toolbar'],['sheet','dialog'],['selk','']].forEach(([id,role])=>{if(!document.getElementById(id)){const d=document.createElement('div');d.id=id;if(role)d.setAttribute('role',role);if(id==='scrim')d.dataset.act='scrim';document.body.appendChild(d)}});
+if(!document.getElementById('rpanel')){const r=document.createElement('aside');r.id='rpanel';(document.getElementById('app')||document.body).appendChild(r)}
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const cap=s=>s?s[0].toUpperCase()+s.slice(1):s;
 const pad=n=>String(n).padStart(2,'0');
@@ -355,9 +356,6 @@ function syncLine(){const s=syncInfo();return `<div class="sync ${s.kind==='err'
 function setStatus(msg,kind=''){S.status=msg;S.statusKind=kind;const d=document.getElementById('sdot');if(d)d.outerHTML=syncDot();const l=document.getElementById('syncline');if(l)l.outerHTML=syncLine()}
 
 /* ---------- top bar ---------- */
-function topbar(left,{aa=false}={}){
- return `${left}${account||CFG.clientId?syncDot():''}<span class="sp"></span>${ib('search','nav','Search','data-v="search"')}${ib('sliders','nav','Settings','data-v="settings"')}${aa?`<button class="ib aa" data-act="txt" aria-label="Scripture text" title="Scripture text">Aa</button>`:''}`;
-}
 const backIcon=(v,label)=>`<button class="ib backi" data-act="nav" data-v="${v}" aria-label="${label}" title="${label}">${ic('chevL',20)}</button>`;
 
 /* ---------- views ---------- */
@@ -377,10 +375,6 @@ function vStudies(){
  const g={};list.forEach(s=>(g[s.series||'Studies']=g[s.series||'Studies']||[]).push(s));
  return {bar:topbar(`<div class="bt">Studies</div>`),
   body:`${banners()}<div class="pg">${list.length?Object.entries(g).map(([k,ss])=>`<div class="ghead">${esc(k)}</div>${ss.map(s=>`<button class="sl" data-act="open" data-s="${esc(s.id)}"><b>${esc(s.title||'Untitled')}</b><span>${esc((s.passages||[]).map(p=>refStr(p.ref)).join(', '))} · ${(s.annotations||[]).filter(a=>a.note).length} notes</span></button>`).join('')}`).join(''):`<p class="muted">${syncing?'Loading your studies…':'No studies found yet. Check the folder in Settings.'}</p>`}</div>`};
-}
-function headerRow(st,tr){
- const t=tset(),fold=SET.fold!==false,fon=filterOn();
- return `<div class="hrow"><div class="hl"><button class="hm strong" data-act="menu" data-m="tr">${esc(trName(tr))} ▾</button><span class="hsep">·</span><button class="hm" data-act="menu" data-m="layout">${t.layout==='para'?'Paragraphs':'Verses'} ▾</button></div><div class="hr"><button class="hm midonly" data-act="menu" data-m="nlay">${SET.nlay==='under'?'Under':'Margin'} ▾</button><span class="sp"></span><button class="hq" data-act="fold">${ic(fold?'expand':'collapse',14)}${fold?'Expand':'Collapse'}</button>${FS.just?`<button class="hq on fchip" data-act="fjust">${ic('eyeoff',14)}Just the text<span class="fx2">${ic('x',12)}</span></button>`:fon?`<span class="fchip2"><button class="hq on" data-act="menu" data-m="filter">${ic('solid/filter',14)}${esc(filterLabel())} · ${filterCount(st)}</button><button class="hq on fx3" data-act="fclear" aria-label="Clear the filter">${ic('x',12)}</button></span>`:`<button class="hq" data-act="menu" data-m="filter">${ic('filter',14)}Filter</button>`}</div></div>`;
 }
 function filterLabel(){const n=FS.kinds.size+FS.colors.size+FS.tags.size;if(n!==1)return 'Filter';if(FS.kinds.size)return KLABEL[[...FS.kinds][0]]||'Filter';if(FS.tags.size)return '#'+[...FS.tags][0];return 'One color'}
 const filterCount=st=>(st&&st.annotations||[]).filter(annMatch).length;
@@ -440,20 +434,7 @@ function cardHtml({a,anch}){
  if(a.kind==='above'&&a.above)extra=`<span class="ntags">Above: ${esc(a.above)}</span>`;
  if(a.kind==='connect'&&words.length>1)extra=`<span class="ntags">Connects “${esc(words[0])}” with “${esc(words[1])}”</span>`;
  const more=(a.tags||[]).filter(x=>x!==tag),sel=ui.selCard===a.id;
- return `<div class="nc${ui.flash===a.id?' flash':''}${edit?' editing':''}${sel?' sel':''}${filterOn()&&!annMatch(a)?' fdim':''}" role="button" tabindex="0" data-act="card" data-m="${esc(a.id)}" id="c-${esc(a.id)}"><span class="ntop"><span class="nt" style="color:${col}">${esc(t)}</span><em class="nq">${esc(words[0]||'')}</em>${sel&&more.length?`<span class="ctags">${more.map(x=>'#'+esc(x)).join(' ')}</span>`:''}${sel?`<button class="cmore" data-act="menu" data-m="card" data-id="${esc(a.id)}" aria-label="Note options" title="Note options">${ic('more',16)}</button>`:''}</span>${a.note?`<div class="nb">${md(a.note)}</div>`:''}${extra}${!sel&&more.length?`<span class="ntags">${more.map(x=>'#'+esc(x)).join(' ')}</span>`:''}${anch?'':'<span class="unanch">These words weren’t found in this text.</span>'}</div>`;
-}
-function vStudy(){
- const st=cur();if(!st){ui.view='studies';return vStudies()}
- const tr=studyTr(st);
- const left=`${WIDE.matches&&sideOpen()?'':backIcon('studies','Studies')}<div class="bt">${esc(st.title||'Untitled')}<small>${esc((st.passages||[]).map(p=>refStr(p.ref)).join(', '))}</small></div>`;
- let body=`${banners()}<div class="shd"><div class="ser">${esc(st.series||'')}</div><div class="ttl">${esc(st.title||'Untitled')}</div><div class="ref">${esc((st.passages||[]).map(p=>refStr(p.ref)).join(', '))}</div>${st.summary?`<button class="qsum${ui.sumOpen?' open':''}" data-act="sum">${esc(plainMd(st.summary))}</button>`:''}</div><div class="utabs" role="tablist"><button class="${ui.tab==='passage'?'on':''}" data-act="tab" data-t="passage" role="tab">Passage</button><button class="${ui.tab==='notes'?'on':''}" data-act="tab" data-t="notes" role="tab">Study notes</button></div>`;
- if(ui.tab==='notes')body+=`<div class="outline">${st.outline&&st.outline.trim()?md(st.outline):'<p class="muted">No Study notes yet.</p>'}</div>`;
- else{
-  body+=headerRow(st,tr);
-  (st.passages||[]).forEach((p,i)=>{if((st.passages||[]).length>1)body+=`<div class="pref">${esc(refStr(p.ref))}</div>`;body+=passageRows(st,p,tr)});
-  body+='<div style="height:140px"></div>';
- }
- return {bar:topbar(left,{aa:ui.tab==='passage'}),body};
+ return `<div class="nc${ui.flash===a.id?' flash':''}${edit?' editing':''}${sel?' sel':''}${filterOn()&&!annMatch(a)?' fdim':''}" role="button" tabindex="0" data-act="card" data-m="${esc(a.id)}" id="c-${esc(a.id)}"><span class="ntop"><span class="nt" style="color:${col}">${esc(t)}</span><em class="nq k-${KIND[a.kind]||'cm'}" style="--mc:${okHex(a.color)}">${esc(words[0]||'')}</em>${sel&&more.length?`<span class="ctags">${more.map(x=>'#'+esc(x)).join(' ')}</span>`:''}${sel?`<button class="cmore" data-act="menu" data-m="card" data-id="${esc(a.id)}" aria-label="Note options" title="Note options">${ic('more',16)}</button>`:''}</span>${a.note?`<div class="nb">${md(a.note)}</div>`:''}${extra}${!sel&&more.length?`<span class="ntags">${more.map(x=>'#'+esc(x)).join(' ')}</span>`:''}${anch?'':'<span class="unanch">These words weren’t found in this text.</span>'}</div>`;
 }
 function vSearch(){return {bar:`${backIcon(ui.back||'studies','Back')}<div class="bt">Search</div>`,body:`<div class="pg"><input class="qin" id="q" type="search" placeholder="Search your studies, notes and devotional" value="${esc(ui.q)}" autocomplete="off"><div id="res">${results()}</div></div>`}}
 function results(){
@@ -534,26 +515,6 @@ function devLight(){const dark=document.documentElement.dataset.theme==='dark'||
 const DEV_BG={morn:'#fbf8f2',eve:'#f5eff0',dark:'#14152a'};
 function setThemeColor(c){let m=document.getElementById('tc-dev');if(!c){if(m)m.remove();return}if(!m){m=document.createElement('meta');m.name='theme-color';m.id='tc-dev';document.head.appendChild(m)}m.content=c}
 
-function vDevo(){
- const t=new Date(),tk=dkey(t),legacy=S.devo.log||{},today=devFor(tk);
- if(!ui.cal)ui.cal=[t.getFullYear(),t.getMonth()];
- const [cy,cm]=ui.cal;
- let todayCard;
- if(today){const r=devRef(today),touched=devTouched(today),done=today.dev.done;
-  todayCard=`<div class="card dtoday"><div class="lbl">Today’s reading${done?' · done':''}</div><div class="rr">${esc(today.title)}</div><div class="muted" style="font-size:13px;margin:2px 0 12px">${esc(trName((today.translations||[])[0]||devoTr()))}${r?' · '+(r.v2-r.v1+1)+' verses':''}${poolOf(r&&r.b)?' · '+esc(poolOf(r.b)):''}</div><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">${done?`<button class="btn" data-act="devopen" data-s="${esc(today.id)}" data-notes="1">${ic('check',15)}See my notes</button><button class="quiet" data-act="devopen" data-s="${esc(today.id)}">Read again</button>`:`<button class="btn" data-act="devopen" data-s="${esc(today.id)}">${touched?'Continue':'Start reading'}</button>${touched?'':`<button class="quiet" data-act="another">Another</button>`}`}</div></div>`}
- else{const r=devProposal(tk);
-  todayCard=`<div class="card dtoday"><div class="lbl">Today’s reading</div><div class="rr">${r?esc(devTitle(r)):'…'}</div><div class="muted" style="font-size:13px;margin:2px 0 12px">${esc(trName(devoTr()))}${r?' · '+(r.v2-r.v1+1)+' verses · '+esc(poolOf(r.b)):''}</div><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button class="btn" data-act="start"${r?'':' disabled'}>Start reading</button><button class="quiet" data-act="another">Another</button></div></div>`}
- const n=devList().length;
- const plan=`<div class="card"><div class="lbl">Plan</div><div style="font-weight:600;font-size:16px">Surprise me</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${Object.keys(DEV_POOLS).map(p=>`<span class="chip on">${p}</span>`).join('')}</div><div style="display:flex;justify-content:space-between;font-size:13px;margin-top:10px" class="muted"><span>${n} reading${n===1?'':'s'} so far</span><span>${esc(trName(devoTr()))}</span></div></div>`;
- const first=new Date(cy,cm,1),days=new Date(cy,cm+1,0).getDate();
- let cal=`<div class="cal">${['S','M','T','W','T','F','S'].map(d=>`<div class="w">${d}</div>`).join('')}${'<div></div>'.repeat(first.getDay())}`;
- for(let d=1;d<=days;d++){const k=`${cy}-${pad(cm+1)}-${pad(d)}`;const dd=new Date(cy,cm,d);const has=devFor(k)||legacy[k];cal+=`<button class="dc${k===tk?' t':''}${dd>t?' f':''}${has?' r':''}" data-act="day" data-d="${k}" aria-label="${dd.toDateString()}${has?', read':''}"><span class="dn">${d}</span><i class="dot"></i></button>`}
- cal+='</div>';
- const calc=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b style="font-weight:600">${first.toLocaleString('en-US',{month:'long',year:'numeric'})}</b><span style="display:flex;gap:2px"><button class="ib" data-act="cal" data-d="-1" aria-label="Previous month">${ic('chevL',16)}</button><button class="ib" data-act="cal" data-d="1" aria-label="Next month">${ic('chevR',16)}</button></span></div>${cal}</div>`;
- const rec=devList().sort((a,b)=>a.dev.date<b.dev.date?1:a.dev.date>b.dev.date?-1:0).slice(0,6);
- const recent=`<div class="card"><div class="lbl">Recent</div>${rec.length?rec.map(d=>`<button class="rec" data-act="devopen" data-s="${esc(d.id)}"><span>${kdate(d.dev.date).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</span><span>${esc(d.title)}${d.dev.done?' ✓':''}</span></button>`).join(''):'<p class="muted">No readings yet.</p>'}</div>`;
- return {bar:topbar(`<div class="bt">Devotional</div>`),body:`${banners()}<div class="pg"><div class="two">${todayCard}${plan}</div><div class="two">${calc}${recent}</div><p class="muted" style="font-size:12.5px;margin:0 2px">Readings are shared with the desktop app through OneDrive: whichever you open first sets the day’s passage.</p></div>`};
-}
 
 /* ---------- full-screen devotional mode ---------- */
 const isWholeVerse=(sp,t)=>sp.s<=0&&sp.e>=t.replace(/\s+$/,'').length-1;
@@ -658,25 +619,22 @@ const acctSeg=()=>`<div class="lbl" style="margin-top:4px">Account type</div><di
 /* ---------- shell ---------- */
 function tabOf(v){return {studies:'Studies',study:'Studies',devo:'Devotional',devoRead:'Devotional'}[v]||''}
 function tabsHtml(){const t=tabOf(ui.view);return [['Studies','book','studies'],['Devotional','cal','devo']].map(([l,i,v])=>`<button class="tab${t===l?' on':''}" data-act="nav" data-v="${v}">${ic(i,22)}${l}</button>`).join('')}
-function sideHtml(){
- const t=tabOf(ui.view)||'Studies',open=sideOpen();
- if(!open)return `<button class="ib" data-act="side" aria-label="Show the sidebar" title="Show the sidebar">${ic('caretR',17)}</button><button class="ib${t==='Studies'?' on':''}" data-act="nav" data-v="studies" aria-label="Studies" title="Studies">${ic('book',19)}</button><button class="ib${t==='Devotional'?' on':''}" data-act="nav" data-v="devo" aria-label="Devotional" title="Devotional">${ic('cal',19)}</button>`;
- const g={};studyList().forEach(s=>(g[s.series||'Studies']=g[s.series||'Studies']||[]).push(s));
- const list=Object.entries(g).map(([k,ss])=>`<div class="sgrp">${esc(k)}</div>${ss.map(s=>`<button class="sli${ui.view==='study'&&s.id===ui.sid?' on':''}" data-act="open" data-s="${esc(s.id)}">${esc(s.title||'Untitled')}<small>${esc((s.passages||[]).map(p=>refStr(p.ref)).join(', '))}</small></button>`).join('')}`).join('');
- return `<div class="stabs"><button class="${t==='Studies'?'on':''}" data-act="nav" data-v="study">Studies</button><button class="${t==='Devotional'?'on':''}" data-act="nav" data-v="devo">Devotional</button><button class="caret" data-act="side" aria-label="Hide the sidebar" title="Hide the sidebar">${ic('caretL',16)}</button></div>${list||'<p class="muted" style="padding:0 9px;font-size:13px">No studies yet.</p>'}`;
-}
 let lastKey='';
 function render(){
  if(ui.view==='devmode'&&document.activeElement&&(document.activeElement.id==='devnotes'||document.activeElement.id==='enote')){ui.pendRender=true;return}
  ui.pendRender=false;
- if(WIDE.matches&&sideOpen()&&ui.view==='studies'&&cur())ui.view='study';
+ if(WIDE.matches&&ui.view==='studies'&&cur())ui.view='study';
  if(ui.view==='study'&&!cur())ui.view='studies';
  const fn={studies:vStudies,study:vStudy,search:vSearch,devo:vDevo,devmode:vDevMode,settings:vSettings}[ui.view]||vStudies;
  const ae=document.activeElement,keepFocus=ae&&ae.id&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA')&&!ae.closest('#ed')?{id:ae.id,s:ae.selectionStart,e:ae.selectionEnd}:null;
- const V=fn(),body=$('#body'),key=ui.view+'|'+(ui.view==='devmode'?ui.devSid:ui.sid)+'|'+ui.tab,top=key===lastKey?body.scrollTop:0;
+ const V=fn(),body=$('#body'),key=ui.view+'|'+(ui.view==='devmode'?ui.devSid:ui.sid)+'|'+focusOn(),top=key===lastKey?body.scrollTop:0;
  $('#bar').innerHTML=V.bar;body.innerHTML=V.body;
- const app=$('#app');app.classList.toggle('noside',!sideOpen());app.classList.toggle('under',SET.nlay==='under');app.classList.toggle('notabs',!!['search','settings'].includes(ui.view)&&!WIDE.matches);app.classList.toggle('devfull',ui.view==='devmode');setThemeColor(ui.view==='devmode'?DEV_BG[devLight()]:null);$('#body').style.background=ui.view==='devmode'?DEV_BG[devLight()]:'';
- $('#tabs').innerHTML=tabsHtml();$('#side').innerHTML=sideHtml();
+ const app=$('#app');app.classList.remove('noside');app.classList.toggle('under',SET.nlay==='under');app.classList.toggle('notabs',!!['search','settings'].includes(ui.view)&&!WIDE.matches);app.classList.toggle('devfull',ui.view==='devmode');setThemeColor(ui.view==='devmode'?DEV_BG[devLight()]:null);$('#body').style.background=ui.view==='devmode'?DEV_BG[devLight()]:'';
+ if(ui.view!=='study')ui.rpOver=false;
+ if(WIDE.matches&&!focusOn())ui.sideOver=false;
+ app.classList.toggle('focus',focusOn());app.classList.toggle('sidedock',sideDocked());app.classList.toggle('sideover',!!ui.sideOver);app.classList.toggle('rpdock',rpDocked());app.classList.toggle('rpover',!!ui.rpOver&&ui.view==='study');
+ $('#scrim').classList.toggle('show',!!ui.sideOver||(!!ui.rpOver&&!rpDocked()&&ui.view==='study'));
+ $('#side').innerHTML=sideHtml();$('#rpanel').innerHTML=rpShown()?rpanelHtml():'';$('#pill').innerHTML=focusOn()?pillHtml():'';$('#pill').classList.toggle('on',focusOn());if(!focusOn())$('#pill').classList.remove('hide');
  body.scrollTop=top;lastKey=key;
  if(keepFocus){const el=document.getElementById(keepFocus.id);if(el&&el!==ae){el.focus();try{el.setSelectionRange(keepFocus.s,keepFocus.e)}catch(e){}}}
  if(!['study','devmode'].includes(ui.view))$('#tx').classList.remove('open');
@@ -703,15 +661,17 @@ function openMenu(btn,kind){
   if(a.kind==='note')items.push({act:'cdelmark',d:{id:a.id},label:'Delete the comment',icon:'trash',red:1});
   else{if(a.note)items.push({act:'cdelnote',d:{id:a.id},label:`Delete the note <small>keeps the ${esc(lbl)}</small>`,icon:'note'});items.push({act:'cdelmark',d:{id:a.id},label:a.note?`Delete the ${esc(lbl)} and note`:`Delete the ${esc(lbl)}`,icon:'trash',red:1})}
  }
- const heads={tr:'Translation',layout:'Layout',nlay:'Notes',dtpl:'Template',dmore:'Reading'};
- if(kind==='filter'&&st){m.innerHTML=filterPane(st)}else m.innerHTML=(heads[kind]?`<div class="msec">${heads[kind]}</div>`:'')+items.map(it=>it.hr?'<div class="mhr"></div>':`<button class="mi${it.on?' on':''}${it.off?' off':''}${it.red?' red':''}" data-act="${it.act}" ${Object.entries(it.d).map(([k,v])=>`data-${k}="${esc(v)}"`).join(' ')}><span class="ck">${it.icon?ic(it.icon,16):it.on?ic('check',15):''}</span><span>${it.label}</span></button>`).join('')+(kind==='layout'?`<div class="mhr"></div><button class="mi" data-act="txt"><span class="ck"></span><span>Text size, font and spacing…</span></button>`:'');
+ if(kind==='dtplh'){const tk=dkey(new Date()),d=devFor(tk),curT=d&&d.dev&&DTPL[d.dev.tmpl]?d.dev.tmpl:LS.get('devTpl','inductive');items=Object.entries(DTPL).map(([k,t])=>({act:'dtplhome',d:{t:k},label:t.n,on:k===curT}))}
+ const heads={tr:'Translation',layout:'Layout',nlay:'Notes',dtpl:'Template',dtplh:'Template',dmore:'Reading'};
+ if(kind==='fmore'){m.innerHTML=`<div class="mgrid"><button data-act="sideopen" data-t="Studies">${ic('book',20)}Studies</button><button data-act="nav" data-v="devo">${ic('cal',20)}Devotional</button><button data-act="nav" data-v="search">${ic('search',20)}Search</button><button data-act="rpopen" data-t="guide">${ic('guide',20)}Guide</button></div><div class="mhr"></div><button class="mi" data-act="fold"><span class="ck">${ic('collapse',16)}</span><span>${SET.fold!==false?'Expand notes':'Collapse notes'}</span></button><button class="mi" data-act="nav" data-v="settings"><span class="ck">${ic('sliders',16)}</span><span>Settings</span></button><div class="mhr"></div><button class="mi on" data-act="focus"><span class="ck">${ic('unfocus',16)}</span><span>Leave Focus <small>everything back</small></span></button>`}
+ else if(kind==='filter'&&st){m.innerHTML=filterPane(st)}else m.innerHTML=(heads[kind]?`<div class="msec">${heads[kind]}</div>`:'')+items.map(it=>it.hr?'<div class="mhr"></div>':`<button class="mi${it.on?' on':''}${it.off?' off':''}${it.red?' red':''}" data-act="${it.act}" ${Object.entries(it.d).map(([k,v])=>`data-${k}="${esc(v)}"`).join(' ')}><span class="ck">${it.icon?ic(it.icon,16):it.on?ic('check',15):''}</span><span>${it.label}</span></button>`).join('')+(kind==='layout'?`<div class="mhr"></div><button class="mi" data-act="txt"><span class="ck"></span><span>Text size, font and spacing…</span></button>`:'');
  m.dataset.k=kind;
  const sheet=!MID.matches&&(kind==='card'||kind==='filter');m.classList.toggle('asSheet',sheet);$('#scrim').classList.toggle('show',sheet);
  m.classList.add('open');
  if(sheet)return;
  const r=btn.getBoundingClientRect(),w=m.offsetWidth||220;
- m.style.top=Math.min(r.bottom+6,innerHeight-(m.offsetHeight||200)-12)+'px';
- m.style.left=Math.max(8,Math.min(r.left,innerWidth-w-8))+'px';
+ const h=m.offsetHeight||200;m.style.top=(btn.closest('#pill')?Math.max(8,r.top-h-8):Math.min(r.bottom+6,innerHeight-h-12))+'px';
+ m.style.left=Math.max(8,Math.min(btn.closest('#pill')?r.left+r.width/2-w/2:r.left,innerWidth-w-8))+'px';
 }
 function refreshFilter(){const m=$('#menu');if(m.classList.contains('open')&&m.dataset.k==='filter'&&cur())m.innerHTML=filterPane(cur())}
 const closeMenu=()=>{$('#menu').classList.remove('open','asSheet');const sc=$('#scrim');if(sc)sc.classList.remove('show')};
@@ -768,7 +728,7 @@ function applyMark(kind,ci){
  const a={id:newId(),kind,color:kind==='note'?'#5b8afe':PALETTE[ui.color],spans:[{tr:studyTr(st),b:p.ref.b,c:sl.c,v:sl.v,s:sl.s,e:sl.e,text:sl.w}],note:'',tags:[],created:new Date().toISOString()};
  commit({op:'add',sid:st.id,a});
  try{getSelection().removeAllRanges()}catch(e){}
- ui.sel=null;hideBar();if(ui.view==='devmode'&&kind==='note')ui.justMade=a.id;openEd(a.id);
+ ui.sel=null;hideBar();clearOwnSel();if(ui.view==='devmode'&&kind==='note')ui.justMade=a.id;openEd(a.id);
 }
 function removeAnn(a){
  const st=cur();const copy=JSON.parse(JSON.stringify(a));
@@ -829,8 +789,8 @@ function applyTheme(){const r=document.documentElement;if(SET.theme==='auto')del
 /* ---------- actions ---------- */
 const A={
  side:()=>{SET.side=!sideOpen();saveSet();render()},
- nav:el=>{const v=el.dataset.v;if(['search','settings'].includes(v)&&!['search','settings'].includes(ui.view))ui.back=ui.view;closeEd(true);hideBar();closeMenu();ui.view=v;render();if(v==='search'&&MID.matches){const q=$('#q');if(q)q.focus()}},
- open:el=>{ui.sid=el.dataset.s;ui.view='study';ui.tab='passage';fsReset();closeEd(true);hideBar();ui.sumOpen=false;ui.unfold.clear();lastKey='';render()},
+ nav:el=>{ui.sideOver=false;ui.rpOver=false;closeSheet();clearOwnSel();const v=el.dataset.v;if(['search','settings'].includes(v)&&!['search','settings'].includes(ui.view))ui.back=ui.view;closeEd(true);hideBar();closeMenu();ui.view=v;render();if(v==='search'&&MID.matches){const q=$('#q');if(q)q.focus()}},
+ open:el=>{ui.sideOver=false;ui.sideTab=null;clearOwnSel();ui.sid=el.dataset.s;ui.view='study';ui.tab='passage';fsReset();closeEd(true);hideBar();ui.sumOpen=false;ui.unfold.clear();lastKey='';render()},
  tab:el=>{ui.tab=el.dataset.t;closeEd(true);hideBar();render()},
  menu:el=>{const m=$('#menu');if(m.classList.contains('open')&&m.dataset.k===el.dataset.m){closeMenu();return}m.dataset.k=el.dataset.m;openMenu(el,el.dataset.m)},
  ftog:el=>{const g=FS[el.dataset.g],v=el.dataset.v;if(g.has(v))g.delete(v);else g.add(v);ui.fdelArm=false;render();refreshFilter()},
@@ -848,7 +808,26 @@ const A={
  cpin:el=>{closeMenu();const a=findAnn(el.dataset.id);if(!a)return;commit({op:'upd',sid:cur().id,id:a.id,patch:{titleTag:el.dataset.t}});render()},
  cdelnote:el=>{closeMenu();const a=findAnn(el.dataset.id);if(!a)return;const old={note:a.note||'',tags:[...(a.tags||[])],titleTag:a.titleTag};const sid=cur().id;commit({op:'upd',sid,id:a.id,patch:{note:''}});ui.selCard=null;render();toast('Note deleted',()=>{commit({op:'upd',sid,id:a.id,patch:{note:old.note}});render()})},
  cdelmark:el=>{closeMenu();const a=findAnn(el.dataset.id);if(!a)return;ui.selCard=null;removeAnn(a)},
- scrim:()=>closeMenu(),
+ scrim:()=>{closeMenu();closeSheet();if(ui.sideOver||ui.rpOver){ui.sideOver=false;ui.rpOver=false;render()}},
+ sidebtn:()=>{if(WIDE.matches&&!focusOn()){SET.side=SET.side===false;saveSet();render();return}ui.sideOver=!ui.sideOver;ui.rpOver=false;render()},
+ sideopen:el=>{closeMenu();ui.sideTab=el.dataset.t||null;ui.sideOver=true;ui.rpOver=false;render()},
+ sidetab:el=>{ui.sideTab=el.dataset.t;if(el.dataset.t==='Devotional'&&ui.view!=='devo'&&ui.view!=='devmode'&&WIDE.matches&&!ui.sideOver){ui.view='devo';ui.sideTab=null}render()},
+ rpbtn:()=>{if(WIDE.matches&&!focusOn()){SET.rp=SET.rp===false;saveSet();ui.rpOver=false}else{ui.rpOver=!ui.rpOver;ui.sideOver=false}render()},
+ rpopen:el=>{closeMenu();ui.rpTab=el.dataset.t||'notes';if(!rpDocked())ui.rpOver=true;render()},
+ rptab:el=>{ui.rpTab=el.dataset.t;render()},
+ rpclose:()=>{ui.rpOver=false;render()},
+ focus:()=>{closeMenu();const st=cur();if(!st)return;SET.focus[st.id]=!SET.focus[st.id];if(!SET.focus[st.id])delete SET.focus[st.id];saveSet();ui.sideOver=false;ui.rpOver=false;hideBar();clearOwnSel();render()},
+ gtag:el=>{FS.tags.clear();FS.tags.add(el.dataset.t);ui.rpOver=false;render()},
+ vnote:el=>{closeMenu();const st=cur();if(!st)return;const p=st.passages.find(x=>x.id===el.dataset.p)||st.passages[0],c=+el.dataset.c,v=+el.dataset.v,tr=studyTr(st);const t=((CH[chKey(tr,p.ref.b,c)]||{v:[]}).v[v-1])||'';const a={id:newId(),kind:'note',color:'#5b8afe',spans:[{tr,b:p.ref.b,c,v,s:0,e:t.length,text:t}],note:'',tags:[],created:new Date().toISOString()};commit({op:'add',sid:st.id,a});ui.justMade=a.id;openEd(a.id)},
+ vcopy:el=>{closeMenu();const st=cur();if(!st)return;const p=st.passages.find(x=>x.id===el.dataset.p)||st.passages[0],c=+el.dataset.c,v=+el.dataset.v,tr=studyTr(st);const t=((CH[chKey(tr,p.ref.b,c)]||{v:[]}).v[v-1])||'';const ref=`${bname(p.ref.b,true)} ${c}:${v}`;const txt=el.dataset.ref?ref:`“${t}” ${ref} (${trName(tr)})`;(navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('Copied')).catch(()=>toast('Couldn’t copy here'))},
+ devcal:()=>{showSheetHtml(devCalCard()+devPlanCard())},
+ goopen:()=>{const i=$('#gopass');const r=parseRef(i&&i.value);if(!r){toast('Type a passage like Romans 8 or John 3:1–21');return}closeSheet();openOneOff(r)},
+ gopool:async el=>{const r=await poolPick(el.dataset.p);openOneOff(r)},
+ vodctx:()=>vodContext(),
+ vodread:()=>{const r=vodRef();closeSheet();if(r)openOneOff({b:r.b,c1:r.c1,v1:1,c2:r.c1,v2:999})},
+ sheetx:()=>closeSheet(),
+ dtplhome:el=>{closeMenu();const t=el.dataset.t;LS.set('devTpl',t);const d=devFor(dkey(new Date()));if(d&&!devBody(d.outline)){commit({op:'set',sid:d.id,patch:{outline:tplOutline(t),dev:{tmpl:t}}})}render()},
+ dstartover:()=>{const d=devFor(dkey(new Date()));if(!d)return;if(!ui.overArm){ui.overArm=true;render();setTimeout(()=>{ui.overArm=false},4000);return}ui.overArm=false;const old={outline:d.outline,annotations:JSON.parse(JSON.stringify(d.annotations||[])),dev:{done:!!d.dev.done}};commit({op:'set',sid:d.id,patch:{outline:tplOutline(d.dev.tmpl||'inductive'),annotations:[],dev:{done:false}}});render();toast('Started over',()=>{commit({op:'set',sid:d.id,patch:old});render()})},
  wnx:()=>$('#wn').classList.remove('open'),
  keys:()=>showShortcuts(),
  bdel:()=>{const a=ui.bar&&findAnn(ui.bar.id);if(a)removeAnn(a)},
@@ -890,7 +869,7 @@ const A={
  eline:el=>{const st=cur(),a=findAnn(ui.edit);if(!a)return;commit({op:'upd',sid:st.id,id:a.id,patch:{line:{...(a.line||{}),style:el.dataset.v}}});render();renderEd()},
  bub:el=>openEd(el.dataset.id),
  goto:el=>{ui.sid=el.dataset.s;const st=cur();if(st&&el.dataset.tr&&TRS[el.dataset.tr]){SET.tr[st.id]=el.dataset.tr;saveSet()}ui.view='study';ui.tab='passage';fsReset();if(el.dataset.m)ui.unfold.add(el.dataset.m);ui.flashV=`${el.dataset.p}-${el.dataset.c}-${el.dataset.v}`;lastKey='';render()},
- gonotes:el=>{ui.sid=el.dataset.s;ui.view='study';ui.tab='notes';lastKey='';render()}
+ gonotes:el=>{ui.sid=el.dataset.s;ui.view='study';ui.tab='passage';ui.rpTab='notes';if(!rpDocked())ui.rpOver=true;lastKey='';render()}
 };
 document.addEventListener('click',e=>{
  const inMenu=e.target.closest('#menu'),inEd=e.target.closest('#ed')||e.target.closest('.mw.editing'),inBar=e.target.closest('#mbar');
@@ -902,6 +881,7 @@ document.addEventListener('click',e=>{
  const m=e.target.closest('.vtx [data-m]');
  if(m){const s=getSelection();if(s&&!s.isCollapsed)return;markTap(m.dataset.m,m);return}
  if(ui.bar&&ui.bar.mode==='edit'&&!inBar)hideBar();
+ if(ui.selDrag&&!inBar&&!e.target.closest('#selk')){clearOwnSel();if(ui.bar&&ui.bar.mode==='new')hideBar()}
  if($('#tx').classList.contains('open')&&!e.target.closest('#tx')){$('#tx').classList.remove('open');return}
  if(ui.view==='devmode'&&!inMenu&&!inBar&&!inEd&&!e.target.closest('#tx,.vtx,.mw,.copen,#devnotes,.dctl,button,input,a')){const s=getSelection();if(!s||s.isCollapsed)devShowCtl(!ui.devCtl)}
 });
@@ -915,6 +895,7 @@ document.addEventListener('input',e=>{
  else if(t.dataset&&t.dataset.f&&ui.dr){ui.dr.f[t.dataset.f]=t.value}
 });
 document.addEventListener('keydown',e=>{
+ if(e.target.id==='gopass'&&e.key==='Enter'){e.preventDefault();A.goopen();return}
  if(e.target.id==='etagin'&&e.key==='Enter'){e.preventDefault();const v=e.target.value.trim().replace(/^#/,'');if(!v)return;const st=cur(),a=findAnn(ui.edit);if(a&&!(a.tags||[]).includes(v))commit({op:'upd',sid:st.id,id:a.id,patch:{tags:[...(a.tags||[]),v]}});render();renderEd();const n=$('#etagin');if(n)n.focus();return}
  if((e.ctrlKey||e.metaKey)&&['b','i'].includes(e.key.toLowerCase())){
   if(e.target.id==='enote'){e.preventDefault();document.execCommand(e.key.toLowerCase()==='b'?'bold':'italic');e.target.dispatchEvent(new Event('input',{bubbles:true}));return}
@@ -924,7 +905,8 @@ document.addEventListener('keydown',e=>{
  if(e.key==='Enter'&&e.target.classList&&e.target.classList.contains('nc')){A.card(e.target);return}
  if(e.key==='Escape'){if($('#menu').classList.contains('open'))closeMenu();else if($('#tx').classList.contains('open'))$('#tx').classList.remove('open');else if(ui.edit)closeEd();else if(ui.bar)hideBar();else if(ui.view==='devmode'&&!/INPUT|TEXTAREA/.test(e.target.tagName)&&e.target.id!=='devnotes')devExit();else if($('#wn').classList.contains('open'))$('#wn').classList.remove('open')}
 });
-$('#body').addEventListener('scroll',()=>{if(ui.bar)placeBar();closeMenu();if(ui.view==='devmode'){const b=$('#body'),pr=$('#dprog');if(pr)pr.style.width=Math.min(100,b.scrollTop/Math.max(1,b.scrollHeight-b.clientHeight)*100)+'%'}},{passive:true});
+let lastTop=0;
+$('#body').addEventListener('scroll',()=>{const b=$('#body');if(focusOn()){const p=$('#pill');if(p)p.classList.toggle('hide',b.scrollTop>lastTop+4&&b.scrollTop>80);}lastTop=b.scrollTop;if(ui.selDrag)drawSel();if(ui.bar)placeBar();closeMenu();if(ui.view==='devmode'){const b=$('#body'),pr=$('#dprog');if(pr)pr.style.width=Math.min(100,b.scrollTop/Math.max(1,b.scrollHeight-b.clientHeight)*100)+'%'}},{passive:true});
 document.addEventListener('focusout',e=>{if(e.target&&(e.target.id==='devnotes'||e.target.id==='enote')&&ui.pendRender)setTimeout(()=>{if(document.activeElement.id!=='enote'&&document.activeElement.id!=='devnotes')render()},0)});
 let swipeX=null;
 $('#body').addEventListener('touchstart',e=>{swipeX=ui.view==='devmode'&&e.touches[0].clientX<24?e.touches[0].clientX:null},{passive:true});
@@ -941,6 +923,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 /* ---------- What's new and keyboard shortcuts ---------- */
 const CHANGES={
+ '1.4.0':['The desktop’s look: the same top bar, sidebar (Studies · Devotional), study page, note cards and right panel (Study notes · Guide), in the desktop’s colors.','Focus: one tap for just the page, with a small pill for what you need while reading; everything else one tap away under ⋯.','Select scripture by pressing and holding a word, then dragging: no more Copy / Look Up menu. Long-press a verse number for the verse menu.','A new devotional home, like the desktop’s: verse of the day, today’s reading, choose your own passage, past readings and Recent.'],
  '1.3.3':['Devotional: comments now appear beside their verse (in the margin on an iPad, under the verse on a phone), like the desktop’s writing beside the text. Select words and choose Comment: the box opens right there, ready to type.'],
  '1.3.2':['Fixed: menus, Filter, translations and Verses not responding when some app files were from an older version; the app now repairs this itself and tells you if files need uploading again.','Fixed: Paragraphs now works in KJV and other translations without their own paragraph marks.','Fixed: note cards keep the title and marked words on one line and stay inside the notes column.'],
  '1.3.1':['The app now uses the desktop app’s icon. To see it on the Home Screen, remove Marginalia from the Home Screen and add it again (your studies stay in OneDrive).'],
@@ -963,7 +946,249 @@ document.addEventListener('keydown',e=>{
  if(!inText&&(k==='['||k===']')&&ui.view==='study'){e.preventDefault();stepStudy(k===']'?1:-1);return}
  if(k==='/'){e.preventDefault();showShortcuts();return}
 },true);
-window.MarginaliaState=S;
+/* ===================== 1.4: the desktop's layout, simplified ===================== */
+Object.assign(ICO,{
+ 'mg-side':'<rect x="3" y="4" width="18" height="16" rx="3" stroke="currentColor"/><path d="M9 4v16" stroke="currentColor"/>',
+ 'mg-rside':'<rect x="3" y="4" width="18" height="16" rx="3" stroke="currentColor"/><path d="M15 4v16" stroke="currentColor"/>',
+ 'mg-focus':'<path d="M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.2" stroke="currentColor"/>',
+ 'mg-unfocus':'<path d="M9 4v4H5M15 4v4h4M9 20v-4H5M15 20v-4h4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>',
+ 'mg-notes':'<rect x="5" y="4" width="14" height="17" rx="2" stroke="currentColor"/><path d="M9 9h6M9 13h6M9 17h3" stroke="currentColor" stroke-linecap="round"/>',
+ 'mg-calendar':'<rect x="3.5" y="5" width="17" height="15" rx="2" stroke="currentColor"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke="currentColor" stroke-linecap="round"/>'
+});
+Object.assign(IC_ALIAS,{side:'mg-side',rside:'mg-rside',focus:'mg-focus',unfocus:'mg-unfocus',notesI:'mg-notes',calendar:'mg-calendar',guide:'@guide'});
+Object.assign(ui,{sideOver:false,rpOver:false,rpTab:'notes',sideTab:null,selDrag:null});
+SET.focus=SET.focus||{};
+const focusOn=()=>ui.view==='study'&&!!SET.focus[ui.sid]&&!!cur();
+const sideDocked=()=>WIDE.matches&&SET.side!==false&&!focusOn();
+const rpDocked=()=>WIDE.matches&&SET.rp!==false&&ui.view==='study'&&!focusOn();
+const rpShown=()=>ui.view==='study'&&(rpDocked()||ui.rpOver);
+
+/* ---------- top bar: the desktop's slim bar ---------- */
+function topbar(title,opt={}){
+ const sideOn=WIDE.matches?sideDocked():ui.sideOver;
+ const name=title?`<div class="bt">${title}</div>`:`<div class="bname">Marginalia</div>`;
+ return `<button class="ib${sideOn?' on':''}" data-act="sidebtn" aria-label="Sidebar" title="Sidebar">${ic('side',18)}</button>${name}${(account||CFG.clientId)?syncDot():''}<span class="sp"></span>${opt.extra||''}${opt.focus?`<button class="fbtn" data-act="focus" aria-label="Focus" title="Focus: just the page">${ic('focus',17)}<span class="lab">Focus</span></button>`:''}${ib('search','nav','Search','data-v="search"')}${MID.matches?ib('sliders','nav','Settings','data-v="settings"'):''}${opt.rp?`<button class="ib${rpShown()?' on':''}" data-act="rpbtn" aria-label="Study notes and Guide" title="Study notes and Guide">${ic('rside',18)}</button>`:''}`;
+}
+
+/* ---------- sidebar: Studies · Devotional, like the desktop's ---------- */
+function sideHtml(){
+ const t=ui.sideTab||(['devo','devmode'].includes(ui.view)?'Devotional':'Studies');
+ const tabs=`<div class="stabs"><button class="${t==='Studies'?'on':''}" data-act="sidetab" data-t="Studies">Studies</button><button class="${t==='Devotional'?'on':''}" data-act="sidetab" data-t="Devotional">Devotional</button></div>`;
+ let inner='';
+ if(t==='Studies'){
+  const list=studyList(),open=ui.view==='study'?cur():null;
+  inner=(open?`<div class="scard"><b>${esc(open.title||'Untitled')}</b><small>${esc((open.passages||[]).map(p=>refStr(p.ref)).join(', '))} · ${(open.annotations||[]).length} marks</small>${(open.passages||[]).map(p=>`<div class="pchip">${esc(refStr(p.ref))}</div>`).join('')}</div>`:'')+
+   (list.filter(s=>!open||s.id!==open.id).map(s=>`<button class="srow" data-act="open" data-s="${esc(s.id)}">${esc(s.title||'Untitled')}<small>${esc((s.passages||[]).map(p=>refStr(p.ref)).join(', '))}</small></button>`).join('')||(open?'':'<p class="muted" style="padding:4px 8px;font-size:13px">No studies yet.</p>'));
+ }else{
+  inner=`<button class="srow strong" data-act="nav" data-v="devo">${ic('cal',17)}Today’s reading</button>${devCalCard()}${devPlanCard()}`;
+ }
+ return `${tabs}<div class="sbody">${inner}</div><div class="sfoot2">${MID.matches?'':`<button class="srow" data-act="nav" data-v="settings">${ic('sliders',16)}Settings</button>`}${syncLine()}</div>`;
+}
+function devPlanCard(){const n=devList().length;return `<div class="scard"><small style="margin:0">Plan</small><b>Surprise me</b><small>${Object.keys(DEV_POOLS).join(' · ')} · ${n} reading${n===1?'':'s'}</small></div>`}
+function devCalCard(){
+ const t=new Date(),tk=dkey(t),legacy=S.devo.log||{};if(!ui.cal)ui.cal=[t.getFullYear(),t.getMonth()];
+ const [cy,cm]=ui.cal,first=new Date(cy,cm,1),days=new Date(cy,cm+1,0).getDate();
+ let cal=`<div class="cal">${['S','M','T','W','T','F','S'].map(d=>`<div class="w">${d}</div>`).join('')}${'<div></div>'.repeat(first.getDay())}`;
+ for(let d=1;d<=days;d++){const k=`${cy}-${pad(cm+1)}-${pad(d)}`;const dd=new Date(cy,cm,d);const has=devFor(k)||legacy[k];cal+=`<button class="dc${k===tk?' t':''}${dd>t?' f':''}${has?' r':''}" data-act="day" data-d="${k}" aria-label="${dd.toDateString()}${has?', read':''}"><span class="dn">${d}</span><i class="dot"></i></button>`}
+ return `<div class="scard"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><b style="margin:0">${first.toLocaleString('en-US',{month:'long',year:'numeric'})}</b><span style="display:flex"><button class="ib" data-act="cal" data-d="-1" aria-label="Previous month">${ic('chevL',15)}</button><button class="ib" data-act="cal" data-d="1" aria-label="Next month">${ic('chevR',15)}</button></span></div>${cal}</div></div>`;
+}
+
+/* ---------- right panel: Study notes · Guide ---------- */
+function rpanelHtml(){
+ const st=cur();if(!st||ui.view!=='study')return '';
+ const tabs=`<div class="stabs"><button class="${ui.rpTab==='notes'?'on':''}" data-act="rptab" data-t="notes">Study notes</button><button class="${ui.rpTab==='guide'?'on':''}" data-act="rptab" data-t="guide">Guide</button>${WIDE.matches&&!ui.rpOver?'':`<button class="caret" data-act="rpclose" aria-label="Close">${ic('x',16)}</button>`}</div>`;
+ let body;
+ if(ui.rpTab==='notes')body=`<div class="outline rpo">${st.outline&&st.outline.trim()?md(st.outline):'<p class="muted">No Study notes yet.</p>'}</div>`;
+ else{
+  const tr=studyTr(st),anns=(st.annotations||[]).filter(a=>(a.spans||[]).some(s=>s.tr===tr));
+  const tags={};(st.annotations||[]).forEach(a=>(a.tags||[]).forEach(t=>tags[t]=(tags[t]||0)+1));
+  const notes=anns.filter(a=>a.note).sort((a,b)=>{const x=a.spans[0],y=b.spans[0];return (x.c-y.c)||(x.v-y.v)||(x.s-y.s)});
+  body=`${st.summary?`<div class="gcard"><div class="gl">Summary</div><div>${md(st.summary)}</div></div>`:''}${Object.keys(tags).length?`<div class="gcard"><div class="gl">Tags</div><div class="xchips">${Object.entries(tags).map(([t,n])=>`<button data-act="gtag" data-t="${esc(t)}">#${esc(t)} <small>${n}</small></button>`).join('')}</div></div>`:''}<div class="gcard"><div class="gl">Notes in this study</div>${notes.length?notes.map(a=>{const sp=a.spans.find(s=>s.tr===tr)||a.spans[0];const p=(st.passages||[]).find(p=>p.ref&&p.ref.b===sp.b)||{};return `<button class="gnote" data-act="goto" data-s="${esc(st.id)}" data-p="${esc(p.id||'')}" data-c="${sp.c}" data-v="${sp.v}" data-m="${esc(a.id)}"><small>${esc(bname(sp.b,true))} ${sp.c}:${sp.v}</small><span class="gq">${esc(sp.text||'')}</span><span class="gn">${esc(plainMd(a.note).slice(0,140))}</span></button>`}).join(''):'<p class="muted" style="margin:4px 0 0">No notes yet.</p>'}</div>`;
+ }
+ return `${tabs}<div class="rbody">${body}</div>`;
+}
+
+/* ---------- the study page ---------- */
+function headerRow(st,tr){
+ const t=tset(),fold=SET.fold!==false,fon=filterOn();
+ const filt=FS.just?`<button class="hq on fchip" data-act="fjust">${ic('eyeoff',14)}Just the text<span class="fx2">${ic('x',12)}</span></button>`:fon?`<span class="fchip2"><button class="hq on" data-act="menu" data-m="filter">${ic('solid/filter',14)}${esc(filterLabel())} · ${filterCount(st)}</button><button class="hq on fx3" data-act="fclear" aria-label="Clear the filter">${ic('x',12)}</button></span>`:`<button class="hq" data-act="menu" data-m="filter">Filter</button>`;
+ return `<div class="hrow"><div class="hl"><button class="hm strong" data-act="menu" data-m="layout">${t.layout==='para'?'Paragraphs':'Verses'} ▾</button><button class="hm" data-act="menu" data-m="tr">${esc(trName(tr))} ▾</button></div><div class="hr"><button class="hm midonly" data-act="menu" data-m="nlay">${SET.nlay==='under'?'Under':'Margin'} ▾</button><span class="sp"></span>${filt}<button class="hq" data-act="fold">${fold?'Expand':'Collapse'}</button></div></div>`;
+}
+function vStudy(){
+ const st=cur();if(!st){ui.view='studies';return vStudies()}
+ const tr=studyTr(st);ui.tab='passage';
+ let body=`${banners()}<div class="studywrap"><div class="shd"><div class="ser">${esc(st.series||'')}</div><div class="ttl">${esc(st.title||'Untitled')}</div><div class="ref">${esc((st.passages||[]).map(p=>refStr(p.ref)).join(', '))}</div>${st.summary?`<button class="qsum${ui.sumOpen?' open':''}" data-act="sum">${esc(plainMd(st.summary))}</button>`:''}</div>${headerRow(st,tr)}`;
+ (st.passages||[]).forEach(p=>{if((st.passages||[]).length>1)body+=`<div class="pref">${esc(refStr(p.ref))}</div>`;body+=passageRows(st,p,tr)});
+ body+='<div style="height:140px"></div></div>';
+ return {bar:topbar(WIDE.matches?'':esc(st.title||'Untitled'),{focus:1,rp:1}),body};
+}
+function pillHtml(){
+ const st=cur();if(!st)return '';
+ return `<button data-act="focus" aria-label="Leave Focus" title="Leave Focus">${ic('unfocus',17)}</button><span class="psep"></span><button data-act="menu" data-m="tr">${esc(trName(studyTr(st)))} ▾</button><button data-act="rpopen" data-t="notes">${ic('notesI',16)}Notes</button><button data-act="menu" data-m="filter" aria-label="Filter" class="${filterOn()||FS.just?'on':''}">${ic('filter',16)}</button><button class="aa" data-act="txt" aria-label="Text settings">Aa</button><button data-act="menu" data-m="fmore" aria-label="More">${ic('more',17)}</button>`;
+}
+
+/* ---------- Marginalia's own word selection (no browser menu) ---------- */
+const WORDCH=/[\p{L}\p{N}’'\-]/u;
+function caretIn(vtx,x,y){
+ let node,off;
+ if(document.caretRangeFromPoint){const r=document.caretRangeFromPoint(x,y);if(!r)return null;node=r.startContainer;off=r.startOffset}
+ else if(document.caretPositionFromPoint){const p=document.caretPositionFromPoint(x,y);if(!p)return null;node=p.offsetNode;off=p.offset}
+ else return null;
+ if(!vtx.contains(node))return null;
+ return offIn(vtx,node,off);
+}
+function wordBounds(t,o){o=Math.max(0,Math.min(t.length,o));let s=o,e=o;if(!WORDCH.test(t[o]||'')&&o>0&&WORDCH.test(t[o-1]))s=e=o-1;while(s>0&&WORDCH.test(t[s-1]))s--;while(e<t.length&&WORDCH.test(t[e]))e++;if(s===e){e=Math.min(t.length,s+1)}return [s,e]}
+function rangeOf(vtx,s,e){
+ const r=document.createRange(),w=document.createTreeWalker(vtx,NodeFilter.SHOW_TEXT);let n,pos=0,set=false;
+ while((n=w.nextNode())){const L=n.data.length;if(!set&&s<=pos+L){r.setStart(n,s-pos);set=true}if(set&&e<=pos+L){r.setEnd(n,e-pos);return r}pos+=L}
+ if(set){r.setEndAfter(vtx.lastChild||vtx)}return r;
+}
+function drawSel(){
+ const d=ui.selDrag;if(!d)return;
+ const r=rangeOf(d.vtx,d.s,d.e);
+ if(window.CSS&&CSS.highlights&&window.Highlight){CSS.highlights.set('mgsel',new Highlight(r))}
+ const rects=r.getClientRects?[...r.getClientRects()]:[];const k=$('#selk');if(!rects.length||!k)return;
+ const a=rects[0],b=rects[rects.length-1];
+ k.innerHTML=`<i class="k1" style="left:${a.left-6}px;top:${a.top-8}px;height:${a.height+8}px"></i><i class="k2" style="left:${b.right-6}px;top:${b.top}px;height:${b.height+8}px"></i>`;k.classList.add('show');
+}
+function clearOwnSel(){ui.selDrag=null;if(window.CSS&&CSS.highlights)CSS.highlights.delete('mgsel');const k=$('#selk');if(k){k.classList.remove('show');k.innerHTML=''}}
+function finishOwnSel(){
+ const d=ui.selDrag;if(!d)return;const txt=d.vtx.textContent;let s=d.s,e=d.e;while(s<e&&/\s/.test(txt[s]))s++;while(e>s&&/\s/.test(txt[e-1]))e--;if(e<=s){clearOwnSel();return}
+ ui.sel={p:d.vtx.dataset.p,c:+d.vtx.dataset.c,v:+d.vtx.dataset.v,s,e,w:txt.slice(s,e)};
+ if(ui.edit)closeEd(true);
+ ui.barMore=false;ui.bar={mode:'new'};const rr=rangeOf(d.vtx,s,e);showBar(rr.getBoundingClientRect?rr.getBoundingClientRect():d.vtx.getBoundingClientRect());
+}
+/* Used by touch, Apple Pencil and mouse; also by tests. */
+function selectWords(vtx,s,e){ui.selDrag={vtx,anchor:s,s,e};drawSel();finishOwnSel()}
+function extendTo(x,y){
+ const d=ui.selDrag;if(!d)return;const o=caretIn(d.vtx,x,y);if(o==null)return;const t=d.vtx.textContent;const [ws,we]=wordBounds(t,o);
+ if(d.handle==='start'){d.s=Math.min(ws,d.e-1)}else if(d.handle==='end'){d.e=Math.max(we,d.s+1)}
+ else if(o<d.anchor){d.s=ws;d.e=d.anchorEnd}else{d.s=d.anchor;d.e=we}
+ drawSel();
+}
+let lp=null,suppressClick=false;
+function startAt(x,y,target){
+ const vtx=target.closest&&target.closest('.vtx');if(!vtx)return false;
+ const o=caretIn(vtx,x,y);if(o==null)return false;const [s,e]=wordBounds(vtx.textContent,o);
+ hideBar();ui.selDrag={vtx,anchor:s,anchorEnd:e,s,e};drawSel();return true;
+}
+const selView=()=>ui.view==='study'||ui.view==='devmode';
+document.addEventListener('touchstart',e=>{
+ if(!selView()||e.touches.length!==1)return;const t=e.touches[0],el=e.target;
+ const knob=el.closest&&el.closest('#selk i');
+ if(knob&&ui.selDrag){ui.selDrag.handle=knob.classList.contains('k1')?'start':'end';lp={active:true,handle:true};hideBar();return}
+ if(!(el.closest&&(el.closest('.vtx')||el.closest('.vn'))))return;
+ const stylus=t.touchType==='stylus';
+ lp={x:t.clientX,y:t.clientY,el,active:false,stylus};
+ if(stylus){lp.active=startAt(t.clientX,t.clientY,el);return}
+ lp.timer=setTimeout(()=>{if(!lp)return;
+  const vn=lp.el.closest&&lp.el.closest('.vn');
+  if(vn&&ui.view==='study'){suppressClick=true;lp=null;verseMenu(vn);return}
+  lp.active=startAt(lp.x,lp.y,lp.el);if(lp.active){suppressClick=true;if(navigator.vibrate)try{navigator.vibrate(8)}catch(x){}}
+ },380);
+},{passive:true});
+document.addEventListener('touchmove',e=>{
+ if(!lp)return;const t=e.touches[0];
+ if(!lp.active){if(Math.hypot(t.clientX-lp.x,t.clientY-lp.y)>10){clearTimeout(lp.timer);lp=null}return}
+ e.preventDefault();extendTo(t.clientX,t.clientY);
+},{passive:false});
+document.addEventListener('touchend',()=>{if(!lp)return;clearTimeout(lp.timer);const was=lp.active;lp=null;if(was){if(ui.selDrag)ui.selDrag.handle=null;finishOwnSel()}},{passive:true});
+document.addEventListener('touchcancel',()=>{if(lp){clearTimeout(lp.timer);lp=null}},{passive:true});
+/* Mouse or trackpad: press and drag over words. */
+let mdown=null;
+document.addEventListener('mousedown',e=>{if(!selView()||e.button!==0||e.sourceCapabilities&&e.sourceCapabilities.firesTouchEvents)return;if(!(e.target.closest&&e.target.closest('.vtx')))return;mdown={x:e.clientX,y:e.clientY,el:e.target,active:false}});
+document.addEventListener('mousemove',e=>{if(!mdown)return;if(!mdown.active){if(Math.hypot(e.clientX-mdown.x,e.clientY-mdown.y)<4)return;mdown.active=startAt(mdown.x,mdown.y,mdown.el);if(!mdown.active){mdown=null;return}}extendTo(e.clientX,e.clientY)});
+document.addEventListener('mouseup',()=>{if(!mdown)return;const was=mdown.active;mdown=null;if(was){suppressClick=true;finishOwnSel()}});
+document.addEventListener('contextmenu',e=>{const vn=e.target.closest&&e.target.closest('.vn');if(vn&&ui.view==='study'){e.preventDefault();verseMenu(vn)}});
+document.addEventListener('click',e=>{if(suppressClick){suppressClick=false;e.stopImmediatePropagation();e.preventDefault()}},true);
+
+/* ---------- the verse menu (long-press a verse number) ---------- */
+function verseMenu(vn){
+ const row=vn.nextElementSibling&&vn.nextElementSibling.classList.contains('vtx')?vn.nextElementSibling:vn.parentElement.querySelector('.vtx');if(!row)return;
+ const st=cur();if(!st)return;const p=(st.passages||[]).find(x=>x.id===row.dataset.p)||st.passages[0];const c=+row.dataset.c,v=+row.dataset.v;
+ const m=$('#menu');m.dataset.k='verse';
+ m.innerHTML=`<div class="mhead"><b>${esc(bname(p.ref.b,true))} ${c}:${v}</b><button class="mqi" data-act="vcopy" data-p="${esc(p.id)}" data-c="${c}" data-v="${v}" aria-label="Copy verse" title="Copy verse">${ic('copyI',15)}</button></div><button class="mi" data-act="vnote" data-p="${esc(p.id)}" data-c="${c}" data-v="${v}"><span class="ck">${ic('note',16)}</span><span>Note on this verse</span></button><button class="mi" data-act="vcopy" data-p="${esc(p.id)}" data-c="${c}" data-v="${v}"><span class="ck"></span><span>Copy verse</span></button><button class="mi" data-act="vcopy" data-ref="1" data-p="${esc(p.id)}" data-c="${c}" data-v="${v}"><span class="ck"></span><span>Copy the reference</span></button>`;
+ m.classList.remove('asSheet');m.classList.add('open');const r=vn.getBoundingClientRect(),w=m.offsetWidth||220;
+ m.style.top=Math.min(r.bottom+6,innerHeight-(m.offsetHeight||170)-12)+'px';m.style.left=Math.max(8,Math.min(r.left,innerWidth-w-8))+'px';
+}
+ICO['copyI']='<rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3" stroke="currentColor" stroke-linecap="round"/>';
+
+/* ---------- devotional home, like the desktop's ---------- */
+let VOD=null,VODBUSY=false;
+function vodRef(){if(!VOD){if(!VODBUSY){VODBUSY=true;fetch('data/verse-of-day.json').then(r=>r.json()).then(a=>{VOD=a;render()}).catch(()=>{})}return null}
+ const t=new Date(),leap=new Date(2024,t.getMonth(),t.getDate()),i=Math.round((leap-new Date(2024,0,1))/864e5);return parseRef(VOD[i%VOD.length])}
+const BOOKKEYS=BOOKS.map(n=>n.toLowerCase().replace(/[\s.]/g,''));
+const ALIAS={ps:18,psa:18,psalm:18,prov:19,pr:19,jn:42,jhn:42,mt:39,mk:40,lk:41,rom:44,song:21,sos:21,phil:49,php:49,phlm:56,jas:58,jud:64,rev:65,gen:0,ex:1,lev:2,num:3,deut:4,dt:4,josh:5,judg:6,eccl:20,isa:22,jer:23,lam:24,ezek:25,dan:26};
+function parseRef(q){
+ const m=String(q||'').trim().match(/^((?:[123]\s*)?[A-Za-z][A-Za-z .]*?)\s*(\d+)(?::(\d+))?(?:\s*[-–—]\s*(?:(\d+):)?(\d+))?\s*$/);if(!m)return null;
+ const key=m[1].toLowerCase().replace(/[\s.]/g,'');let b=ALIAS[key];if(b==null)b=BOOKKEYS.findIndex(k=>k.startsWith(key));if(b<0||key.length<2)return null;
+ const c1=+m[2];if(c1<1||c1>CHAPS[b])return null;
+ if(!m[3])return {b,c1,v1:1,c2:c1,v2:999,whole:true};
+ const v1=+m[3];let c2=c1,v2=v1;if(m[5]){if(m[4])c2=+m[4];v2=+m[5]}
+ return {b,c1,v1,c2,v2};
+}
+async function settleRef(r){await webBook(r.b);if(r.v2===999)r.v2=chLen(r.b,r.c2)||r.v1;delete r.whole;return r}
+async function openOneOff(ref){
+ ref=await settleRef(ref);const tk=dkey(new Date()),d=devFor(tk);
+ if(d&&!devTouched(d)){const p=d.passages[0];commit({op:'set',sid:d.id,patch:{passages:[{...p,ref}],title:devTitle(ref)}});devOpen(d.id);return}
+ if(!d){const n=newDev(tk,ref);devOpen(n.id);return}
+ const n=newDev(tk,ref,true);devOpen(n.id);
+}
+async function poolPick(pool){const books=DEV_POOLS[pool]||DEV_POOLS.Psalms;const seed=seedOf(pool+Date.now());const b=books[seed%books.length];const ps=await portionsFor(b);const p=ps[(seed>>>5)%ps.length];return {b,c1:p[0],v1:p[1],c2:p[2],v2:p[3]}}
+const TPLCOL={inductive:'#5b8afe',soap:'#5bba88',lectio:'#a78bfa',hhh:'#f59e5b',pray:'#e96f73',free:'#9aa3b2'};
+function skyOf(){const dark=document.documentElement.dataset.theme==='dark'||(document.documentElement.dataset.theme!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);const h=new Date().getHours();if(dark)return 'night';return h>=18||h<5?'eve':h>=12?'aft':'morn'}
+const greeting=()=>{const h=new Date().getHours();return h<5?'Good evening':h<12?'Good morning':h<18?'Good afternoon':'Good evening'};
+const partOfDay=d=>{const h=d.getHours();return h<12?'this morning':h<18?'this afternoon':'this evening'};
+const SPRIG=`<div class="sprig" aria-hidden="true"><svg width="54" height="16" viewBox="0 0 54 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="M2 8h19M33 8h19"/><path d="M27 13V4"/><path d="M27 9c-3-.5-5-2.5-5-5 3 .3 5 2.2 5 5zM27 9c3-.5 5-2.5 5-5-3 .3-5 2.2-5 5z" fill="currentColor" fill-opacity=".25"/></svg></div>`;
+function verseText(r){if(!r)return null;const ch=chapter(devoTr(),r.b,r.c1);return ch?(ch.v[r.v1-1]||''):null}
+function excerpt(r){const ch=chapter(devoTr(),r.b,r.c1);if(!ch)return '';let h='',n=0;for(let v=r.v1;v<=Math.min(r.v2,ch.v.length)&&n<180;v++){const t=ch.v[v-1]||'';h+=`<span class="vn">${v}</span>${esc(t)} `;n+=t.length}return h.length?h.replace(/\s+$/,'')+(n>=180?'…':''):''}
+function lastWrote(d){const lines=String(d.outline||'').split('\n').filter(l=>l.trim()&&!/^#{1,6}\s/.test(l));const fromNotes=(d.annotations||[]).filter(a=>a.note).map(a=>plainMd(a.note));const x=lines.length?plainMd(lines[lines.length-1]):fromNotes[fromNotes.length-1];return x?x.slice(0,120):''}
+function vDevo(){
+ const t=new Date(),tk=dkey(t),today=devFor(tk),sky=skyOf();
+ const vr=vodRef(),vt=verseText(vr);
+ let hero;
+ if(today){const r=devRef(today),touched=devTouched(today),done=today.dev.done;
+  if(done){const notes=(today.annotations||[]).filter(a=>a.kind==='note').length+(devBody(today.outline)?1:0),hl=(today.annotations||[]).filter(a=>a.kind==='highlight').length;
+   hero=`<div class="hero"><div class="rib dn"></div><div class="hl2">Today’s reading · done</div><div class="href">${esc(today.title)}</div><div class="hline"><span>${r?(r.v2-r.v1+1)+' verses · ':''}you wrote ${notes} note${notes===1?'':'s'} and ${hl} highlight${hl===1?'':'s'}</span></div><div class="hbtns"><button class="beg" data-act="devopen" data-s="${esc(today.id)}" data-notes="1">See my notes</button><button class="ql" data-act="devopen" data-s="${esc(today.id)}">Read again</button></div></div>`}
+  else if(touched){const lw=lastWrote(today),cr=new Date(today.createdAt||Date.now());
+   hero=`<div class="hero"><div class="rib"></div><div class="hl2">Continue</div><div class="href">${esc(today.title)}</div><div class="hline"><span>Started ${partOfDay(cr)} · ${cr.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}</span><button class="tp" data-act="menu" data-m="dtplh">${esc((DTPL[today.dev.tmpl]||DTPL.inductive).n)} ▾</button></div>${lw?`<div class="lwl">You last wrote</div><div class="lastw">“${esc(lw)}”</div>`:''}<div class="hbtns"><button class="beg" data-act="devopen" data-s="${esc(today.id)}">Continue</button><button class="ql" data-act="dstartover">${ui.overArm?'Tap again to start over':'Start over'}</button></div><div class="micro">Pick up where you left off.</div></div>`}
+  else{hero=heroNew(today.title,r,today.id)}
+ }else{const r=devProposal(tk);hero=heroNew(r?devTitle(r):'…',r,null)}
+ const past=pastReading(today);
+ const rec=devList().filter(d=>d!==today).sort((a,b)=>a.dev.date<b.dev.date?1:-1).slice(0,3);
+ const body=`<div class="dh ${sky}">${sky==='night'?'<div class="stars"></div>':''}<div class="dhcol">
+ <div class="greet">${greeting()}</div><div class="dhdate">${t.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div>
+ ${vr?`<div class="vod">${vt?`“${esc(vt)}”`:'…'}</div><div class="vodref"><span>${esc(bname(vr.b,true))} ${vr.c1}:${vr.v1} · ${esc(trName(devoTr()))}</span><button class="ql" data-act="vodctx">Read in context</button></div>`:''}
+ ${SPRIG}${hero}
+ <div class="sec"><div class="lbl2">Choose your own passage</div><div class="go"><input id="gopass" class="in" placeholder="Go to a passage, e.g. Romans 8 or John 3:1–21" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go"><button class="ob" data-act="goopen">Open</button></div><div class="chs">${[['Psalms','A Psalm'],['Proverbs','A Proverb'],['Gospels','A Gospel passage'],['Epistles','A letter']].map(([p,l])=>`<button data-act="gopool" data-p="${p}">${l}</button>`).join('')}</div></div>
+ ${past?`<div class="sec"><div class="lbl2">From your past readings</div><button class="past" data-act="devopen" data-s="${esc(past.d.id)}"><small>${esc(past.label)}</small><b>${esc(past.d.title)}</b>${lastWrote(past.d)?`<i>“${esc(lastWrote(past.d))}”</i>`:''}</button></div>`:''}
+ ${rec.length?`<div class="sec"><div class="lbl2">Recent</div>${rec.map(d=>`<button class="rrow" data-act="devopen" data-s="${esc(d.id)}"><span class="rdot" style="background:${TPLCOL[d.dev.tmpl]||TPLCOL.free}"></span><b>${esc(d.title)}</b><i>${esc(lastWrote(d))}</i><small>${kdate(d.dev.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</small></button>`).join('')}</div>`:''}
+ ${SPRIG}</div></div>`;
+ const calBtn=WIDE.matches&&sideDocked()?'':`<button class="ib" data-act="devcal" aria-label="Calendar" title="Calendar">${ic('calendar',18)}</button>`;
+ return {bar:topbar(WIDE.matches?'':'Devotional',{extra:calBtn}),body};
+}
+function heroNew(title,r,id){
+ const tm=LS.get('devTpl','inductive');
+ return `<div class="hero"><div class="rib"></div><div class="hl2">Today’s reading</div><div class="href">${esc(title)}</div><div class="hline"><span>${r?(r.v2-r.v1+1)+' verses · about '+Math.max(1,Math.round((r.v2-r.v1+1)*25/200))+' minute'+(Math.round((r.v2-r.v1+1)*25/200)>1?'s':''):''}</span><button class="tp" data-act="menu" data-m="dtplh">${esc((DTPL[tm]||DTPL.inductive).n)} ▾</button></div>${r?`<div class="exc">${excerpt(r)||'…'}</div>`:''}<div class="hbtns"><button class="beg" ${id?`data-act="devopen" data-s="${esc(id)}"`:'data-act="start"'}${r?'':' disabled'}>Begin</button><button class="ql" data-act="another">Another</button></div><div class="micro">Take your time.</div></div>`;
+}
+function pastReading(today){
+ const t=new Date(),md=dkey(t).slice(5),tk=dkey(t);
+ const same=devList().filter(d=>d.dev.date.slice(5)===md&&d.dev.date<tk).sort((a,b)=>a.dev.date<b.dev.date?1:-1)[0];
+ if(same)return {d:same,label:`${kdate(same.dev.date).getFullYear()} · this day`};
+ const r=today?devRef(today):devProposal(tk);if(!r)return null;
+ const prev=devList().filter(d=>d!==today&&d.dev.date<tk&&devRef(d)&&devRef(d).b===r.b).sort((a,b)=>a.dev.date<b.dev.date?1:-1)[0];
+ return prev?{d:prev,label:`Last time in ${bname(r.b)} · ${kdate(prev.dev.date).toLocaleDateString('en-US',{month:'long',day:'numeric'})}`}:null;
+}
+function showSheetHtml(html){const s=$('#sheet');s.innerHTML=`<div class="grab"></div>${html}`;s.classList.add('open');$('#scrim').classList.add('show');$('#scrim').dataset.for='sheet'}
+function closeSheet(){const s=$('#sheet');if(s){s.classList.remove('open');s.innerHTML=''}const sc=$('#scrim');if(sc&&sc.dataset.for==='sheet'){sc.classList.remove('show');sc.dataset.for=''}}
+function vodContext(){
+ const r=vodRef();if(!r)return;const ch=chapter(devoTr(),r.b,r.c1);
+ if(!ch){showSheetHtml('<p class="muted">Loading…</p>');setTimeout(vodContext,500);return}
+ const a=Math.max(1,r.v1-4),z=Math.min(ch.v.length,r.v1+4);
+ showSheetHtml(`<div class="gl" style="margin-bottom:6px">${esc(bname(r.b,true))} ${r.c1}:${a}–${z} · ${esc(trName(devoTr()))}</div><p class="vt ctx">${Array.from({length:z-a+1},(_,i)=>a+i).map(v=>`<span class="${v===r.v1?'vod-on':''}"><span class="vn">${v}</span>${esc(ch.v[v-1]||'')} </span>`).join('')}</p><div style="display:flex;gap:12px;margin-top:12px"><button class="btn" data-act="vodread">Read this chapter</button><button class="quiet" data-act="sheetx">Close</button></div>`);
+}
+
+window.MarginaliaState=S;window.MarginaliaTest={selectWords,parseRef,verseMenu};
 /* ---------- start ---------- */
 (async function start(){
  applyTheme();applyText();

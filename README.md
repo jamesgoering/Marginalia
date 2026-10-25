@@ -1,4 +1,4 @@
-# Marginalia for iPad and phone (version 1.3.3)
+# Marginalia for iPad and phone (version 1.4)
 
 Reads your Marginalia studies from OneDrive, lets you mark and annotate them, and saves the changes back into the same study files the desktop app uses. It also has a devotional that syncs between your phone and iPad.
 
@@ -99,3 +99,12 @@ KJV text: scrollmapper bible_databases (public domain). WEB: world-english-bible
 ## 1.3.1
 
 - The desktop app's icon on the Home Screen and the browser tab. An iPad keeps the old Home Screen icon until you remove Marginalia from the Home Screen and add it again; your studies stay in OneDrive.
+
+## What's new in 1.4
+
+- The desktop's look, simplified: same colors, top bar, sidebar (Studies · Devotional), study page, note cards and right panel (Study notes · Guide). No more bottom tabs: the sidebar button at the top left does that job.
+- Focus (top bar): just the page, with a small pill for what you need while reading; everything else under ⋯.
+- Press and hold a word, then drag, to select scripture; the iPhone/iPad Copy menu no longer pops up. Long-press a verse number for Note on this verse and Copy.
+- The devotional home from the desktop, with the verse of the day, today's reading card and Choose your own passage.
+
+Upload all of: index.html, app.js, app.css, sw.js, manifest.webmanifest, data/verse-of-day.json, README.md, CHANGELOG.md. On Android, remove and re-add the app to the Home Screen once so the new window colors apply.

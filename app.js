@@ -1,7 +1,10 @@
 'use strict';
 /* Marginalia for iPad and phone. Reads and writes the desktop app's study files in OneDrive. */
-const VERSION='1.3.1';
+const VERSION='1.3.2';
+const CSS_VER='132';
 const $=s=>document.querySelector(s);
+/* Older index.html files lack some parts; add any that are missing so a partial upload can't break menus. */
+[['mbar','toolbar'],['scrim',''],['menu','menu'],['ed','dialog'],['tx','dialog'],['toast','status'],['wn','dialog']].forEach(([id,role])=>{if(!document.getElementById(id)){const d=document.createElement('div');d.id=id;if(role)d.setAttribute('role',role);if(id==='scrim')d.dataset.act='scrim';document.body.appendChild(d)}});
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const cap=s=>s?s[0].toUpperCase()+s.slice(1):s;
 const pad=n=>String(n).padStart(2,'0');
@@ -113,9 +116,16 @@ async function abBible(tr){
  if(!hit)throw new Error(`Your API.Bible key doesn’t include ${trName(tr)}`);
  ids[tr]=hit.id;LS.set('abids',ids);return hit.id;
 }
+/* Translations without paragraph data (KJV, sometimes NET) borrow the WEB's paragraph and stanza breaks; poetry verses each start a line. */
+async function withParagraphs(tr,b,c,d){
+ if(tr==='web'||(d.p&&d.p.length))return d;
+ try{const wb=await webBook(b),pre=c+':',pick=a=>(a||[]).filter(k=>k.startsWith(pre)).map(k=>+k.slice(pre.length));
+  const poem=Object.keys(wb.q||{}).filter(k=>k.startsWith(pre)).map(k=>+k.slice(pre.length));
+  return {...d,p:[...new Set([1,...pick(wb.p),...poem])],s:(d.s&&d.s.length)?d.s:pick(wb.s)}}catch(e){return d}
+}
 function chapter(tr,b,c){
  const k=chKey(tr,b,c);if(CH[k])return CH[k];
- if(!LOADING[k]&&!CHERR[k]){LOADING[k]=fetchChapter(tr,b,c).then(d=>{CH[k]=d;delete LOADING[k];render()}).catch(e=>{CHERR[k]=e.message||String(e);delete LOADING[k];render()})}
+ if(!LOADING[k]&&!CHERR[k]){LOADING[k]=fetchChapter(tr,b,c).then(d=>withParagraphs(tr,b,c,d)).then(d=>{CH[k]=d;delete LOADING[k];render()}).catch(e=>{CHERR[k]=e.message||String(e);delete LOADING[k];render()})}
  return null;
 }
 
@@ -913,6 +923,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 /* ---------- What's new and keyboard shortcuts ---------- */
 const CHANGES={
+ '1.3.2':['Fixed: menus, Filter, translations and Verses not responding when some app files were from an older version; the app now repairs this itself and tells you if files need uploading again.','Fixed: Paragraphs now works in KJV and other translations without their own paragraph marks.','Fixed: note cards keep the title and marked words on one line and stay inside the notes column.'],
  '1.3.1':['The app now uses the desktop app’s icon. To see it on the Home Screen, remove Marginalia from the Home Screen and add it again (your studies stay in OneDrive).'],
  '1.3.0':['Devotional: the iPad and the computer now share each day’s reading through OneDrive, with the same passage, marks and notes on both.','Devotional mode goes full screen, in the desktop’s morning and evening look. Tap to show ‹ Today, Aa and ⋯; swipe from the left edge to go back.','Write beside a verse by tapping its number; comments fold into small bubbles; one writing area with six templates.','Menus, the Filter and note cards now look and work like the desktop’s: Just the text, types, colors and tags, and Delete these marks.','Words-above and connection marks can be changed here (words, color, line style).','Keyboard shortcuts for an iPad keyboard (⌘/ lists them).'],
  '1.2.1':['Delete a note: tap a note, then ••• (keeps the highlight, or deletes both). Every delete has Undo.','The desktop’s icons throughout.']};
@@ -941,6 +952,7 @@ window.MarginaliaState=S;
  const first=studyList()[0];if(first)ui.sid=first.id;
  ui.view=WIDE.matches&&first?'study':'studies';
  render();
+ if(getComputedStyle(document.documentElement).getPropertyValue('--mg-css').trim()!==CSS_VER)setTimeout(()=>toast('Some app files on the site are from an older version. Upload app.css and index.html again.'),800);
  {const seen=LS.get('seenVer',null);if(seen&&seen!==VERSION)showWhatsNew(seen);else if(!seen&&Object.keys(S.studies).length)showWhatsNew('1.2.0');LS.set('seenVer',VERSION)}
  await initAuth();
  render();

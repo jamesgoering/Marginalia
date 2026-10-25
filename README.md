@@ -1,4 +1,4 @@
-# Marginalia for iPad and phone (version 1.3.1)
+# Marginalia for iPad and phone (version 1.3.2)
 
 Reads your Marginalia studies from OneDrive, lets you mark and annotate them, and saves the changes back into the same study files the desktop app uses. It also has a devotional that syncs between your phone and iPad.
 
@@ -63,6 +63,9 @@ The sign-in lasts about a day. When it runs out, the app keeps showing your save
 - **Close a study on the computer before marking it on the iPad.** A study that is open on the computer is held in the desktop app's memory, and the next save there can overwrite changes made on the iPad.
 
 ## Updating later
+
+Upload every file listed for a version, including index.html and app.css. If only some of them are new, parts of the app stop working (as in 1.3.1). Since 1.3.2 the app shows a message when app.css doesn't match.
+
 
 Upload the changed files, and change the `VERSION` line in `sw.js`. The app shows "A new version is ready" the next time it's opened online.
 

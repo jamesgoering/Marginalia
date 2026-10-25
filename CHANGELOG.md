@@ -1,5 +1,13 @@
 # Marginalia for iPad and phone: changelog
 
+## 1.3.2 (2026-10-24)
+Fixes
+- Menus, the Filter, the translation and Verses menus did nothing on the live site: only part of 1.3 had been uploaded (new app.js with the 1.2 index.html and app.css), so the menu backdrop element was missing and every menu stopped with an error, and the 1.3 styles (devotional look, Filter, cards) were missing. app.js now adds any missing page parts itself and shows a message when app.css is from another version.
+- The offline copy no longer picks up old files from the browser's cache when a new version installs (cache: reload).
+- Paragraphs and poetry did nothing in KJV (no paragraph marks in its text): translations without paragraph data now use the WEB's paragraph and stanza breaks.
+- Note cards: the title, marked words, tags and ••• stay on one line and inside the notes column (an old rule forced them onto separate lines).
+- The filter chip in the header no longer wraps on a phone.
+
 ## 1.3.1 (2026-10-24)
 Tweaks
 - Home Screen, app and browser-tab icons are now the desktop app's icon (from build/icon-mac.png): full-bleed light tile for iOS, a maskable version with the art in the safe zone, and the rounded tile for the tab.

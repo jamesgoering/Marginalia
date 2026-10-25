@@ -1,7 +1,7 @@
 'use strict';
 /* Marginalia for iPad and phone. Reads and writes the desktop app's study files in OneDrive. */
-const VERSION='1.3.2';
-const CSS_VER='132';
+const VERSION='1.3.3';
+const CSS_VER='133';
 const $=s=>document.querySelector(s);
 /* Older index.html files lack some parts; add any that are missing so a partial upload can't break menus. */
 [['mbar','toolbar'],['scrim',''],['menu','menu'],['ed','dialog'],['tx','dialog'],['toast','status'],['wn','dialog']].forEach(([id,role])=>{if(!document.getElementById(id)){const d=document.createElement('div');d.id=id;if(role)d.setAttribute('role',role);if(id==='scrim')d.dataset.act='scrim';document.body.appendChild(d)}});
@@ -329,7 +329,7 @@ const LH=[['1.5','Tight'],['1.75','Normal'],['2','Relaxed'],['2.3','Airy']];
 const TDEF={font:'source',size:1,lh:'1.75',vn:true,layout:'verse'};
 const tset=()=>Object.assign({},TDEF,LS.get('text',{}));
 function applyText(){const t=tset(),r=document.documentElement.style,f=FONTS.find(x=>x[0]===t.font)||FONTS[0];r.setProperty('--sfont',f[2]);r.setProperty('--tsz',t.size);r.setProperty('--tlh',t.lh);$('#app').classList.toggle('novn',!t.vn);$('#tx').classList.toggle('novn',!t.vn)}
-function txtHtml(){const t=tset();return `<div class="grab"></div><div style="display:flex;align-items:center;margin-bottom:8px"><b style="font-size:16px;flex:1">Scripture text</b>${ib('x','txtx','Close')}</div><p class="vt tpv"><span class="vn">1</span>In the beginning was the Word, and the Word was with God…</p><div class="lbl">Font</div><div class="tfs">${FONTS.map(([k,l,f])=>`<button class="${t.font===k?'on':''}" style="font-family:${f.replace(/"/g,'&quot;')}" data-act="tfont" data-k="${k}">${l}</button>`).join('')}</div><div class="lbl">Size</div><div class="trw"><button class="btn2" style="padding:6px 12px" data-act="tsize" data-d="-1" aria-label="Smaller">A−</button><input type="range" id="tsz" min="0.8" max="1.6" step="0.05" value="${t.size}" aria-label="Text size"><button class="btn2" style="padding:6px 12px;font-size:17px" data-act="tsize" data-d="1" aria-label="Larger">A+</button><b id="tszv">${Math.round(t.size*100)}%</b></div><div class="lbl">Line spacing</div><div class="seg" style="margin-bottom:12px">${LH.map(([v,l])=>`<button class="${t.lh===v?'on':''}" data-act="tlh" data-v="${v}">${l}</button>`).join('')}</div><div class="lbl">Verse numbers</div><div class="seg" style="margin-bottom:14px"><button class="${t.vn?'on':''}" data-act="tvn" data-v="1">Show</button><button class="${t.vn?'':'on'}" data-act="tvn" data-v="0">Hide</button></div>${ui.view==='devmode'?`<div class="lbl">Layout</div><div class="seg" style="margin-bottom:12px">${[['verse','Verses'],['para','Paragraphs']].map(([v,l])=>`<button class="${t.layout===v?'on':''}" data-act="tlay" data-v="${v}">${l}</button>`).join('')}</div><div class="lbl">Notes</div><div class="seg" style="margin-bottom:8px"><button class="${SET.devBub!==false?'on':''}" data-act="dbub">Comments as bubbles</button><button class="${SET.devMargin!==false?'on':''}" data-act="dmargin">Margin writing</button></div><div class="lbl">Light</div><div class="seg" style="margin-bottom:14px"><button class="${SET.devLight!=='day'?'on':''}" data-act="dlight" data-v="hour">By the hour</button><button class="${SET.devLight==='day'?'on':''}" data-act="dlight" data-v="day">Always day</button></div>`:''}<div style="display:flex;justify-content:flex-start"><button class="quiet" data-act="treset">Reset to the defaults</button></div>`}
+function txtHtml(){const t=tset();return `<div class="grab"></div><div style="display:flex;align-items:center;margin-bottom:8px"><b style="font-size:16px;flex:1">Scripture text</b>${ib('x','txtx','Close')}</div><p class="vt tpv"><span class="vn">1</span>In the beginning was the Word, and the Word was with God…</p><div class="lbl">Font</div><div class="tfs">${FONTS.map(([k,l,f])=>`<button class="${t.font===k?'on':''}" style="font-family:${f.replace(/"/g,'&quot;')}" data-act="tfont" data-k="${k}">${l}</button>`).join('')}</div><div class="lbl">Size</div><div class="trw"><button class="btn2" style="padding:6px 12px" data-act="tsize" data-d="-1" aria-label="Smaller">A−</button><input type="range" id="tsz" min="0.8" max="1.6" step="0.05" value="${t.size}" aria-label="Text size"><button class="btn2" style="padding:6px 12px;font-size:17px" data-act="tsize" data-d="1" aria-label="Larger">A+</button><b id="tszv">${Math.round(t.size*100)}%</b></div><div class="lbl">Line spacing</div><div class="seg" style="margin-bottom:12px">${LH.map(([v,l])=>`<button class="${t.lh===v?'on':''}" data-act="tlh" data-v="${v}">${l}</button>`).join('')}</div><div class="lbl">Verse numbers</div><div class="seg" style="margin-bottom:14px"><button class="${t.vn?'on':''}" data-act="tvn" data-v="1">Show</button><button class="${t.vn?'':'on'}" data-act="tvn" data-v="0">Hide</button></div>${ui.view==='devmode'?`<div class="lbl">Layout</div><div class="seg" style="margin-bottom:12px">${[['verse','Verses'],['para','Paragraphs']].map(([v,l])=>`<button class="${t.layout===v?'on':''}" data-act="tlay" data-v="${v}">${l}</button>`).join('')}</div><div class="lbl">Comments beside the text</div><div class="seg" style="margin-bottom:8px"><button class="${SET.devMargin!==false?'on':''}" data-act="dmargin" data-v="1">Show</button><button class="${SET.devMargin===false?'on':''}" data-act="dmargin" data-v="0">Hide</button></div><div class="lbl">Light</div><div class="seg" style="margin-bottom:14px"><button class="${SET.devLight!=='day'?'on':''}" data-act="dlight" data-v="hour">By the hour</button><button class="${SET.devLight==='day'?'on':''}" data-act="dlight" data-v="day">Always day</button></div>`:''}<div style="display:flex;justify-content:flex-start"><button class="quiet" data-act="treset">Reset to the defaults</button></div>`}
 function setText(p){LS.set('text',Object.assign(tset(),p));applyText();if('layout' in p)render();const x=$('#tx');if(x.classList.contains('open'))x.innerHTML=txtHtml()}
 
 /* ---------- UI state ---------- */
@@ -561,10 +561,10 @@ function devVerseHtml(st,tr,b,x,para){
  const ms=[],bubbles=[],margin=[],opened=[];
  (st.annotations||[]).forEach(a=>(a.spans||[]).forEach(sp=>{
   if(sp.tr!==tr||sp.b!==b||sp.c!==x.c||sp.v!==x.v)return;
-  if(a.kind==='note'&&isWholeVerse(sp,x.t)){if(SET.devMargin!==false&&(sp===(a.spans||[])[0]))margin.push(a);return}
+  if(a.kind==='note'&&isWholeVerse(sp,x.t)){if((SET.devMargin!==false||ui.edit===a.id)&&(sp===(a.spans||[])[0]))margin.push({a,whole:1,s:-1});return}
   const r=anchor(sp,x.t);if(!r)return;
   const m={id:a.id,kind:KIND[a.kind]||'cm',c:okHex(a.color),us:USTYLE[a.ustyle]||'solid',ab:a.kind==='above'?(a.above||''):null,s:r[0],e:r[1]};
-  if(a.kind==='note'){if(SET.devBub!==false)m.bub=1;else if(a.note)opened.push(a)}
+  if(a.kind==='note'&&(SET.devMargin!==false||ui.edit===a.id)&&sp===(a.spans||[])[0])margin.push({a,whole:0,s:r[0]});
   ms.push(m);
  }));
  const html=markup(x.t,ms,para&&x.ch.q?x.ch.q[x.v]:null);
@@ -580,10 +580,16 @@ function vDevMode(){
    const from=c===r.c1?r.v1:1,to=c===r.c2?Math.min(r.v2,ch.v.length):ch.v.length;const items=[];
    for(let v=from;v<=to;v++){const t=ch.v[v-1]||'';items.push({c,v,t,ch});vcount++;words+=t.split(/\s+/).length}
    const groups=[];items.forEach(x=>{const poem=para&&x.ch.q&&x.ch.q[x.v];const starts=!groups.length||!para||poem||(x.ch.p?x.ch.p.includes(x.v):true)||groups[groups.length-1].poem;if(starts)groups.push({poem:!!poem,stz:para&&x.ch.s&&x.ch.s.includes(x.v),items:[x]});else groups[groups.length-1].items.push(x)});
-   rows+=groups.map(g=>{const parts=[],marg=[],open=[];g.items.forEach(x=>{const o=devVerseHtml(st,tr,r.b,x,para);marg.push(...o.margin);open.push(...o.opened);parts.push(`<span class="vn" data-act="vwrite" data-c="${x.c}" data-v="${x.v}" role="button" title="Write about this verse">${r.c1!==r.c2&&x.v===1?c+':':''}${x.v}</span><span class="vtx" data-p="${esc(p.id)}" data-c="${x.c}" data-v="${x.v}">${o.html}</span>`)});
-    const mw=marg.map(a=>`<div class="mw" data-act="mwedit" data-id="${esc(a.id)}" role="button">${a.note?md(a.note):'<span class="mwph2">Write about this verse…</span>'}</div>`).join('');
-    const op=open.map(a=>`<div class="copen" data-act="mwedit" data-id="${esc(a.id)}" role="button"><b>Comment · ${esc((a.spans||[])[0].text||'')}</b>${md(a.note)}</div>`).join('');
-    return `<div class="drow${g.stz?' stz':''}"><p class="vt${g.poem?' poem':''}">${parts.join(' ')}</p><div class="dmarg">${mw}${op}</div></div>`}).join('');
+   const mwHtml=list=>list.sort((x,y)=>x.s-y.s).map(({a,whole})=>{const sp=(a.spans||[])[0]||{},ed=ui.edit===a.id;const head=whole?'':`<em class="q">${esc(sp.text||'')}</em>`;
+     return `<div class="mw${ed?' editing':''}" data-c="${sp.c}" data-v="${sp.v}"${ed?'':` data-act="mwedit" data-id="${esc(a.id)}" role="button"`}>${head}${ed?`<div class="cwtext" id="enote" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Comment" data-ph="Write a comment">${a.note?md(a.note):''}</div>`:a.note?`<div class="cwb">${md(a.note)}</div>`:'<span class="mwph2">Write a comment…</span>'}</div>`}).join('');
+   const side=MID.matches;
+   rows+=groups.map(g=>{const pcls=`vt${g.poem?' poem':''}`;let parts=[],marg=[],html='';
+    g.items.forEach((x,i)=>{const o=devVerseHtml(st,tr,r.b,x,para);parts.push(`<span class="vn" data-act="vwrite" data-c="${x.c}" data-v="${x.v}" role="button" title="Write about this verse">${r.c1!==r.c2&&x.v===1?c+':':''}${x.v}</span><span class="vtx" data-p="${esc(p.id)}" data-c="${x.c}" data-v="${x.v}">${o.html}</span>`);
+     if(side)marg.push(...o.margin);
+     else if(o.margin.length){html+=`<p class="${pcls}${html?' cont':''}">${parts.join(' ')}</p><div class="dmarg">${mwHtml(o.margin)}</div>`;parts=[]}});
+    if(side)return `<div class="drow${g.stz?' stz':''}"><p class="${pcls}">${parts.join(' ')}</p><div class="dmarg">${mwHtml(marg)}</div></div>`;
+    if(parts.length)html+=`<p class="${pcls}${html?' cont':''}">${parts.join(' ')}</p>`;
+    return `<div class="drow${g.stz?' stz':''}">${html}</div>`}).join('');
  }}
  const dl=kdate(st.dev.date).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
  const tmpl=(DTPL[st.dev.tmpl]?st.dev.tmpl:LS.get('devTpl','inductive'));
@@ -595,11 +601,21 @@ function vDevMode(){
   <div class="orn">· ❦ ·</div>
   <div class="wr" id="devwr"><div class="whead"><span class="dlab" style="flex:1">Your notes</span><button class="tpill" data-act="menu" data-m="dtpl">${esc((DTPL[tmpl]||DTPL.inductive).n)} ▾</button></div>
    <div class="devnotes" id="devnotes" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Your notes">${devNotesHtml(st.outline)}</div>
-   <div class="done"><span class="hint2">Select words to highlight, underline or comment</span><button class="dbtn" data-act="ddone">${st.dev.done?'Close':'Done'}</button></div></div>
+   <div class="done"><span class="hint2">Select words to highlight, underline or comment; comments appear beside the verse</span><button class="dbtn" data-act="ddone">${st.dev.done?'Close':'Done'}</button></div></div>
  </div>
  <div class="dctl${ui.devCtl?' show':''}" id="dctl"><button class="cb" data-act="dexit">${ic('chevL',16)}Today</button><span class="sp"></span><button class="cb aa2" data-act="txt" aria-label="Text and light">Aa</button><button class="cb" data-act="menu" data-m="dmore" aria-label="More">${ic('more',16)}</button></div>
  ${LS.get('devHint',0)?'':'<div class="dhint" id="dhint">Tap to show controls</div>'}</div>`;
  return {bar:'',body};
+}
+/* iPad: line each comment up with its own verse, even inside a long paragraph. */
+function alignMargin(){
+ if(ui.view!=='devmode')return;
+ document.querySelectorAll('.dmarg').forEach(col=>{col.querySelectorAll('.mw').forEach(m=>m.style.marginTop='');
+  if(!MID.matches)return;
+  const top0=col.getBoundingClientRect().top;let bottom=0;
+  col.querySelectorAll('.mw').forEach(m=>{const v=col.parentElement.querySelector(`.vtx[data-c="${m.dataset.c}"][data-v="${m.dataset.v}"]`);if(!v)return;
+   const rects=v.getClientRects();const vt=(rects[0]||v.getBoundingClientRect()).top-top0;const want=Math.max(0,vt-bottom);m.style.marginTop=want+'px';bottom+=want+m.getBoundingClientRect().height+10;m.style.marginBottom='10px'});
+ });
 }
 function devNotesHtml(outline){
  const html=md(outline||'');
@@ -651,7 +667,7 @@ function sideHtml(){
 }
 let lastKey='';
 function render(){
- if(ui.view==='devmode'&&document.activeElement&&document.activeElement.id==='devnotes'){ui.pendRender=true;return}
+ if(ui.view==='devmode'&&document.activeElement&&(document.activeElement.id==='devnotes'||document.activeElement.id==='enote')){ui.pendRender=true;return}
  ui.pendRender=false;
  if(WIDE.matches&&sideOpen()&&ui.view==='studies'&&cur())ui.view='study';
  if(ui.view==='study'&&!cur())ui.view='studies';
@@ -666,6 +682,7 @@ function render(){
  if(!['study','devmode'].includes(ui.view))$('#tx').classList.remove('open');
  if(!['study','devmode'].includes(ui.view)){hideBar();closeEd(true)}
  else if(ui.bar)placeBar();
+ if(ui.view==='devmode')requestAnimationFrame(alignMargin);
  if(ui.flashV){const el=document.getElementById('v-'+ui.flashV);ui.flashV=null;if(el){el.scrollIntoView({block:'start'});setTimeout(()=>document.querySelectorAll('.vrow.flash').forEach(x=>x.classList.remove('flash')),1600)}}
 }
 
@@ -678,7 +695,7 @@ function openMenu(btn,kind){
  else if(kind==='layout')items=[['verse','Verse by verse'],['para','Paragraphs and poetry']].map(([v,l])=>({act:'tlay',d:{v},label:l,on:tset().layout===v}));
  else if(kind==='nlay')items=[['margin','Margin','Notes beside the text'],['under','Under','Notes under each verse']].map(([v,l,h])=>({act:'nlay',d:{v},label:`${l} <small>${h}</small>`,on:(SET.nlay||'margin')===v}));
  else if(kind==='dtpl'&&st){const curT=st.dev&&DTPL[st.dev.tmpl]?st.dev.tmpl:LS.get('devTpl','inductive');items=Object.entries(DTPL).map(([k,t])=>({act:'dtplset',d:{t:k},label:t.n,on:k===curT}))}
- else if(kind==='dmore'){items=[{act:'dbub',d:{},label:'Comments as bubbles',on:SET.devBub!==false},{act:'dmargin',d:{},label:'Margin writing',on:SET.devMargin!==false},{hr:1},{act:'dexit',d:{},label:'Back to today',icon:'chevL'}]}
+ else if(kind==='dmore'){items=[{act:'dmargin',d:{v:SET.devMargin===false?'1':'0'},label:SET.devMargin===false?'Show comments':'Hide comments',icon:'comment'},{hr:1},{act:'dexit',d:{},label:'Back to today',icon:'chevL'}]}
  if(kind==='card'){const a=findAnn(btn.dataset.id);if(!a)return;const lbl=(KLABEL[a.kind]||'mark').toLowerCase(),id=esc(a.id);const tags=a.tags||[];const cur=a.titleTag||tags[0];
   items=[{act:'cedit',d:{id:a.id},label:'Edit note',icon:'pencil'}];
   if(tags.length>1)tags.forEach(t=>items.push({act:'cpin',d:{id:a.id,t},label:'Pin #'+esc(t)+' as the title',icon:'pin',on:t===cur}));
@@ -751,7 +768,7 @@ function applyMark(kind,ci){
  const a={id:newId(),kind,color:kind==='note'?'#5b8afe':PALETTE[ui.color],spans:[{tr:studyTr(st),b:p.ref.b,c:sl.c,v:sl.v,s:sl.s,e:sl.e,text:sl.w}],note:'',tags:[],created:new Date().toISOString()};
  commit({op:'add',sid:st.id,a});
  try{getSelection().removeAllRanges()}catch(e){}
- ui.sel=null;hideBar();openEd(a.id);
+ ui.sel=null;hideBar();if(ui.view==='devmode'&&kind==='note')ui.justMade=a.id;openEd(a.id);
 }
 function removeAnn(a){
  const st=cur();const copy=JSON.parse(JSON.stringify(a));
@@ -787,7 +804,7 @@ function htmlToMd(root){
 function openEd(id){hideBar();ui.edit=id;ui.unfold.add(id);render();renderEd();const n=$('#enote');if(n){n.focus();try{const r=document.createRange();r.selectNodeContents(n);r.collapse(false);const s=getSelection();s.removeAllRanges();s.addRange(r)}catch(e){}}}
 function renderEd(){
  const ed=$('#ed');const a=ui.edit&&findAnn(ui.edit);
- if(!a){ed.classList.remove('open');ed.innerHTML='';return}
+ if(!a||ui.view==='devmode'){ed.classList.remove('open');ed.innerHTML='';return}
  const st=cur(),tag=a.titleTag||(a.tags||[])[0],col=(tag&&st.tagColors&&st.tagColors[tag])||okHex(a.color);
  const words=(a.spans||[]).map(s=>s.text).filter(Boolean).join(' … ');
  const mine=a.tags||[],others=allTags().filter(t=>!mine.includes(t));
@@ -796,7 +813,7 @@ function renderEd(){
  ed.classList.add('open');$('#tx').classList.remove('open');
  if(!MID.matches)fitEd();
 }
-function closeEd(quiet){if(!ui.edit)return;const id=ui.edit;ui.edit=null;$('#ed').classList.remove('open');$('#ed').innerHTML='';if(ui.justMade===id){ui.justMade=null;const a=findAnn(id);if(a&&!String(a.note||'').trim())commit({op:'del',sid:cur().id,id})}if(!quiet)render();return id}
+function closeEd(quiet){if(!ui.edit)return;const id=ui.edit;ui.edit=null;{const ae=document.activeElement;if(ae&&ae.id==='enote')ae.blur()}$('#ed').classList.remove('open');$('#ed').innerHTML='';if(ui.justMade===id){ui.justMade=null;const a=findAnn(id);if(a&&!String(a.note||'').trim())commit({op:'del',sid:cur().id,id})}if(!quiet)render();return id}
 function fmtText(ta,k){
  const s=ta.selectionStart,e=ta.selectionEnd,v=ta.value,t={b:'**',i:'*'}[k],sel=v.slice(s,e),L=t.length;
  if(v.slice(s-L,s)===t&&v.slice(e,e+L)===t){ta.value=v.slice(0,s-L)+sel+v.slice(e+L);ta.setSelectionRange(s-L,e-L)}
@@ -865,7 +882,7 @@ const A={
  ddone:()=>{const st=cur();if(!st)return;const was=st.dev.done;if(!was)commit({op:'set',sid:st.id,patch:{dev:{done:true}}});devExit();if(!was)toast('Done. Well read.')},
  dtplset:el=>{closeMenu();const st=cur();if(!st)return;const t=el.dataset.t;LS.set('devTpl',t);const have=new Set(String(st.outline||'').split('\n').filter(l=>/^#{1,6}\s/.test(l)).map(l=>l.replace(/^#+\s*/,'').trim()));const add=(DTPL[t]||DTPL.inductive).h.filter(([h])=>!have.has(h)).map(([h])=>`### ${h}\n`).join('\n');const outline=(String(st.outline||'').replace(/\s+$/,'')+(add?'\n\n'+add:'')).replace(/^\s+/,'');commit({op:'set',sid:st.id,patch:{outline,dev:{tmpl:t}}});render()},
  dbub:()=>{SET.devBub=SET.devBub===false;saveSet();closeMenu();render();const x=$('#tx');if(x.classList.contains('open'))x.innerHTML=txtHtml()},
- dmargin:()=>{SET.devMargin=SET.devMargin===false;saveSet();closeMenu();render();const x=$('#tx');if(x.classList.contains('open'))x.innerHTML=txtHtml()},
+ dmargin:el=>{SET.devMargin=el&&el.dataset&&el.dataset.v!=null?el.dataset.v==='1':SET.devMargin===false;saveSet();closeMenu();render();const x=$('#tx');if(x.classList.contains('open'))x.innerHTML=txtHtml()},
  dlight:el=>{SET.devLight=el.dataset.v;saveSet();render();const x=$('#tx');if(x.classList.contains('open'))x.innerHTML=txtHtml()},
  vwrite:el=>{const st=cur();if(!st)return;const p=st.passages[0],tr=(st.translations||[])[0]||devoTr(),c=+el.dataset.c,v=+el.dataset.v;const ex=(st.annotations||[]).find(a=>a.kind==='note'&&(a.spans||[]).some(sp=>sp.tr===tr&&sp.c===c&&sp.v===v&&sp.s<=0&&sp.e>=((CH[chKey(tr,p.ref.b,c)]||{v:[]}).v[v-1]||'').replace(/\s+$/,'').length-1));if(ex){openEd(ex.id);return}const t=((CH[chKey(tr,p.ref.b,c)]||{v:[]}).v[v-1])||'';const a={id:newId(),kind:'note',color:'#5bba88',spans:[{tr,b:p.ref.b,c,v,s:0,e:t.length,text:t}],note:'',tags:[],created:new Date().toISOString()};commit({op:'add',sid:st.id,a});ui.justMade=a.id;openEd(a.id)},
  mwedit:el=>openEd(el.dataset.id),
@@ -876,7 +893,7 @@ const A={
  gonotes:el=>{ui.sid=el.dataset.s;ui.view='study';ui.tab='notes';lastKey='';render()}
 };
 document.addEventListener('click',e=>{
- const inMenu=e.target.closest('#menu'),inEd=e.target.closest('#ed'),inBar=e.target.closest('#mbar');
+ const inMenu=e.target.closest('#menu'),inEd=e.target.closest('#ed')||e.target.closest('.mw.editing'),inBar=e.target.closest('#mbar');
  if(!inMenu&&!e.target.closest('[data-act=menu]'))closeMenu();
  const a=e.target.closest('[data-act]');
  if(ui.selCard&&!e.target.closest('.nc.sel')&&!inMenu&&!(a&&a.dataset.act==='card')){ui.selCard=null;if(ui.view==='study'){const c=document.querySelector('.nc.sel');if(c)render()}}
@@ -892,7 +909,7 @@ document.addEventListener('input',e=>{
  const t=e.target;
  if(t.id==='devnotes'){t.querySelectorAll('p.hp').forEach(x=>{if(x.textContent.trim())x.classList.remove('hp')});const st=cur();if(st)commit({op:'set',sid:st.id,patch:{outline:htmlToMd(t)}})}
  else if(t.id==='eabove'){const st=cur();if(st&&ui.edit){commit({op:'upd',sid:st.id,id:ui.edit,patch:{above:t.value}});const m=document.querySelector(`.vtx [data-m="${ui.edit}"]`);if(m)m.dataset.above=t.value}}
- else if(t.id==='enote'){const st=cur();if(st&&ui.edit)commit({op:'upd',sid:st.id,id:ui.edit,patch:{note:htmlToMd(t)}})}
+ else if(t.id==='enote'){if(ui.view==='devmode')alignMargin();const st=cur();if(st&&ui.edit)commit({op:'upd',sid:st.id,id:ui.edit,patch:{note:htmlToMd(t)}})}
  else if(t.id==='q'){ui.q=t.value;$('#res').innerHTML=results()}
  else if(t.id==='tsz'){LS.set('text',Object.assign(tset(),{size:+t.value}));applyText();$('#tszv').textContent=Math.round(t.value*100)+'%'}
  else if(t.dataset&&t.dataset.f&&ui.dr){ui.dr.f[t.dataset.f]=t.value}
@@ -908,7 +925,7 @@ document.addEventListener('keydown',e=>{
  if(e.key==='Escape'){if($('#menu').classList.contains('open'))closeMenu();else if($('#tx').classList.contains('open'))$('#tx').classList.remove('open');else if(ui.edit)closeEd();else if(ui.bar)hideBar();else if(ui.view==='devmode'&&!/INPUT|TEXTAREA/.test(e.target.tagName)&&e.target.id!=='devnotes')devExit();else if($('#wn').classList.contains('open'))$('#wn').classList.remove('open')}
 });
 $('#body').addEventListener('scroll',()=>{if(ui.bar)placeBar();closeMenu();if(ui.view==='devmode'){const b=$('#body'),pr=$('#dprog');if(pr)pr.style.width=Math.min(100,b.scrollTop/Math.max(1,b.scrollHeight-b.clientHeight)*100)+'%'}},{passive:true});
-document.addEventListener('focusout',e=>{if(e.target&&e.target.id==='devnotes'&&ui.pendRender)setTimeout(render,0)});
+document.addEventListener('focusout',e=>{if(e.target&&(e.target.id==='devnotes'||e.target.id==='enote')&&ui.pendRender)setTimeout(()=>{if(document.activeElement.id!=='enote'&&document.activeElement.id!=='devnotes')render()},0)});
 let swipeX=null;
 $('#body').addEventListener('touchstart',e=>{swipeX=ui.view==='devmode'&&e.touches[0].clientX<24?e.touches[0].clientX:null},{passive:true});
 $('#body').addEventListener('touchend',e=>{if(swipeX!=null&&e.changedTouches[0].clientX-swipeX>70)devExit();swipeX=null},{passive:true});
@@ -916,13 +933,15 @@ function fitEd(){const ed=$('#ed');if(!window.visualViewport||MID.matches){ed.st
 if(window.visualViewport){visualViewport.addEventListener('resize',fitEd);visualViewport.addEventListener('scroll',fitEd)}
 WIDE.addEventListener&&WIDE.addEventListener('change',()=>render());
 MID.addEventListener&&MID.addEventListener('change',()=>render());
-addEventListener('resize',()=>{if(ui.bar)placeBar()});
+addEventListener('resize',()=>{if(ui.bar)placeBar();alignMargin()});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>alignMargin());
 addEventListener('online',()=>sync());
 addEventListener('offline',()=>setStatus(''));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-LS.get('lastSync',0)>60000)sync()});
 
 /* ---------- What's new and keyboard shortcuts ---------- */
 const CHANGES={
+ '1.3.3':['Devotional: comments now appear beside their verse (in the margin on an iPad, under the verse on a phone), like the desktop’s writing beside the text. Select words and choose Comment: the box opens right there, ready to type.'],
  '1.3.2':['Fixed: menus, Filter, translations and Verses not responding when some app files were from an older version; the app now repairs this itself and tells you if files need uploading again.','Fixed: Paragraphs now works in KJV and other translations without their own paragraph marks.','Fixed: note cards keep the title and marked words on one line and stay inside the notes column.'],
  '1.3.1':['The app now uses the desktop app’s icon. To see it on the Home Screen, remove Marginalia from the Home Screen and add it again (your studies stay in OneDrive).'],
  '1.3.0':['Devotional: the iPad and the computer now share each day’s reading through OneDrive, with the same passage, marks and notes on both.','Devotional mode goes full screen, in the desktop’s morning and evening look. Tap to show ‹ Today, Aa and ⋯; swipe from the left edge to go back.','Write beside a verse by tapping its number; comments fold into small bubbles; one writing area with six templates.','Menus, the Filter and note cards now look and work like the desktop’s: Just the text, types, colors and tags, and Delete these marks.','Words-above and connection marks can be changed here (words, color, line style).','Keyboard shortcuts for an iPad keyboard (⌘/ lists them).'],

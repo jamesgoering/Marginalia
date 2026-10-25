@@ -1,4 +1,4 @@
-# Marginalia for iPad and phone (version 1.2)
+# Marginalia for iPad and phone (version 1.3.1)
 
 Reads your Marginalia studies from OneDrive, lets you mark and annotate them, and saves the changes back into the same study files the desktop app uses. It also has a devotional that syncs between your phone and iPad.
 
@@ -78,3 +78,21 @@ KJV text: scrollmapper bible_databases (public domain). WEB: world-english-bible
 - The note box shows formatting as you type, with no buttons (Bold and Italic from the iOS text menu, or Cmd+B / Cmd+I). Tap outside to finish.
 - iPad: the sidebar uses the lighter tone, the open study is a raised card, the ‹ caret folds it to a strip, and "Margin ▾" switches the notes between beside and under the text.
 - The client ID screen no longer appears when config.js has the ID.
+
+## What's new in 1.2.1
+
+- Delete a note: tap a note to select it, then ••• gives Delete the note (keeps the highlight) or Delete the highlight and note. Comments, words above and connections can be deleted the same way. Tapping a mark also shows a trash button. Every delete has Undo.
+- The desktop's icons: the bespoke Studies, Devotional and Search icons (each with its accent detail) and Iconoir for the rest.
+- Credits: icons from Iconoir (MIT, iconoir.com).
+
+## What's new in 1.3
+
+- The devotional is shared with the desktop app. A reading is the same kind of study file the desktop makes (series "Devotional"), so each day's passage, marks and notes are the same on both. Whichever you open first that day sets the passage; Another changes it on both while nothing is written yet. Entries saved by 1.2 (mobile-devotional.json) are moved into desktop readings once.
+- Full-screen devotional mode in the desktop's devotional look: warm morning paper by day, dusk after 6 pm, the evening look in dark mode (Aa > Light: By the hour or Always day). Tap to show ‹ Today, Aa and ⋯; swipe from the left edge or Esc to leave. Tap a verse number to write beside the verse; comments fold into bubbles; one writing area with the desktop's six templates; Done marks the day.
+- Menus, the Filter and note cards in the desktop's look: soft cards with the pinned tag title, solid menus with headings and checks, and the Filter pane (Just the text, Type, Color, Tags; non-matching marks fade; Delete these marks).
+- Words-above marks (the words and color) and connections (color and line style) can be changed on the iPad.
+- A What's new note after each update, and keyboard shortcuts for an iPad keyboard (Cmd+/ lists them).
+
+## 1.3.1
+
+- The desktop app's icon on the Home Screen and the browser tab. An iPad keeps the old Home Screen icon until you remove Marginalia from the Home Screen and add it again; your studies stay in OneDrive.

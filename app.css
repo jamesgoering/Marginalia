@@ -1,5 +1,5 @@
 /* Marginalia app.css: --mg-css must match CSS_VER in app.js */
-:root{--mg-css:141}
+:root{--mg-css:142}
 :root{--paper:#fff;--panel:#f6f7f9;--side:#eef0f3;--card:#fff;--ink:#1d1f24;--ink2:#444a55;--muted:#6f7580;--line:#e3e5ea;--line2:#cdd1d8;--accent:#3560e8;--tint:rgba(53,96,232,.12);--fill:#eceef2;--danger:#c8443f;--c1:#4c7af0;--c2:#dd5d62;--c3:#3fa874;--c4:#e5b72a;--c5:#ee8a3e;--c6:#8f78f0;--ui:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;--serif:"Source Serif 4",Georgia,serif;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#1c1d22;--panel:#212228;--side:#18191d;--card:#26272e;--ink:#eceef2;--ink2:#c9cdd5;--muted:#9096a0;--line:#2f3037;--line2:#3e3f48;--accent:#8aa6ff;--tint:rgba(138,166,255,.17);--fill:#2b2c33;--danger:#f0868a;--c1:#7b9dff;--c2:#f0868a;--c3:#6fd0a0;--c4:#f2c94c;--c5:#f5a463;--c6:#b6a3fb;color-scheme:dark}}
 :root[data-theme="dark"]{--paper:#1c1d22;--panel:#212228;--side:#18191d;--card:#26272e;--ink:#eceef2;--ink2:#c9cdd5;--muted:#9096a0;--line:#2f3037;--line2:#3e3f48;--accent:#8aa6ff;--tint:rgba(138,166,255,.17);--fill:#2b2c33;--danger:#f0868a;--c1:#7b9dff;--c2:#f0868a;--c3:#6fd0a0;--c4:#f2c94c;--c5:#f5a463;--c6:#b6a3fb;color-scheme:dark}
@@ -628,3 +628,14 @@ html,body{background:var(--paper)}
 .k-above.fdim{padding-top:0}
 .nc.fdim{display:none!important}
 .k-circ.fdim{padding:0;margin:0}
+
+/* ===== 1.4.2 ===== */
+#selk .st{position:fixed;pointer-events:none;background:rgba(74,116,217,.30);border-radius:2px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #selk .st{background:rgba(122,160,240,.38)}}
+:root[data-theme="dark"] #selk .st{background:rgba(122,160,240,.38)}
+#selk i{position:fixed}
+/* the clock floats over the page (black-translucent); a faint shade keeps it readable on a light page */
+body::after{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);pointer-events:none;z-index:60;background:linear-gradient(rgba(0,0,0,.18),rgba(0,0,0,0))}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body::after{background:none}}
+:root[data-theme="dark"] body::after{background:none}
+#app.devfull~*{}

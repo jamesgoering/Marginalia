@@ -1,7 +1,7 @@
 'use strict';
 /* Marginalia for iPad and phone. Reads and writes the desktop app's study files in OneDrive. */
-const VERSION='1.4.1';
-const CSS_VER='141';
+const VERSION='1.4.2';
+const CSS_VER='142';
 const $=s=>document.querySelector(s);
 /* Older index.html files lack some parts; add any that are missing so a partial upload can't break menus. */
 [['mbar','toolbar'],['scrim',''],['menu','menu'],['ed','dialog'],['tx','dialog'],['toast','status'],['wn','dialog'],['pill','toolbar'],['sheet','dialog'],['selk','']].forEach(([id,role])=>{if(!document.getElementById(id)){const d=document.createElement('div');d.id=id;if(role)d.setAttribute('role',role);if(id==='scrim')d.dataset.act='scrim';document.body.appendChild(d)}});
@@ -630,7 +630,7 @@ function render(){
  const ae=document.activeElement,keepFocus=ae&&ae.id&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA')&&!ae.closest('#ed')?{id:ae.id,s:ae.selectionStart,e:ae.selectionEnd}:null;
  const V=fn(),body=$('#body'),key=ui.view+'|'+(ui.view==='devmode'?ui.devSid:ui.sid)+'|'+focusOn(),top=key===lastKey?body.scrollTop:0;
  $('#bar').innerHTML=V.bar;body.innerHTML=V.body;
- const app=$('#app');app.classList.remove('noside');app.classList.toggle('under',SET.nlay==='under');app.classList.toggle('notabs',!!['search','settings'].includes(ui.view)&&!WIDE.matches);app.classList.toggle('devfull',ui.view==='devmode');setThemeColor(ui.view==='devmode'?DEV_BG[devLight()]:null);$('#body').style.background=ui.view==='devmode'?DEV_BG[devLight()]:'';
+ const app=$('#app');app.classList.remove('noside');app.classList.toggle('under',SET.nlay==='under');app.classList.toggle('notabs',!!['search','settings'].includes(ui.view)&&!WIDE.matches);app.classList.toggle('devfull',ui.view==='devmode');setThemeColor(ui.view==='devmode'?DEV_BG[devLight()]:null);$('#body').style.background=ui.view==='devmode'?DEV_BG[devLight()]:'';document.documentElement.style.background=ui.view==='devmode'?DEV_BG[devLight()]:ui.view==='devo'?getComputedStyle(document.documentElement).getPropertyValue('--paper'):'';
  if(ui.view!=='study')ui.rpOver=false;
  if(WIDE.matches&&!focusOn())ui.sideOver=false;
  app.classList.toggle('focus',focusOn());app.classList.toggle('sidedock',sideDocked());app.classList.toggle('sideover',!!ui.sideOver);app.classList.toggle('rpdock',rpDocked());app.classList.toggle('rpover',!!ui.rpOver&&ui.view==='study');
@@ -701,11 +701,12 @@ function readSel(){
 }
 function barHtml(){
  const a=ui.bar&&ui.bar.mode==='edit'?findAnn(ui.bar.id):null;
- const curCol=a&&a.kind==='highlight'?String(a.color).toLowerCase():null;
+ const curCol=a?String(a.color).toLowerCase():null;
+ const hlBtn=a&&a.kind!=='highlight'?`<button class="tb2" data-act="bkind" data-k="highlight" aria-label="Make it a highlight" title="Highlight">${ic('hlt',18)}</button>`:'';
  const kinds=[['underline','underline','Underline'],['circle','circle','Circle'],['note','note','Comment']];
  const dev=ui.view==='devmode';
- if(dev){const kinds2=[['underline','underline','Underline'],['note','note','Comment']];return `${[3,2,0,1].map(i=>{const c=PALETTE[i];return `<button class="sw${curCol===c?' on':''}" style="background:${c}" data-act="bcolor" data-c="${i}" aria-label="${curCol===c?'Remove highlight':'Highlight'}"></button>`}).join('')}<span class="dv"></span>${kinds2.map(([k,i,l])=>`<button class="tb2${a&&a.kind===k?' on':''}" data-act="bkind" data-k="${k}" aria-label="${l}" title="${l}">${ic(i,18)}</button>`).join('')}${a?`<span class="dv"></span><button class="tb2" data-act="bnote" aria-label="Write a note" title="Note">${ic('pencil',17)}</button><button class="tb2" data-act="bdel" aria-label="Delete" title="Delete">${ic('trash',17)}</button>`:''}`}
- return `${PALETTE.map((c,i)=>`<button class="sw${curCol===c?' on':''}" style="background:${c}" data-act="bcolor" data-c="${i}" aria-label="${curCol===c?'Remove highlight':'Highlight, color '+(i+1)}"></button>`).join('')}<span class="dv"></span>${ui.barMore?kinds.map(([k,i,l])=>`<button class="tb2${a&&a.kind===k?' on':''}" data-act="bkind" data-k="${k}" aria-label="${a&&a.kind===k?'Remove '+l.toLowerCase():l}" title="${l}">${ic(i,18)}</button>`).join(''):`<button class="more" data-act="bmore" aria-label="Underline, circle or comment" title="Underline, circle, comment">•••</button>`}${a?`<span class="dv"></span><button class="tb2" data-act="bnote" aria-label="Write a note" title="Note">${ic('pencil',17)}</button><button class="tb2" data-act="bdel" aria-label="Delete this mark" title="Delete">${ic('trash',17)}</button>`:''}`;
+ if(dev){const kinds2=[['underline','underline','Underline'],['note','note','Comment']];return `${[3,2,0,1].map(i=>{const c=PALETTE[i];return `<button class="sw${curCol===c?' on':''}" style="background:${c}" data-act="bcolor" data-c="${i}" aria-label="${a?(a.kind==='highlight'&&curCol===c?'Remove highlight':'Color'):'Highlight'}"></button>`}).join('')}<span class="dv"></span>${hlBtn}${kinds2.map(([k,i,l])=>`<button class="tb2${a&&a.kind===k?' on':''}" data-act="bkind" data-k="${k}" aria-label="${l}" title="${l}">${ic(i,18)}</button>`).join('')}${a?`<span class="dv"></span><button class="tb2" data-act="bnote" aria-label="Write a note" title="Note">${ic('pencil',17)}</button><button class="tb2" data-act="bdel" aria-label="Delete" title="Delete">${ic('trash',17)}</button>`:''}`}
+ return `${PALETTE.map((c,i)=>`<button class="sw${curCol===c?' on':''}" style="background:${c}" data-act="bcolor" data-c="${i}" aria-label="${a?(a.kind==='highlight'&&curCol===c?'Remove highlight':'Color '+(i+1)):'Highlight, color '+(i+1)}"></button>`).join('')}<span class="dv"></span>${hlBtn}${ui.barMore?kinds.map(([k,i,l])=>`<button class="tb2${a&&a.kind===k?' on':''}" data-act="bkind" data-k="${k}" aria-label="${a&&a.kind===k?'Remove '+l.toLowerCase():l}" title="${l}">${ic(i,18)}</button>`).join(''):`<button class="more" data-act="bmore" aria-label="Underline, circle or comment" title="Underline, circle, comment">•••</button>`}${a?`<span class="dv"></span><button class="tb2" data-act="bnote" aria-label="Write a note" title="Note">${ic('pencil',17)}</button><button class="tb2" data-act="bdel" aria-label="Delete this mark" title="Delete">${ic('trash',17)}</button>`:''}`;
 }
 function showBar(rect){ui.bar.rect={top:rect.top,bottom:rect.bottom,left:rect.left,width:rect.width};bar.innerHTML=barHtml();bar.classList.add('show');placeBar()}
 function placeBar(){
@@ -832,7 +833,7 @@ const A={
  wnx:()=>$('#wn').classList.remove('open'),
  keys:()=>showShortcuts(),
  bdel:()=>{const a=ui.bar&&findAnn(ui.bar.id);if(a)removeAnn(a)},
- bcolor:el=>{const i=+el.dataset.c,c=PALETTE[i];if(ui.bar.mode==='new'){applyMark('highlight',i);return}const a=findAnn(ui.bar.id);if(!a)return;if(a.kind==='highlight'&&String(a.color).toLowerCase()===c){removeAnn(a);return}ui.color=i;commit({op:'upd',sid:cur().id,id:a.id,patch:{kind:'highlight',color:c}});render();bar.innerHTML=barHtml()},
+ bcolor:el=>{const i=+el.dataset.c,c=PALETTE[i];if(ui.bar.mode==='new'){applyMark('highlight',i);return}const a=findAnn(ui.bar.id);if(!a)return;if(a.kind==='highlight'&&String(a.color).toLowerCase()===c){removeAnn(a);return}ui.color=i;commit({op:'upd',sid:cur().id,id:a.id,patch:{color:c}});render();bar.innerHTML=barHtml()},
  bkind:el=>{const k=el.dataset.k;if(ui.bar.mode==='new'){applyMark(k,null);return}const a=findAnn(ui.bar.id);if(!a)return;if(a.kind===k){removeAnn(a);return}commit({op:'upd',sid:cur().id,id:a.id,patch:{kind:k}});render();bar.innerHTML=barHtml()},
  bmore:()=>{ui.barMore=true;bar.innerHTML=barHtml();placeBar()},
  bnote:()=>{const id=ui.bar&&ui.bar.id;if(id)openEd(id)},
@@ -925,6 +926,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 /* ---------- What's new and keyboard shortcuts ---------- */
 const CHANGES={
+ '1.4.2':['Selecting words now shows the selection everywhere, including the devotional.','Tapping a color on an underline, circle or comment recolors it; the highlighter turns it into a highlight.','The page runs under the clock and down to the bottom edge, with no bands (remove and re-add the app to the Home Screen once).'],
  '1.4.1':['Focus: the pill hides as soon as you scroll and comes back at the top or when you tap the page; Notes now opens the Study notes in Focus.','The study and the devotional each keep their own Verses / Paragraphs setting.','Notes: the first tap opens a note, the second closes it; edit from ••• > Edit note.','Filter: marks and notes that don’t match are hidden, and the scripture text stays normal.'],
  '1.4.0':['The desktop’s look: the same top bar, sidebar (Studies · Devotional), study page, note cards and right panel (Study notes · Guide), in the desktop’s colors.','Focus: one tap for just the page, with a small pill for what you need while reading; everything else one tap away under ⋯.','Select scripture by pressing and holding a word, then dragging: no more Copy / Look Up menu. Long-press a verse number for the verse menu.','A new devotional home, like the desktop’s: verse of the day, today’s reading, choose your own passage, past readings and Recent.'],
  '1.3.3':['Devotional: comments now appear beside their verse (in the margin on an iPad, under the verse on a phone), like the desktop’s writing beside the text. Select words and choose Comment: the box opens right there, ready to type.'],
@@ -1052,7 +1054,7 @@ function drawSel(){
  if(window.CSS&&CSS.highlights&&window.Highlight){CSS.highlights.set('mgsel',new Highlight(r))}
  const rects=r.getClientRects?[...r.getClientRects()]:[];const k=$('#selk');if(!rects.length||!k)return;
  const a=rects[0],b=rects[rects.length-1];
- k.innerHTML=`<i class="k1" style="left:${a.left-6}px;top:${a.top-8}px;height:${a.height+8}px"></i><i class="k2" style="left:${b.right-6}px;top:${b.top}px;height:${b.height+8}px"></i>`;k.classList.add('show');
+ k.innerHTML=rects.filter(x=>x.width>1).map(x=>`<b class="st" style="left:${x.left}px;top:${x.top}px;width:${x.width}px;height:${x.height}px"></b>`).join('')+`<i class="k1" style="left:${a.left-6}px;top:${a.top-8}px;height:${a.height+8}px"></i><i class="k2" style="left:${b.right-6}px;top:${b.top}px;height:${b.height+8}px"></i>`;k.classList.add('show');
 }
 function clearOwnSel(){ui.selDrag=null;if(window.CSS&&CSS.highlights)CSS.highlights.delete('mgsel');const k=$('#selk');if(k){k.classList.remove('show');k.innerHTML=''}}
 function finishOwnSel(){

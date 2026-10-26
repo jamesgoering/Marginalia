@@ -1,5 +1,12 @@
 # Marginalia for iPad and phone: changelog
 
+## 1.4.2 (2026-10-26)
+Fixes
+- Selecting words in the devotional (and anywhere else) didn't show the selection on the iPad: the tint relied on the CSS Highlight API, which didn't paint there. The selection is now drawn as its own tinted shapes under the words.
+Tweaks
+- An existing underline, circle or comment: the colors recolor it; the highlighter (new in the bar) turns it into a highlight. Tapping a highlight's own color still removes it.
+- Edge to edge: the page runs under the clock (status bar style black-translucent, with a faint shade behind the clock only on light pages) and its own color fills the space by the home indicator, so the devotional and Focus have no bands at the top or bottom. Remove and re-add the app to the Home Screen once.
+
 ## 1.4.1 (2026-10-25)
 Fixes
 - Focus: Notes darkened the screen but showed nothing (the panel was hidden in Focus); it now opens the Study notes.

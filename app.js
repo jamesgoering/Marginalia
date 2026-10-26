@@ -1,7 +1,7 @@
 'use strict';
 /* Marginalia for iPad and phone. Reads and writes the desktop app's study files in OneDrive. */
-const VERSION='1.4.2';
-const CSS_VER='142';
+const VERSION='1.4.4';
+const CSS_VER='144';
 const $=s=>document.querySelector(s);
 /* Older index.html files lack some parts; add any that are missing so a partial upload can't break menus. */
 [['mbar','toolbar'],['scrim',''],['menu','menu'],['ed','dialog'],['tx','dialog'],['toast','status'],['wn','dialog'],['pill','toolbar'],['sheet','dialog'],['selk','']].forEach(([id,role])=>{if(!document.getElementById(id)){const d=document.createElement('div');d.id=id;if(role)d.setAttribute('role',role);if(id==='scrim')d.dataset.act='scrim';document.body.appendChild(d)}});
@@ -630,7 +630,7 @@ function render(){
  const ae=document.activeElement,keepFocus=ae&&ae.id&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA')&&!ae.closest('#ed')?{id:ae.id,s:ae.selectionStart,e:ae.selectionEnd}:null;
  const V=fn(),body=$('#body'),key=ui.view+'|'+(ui.view==='devmode'?ui.devSid:ui.sid)+'|'+focusOn(),top=key===lastKey?body.scrollTop:0;
  $('#bar').innerHTML=V.bar;body.innerHTML=V.body;
- const app=$('#app');app.classList.remove('noside');app.classList.toggle('under',SET.nlay==='under');app.classList.toggle('notabs',!!['search','settings'].includes(ui.view)&&!WIDE.matches);app.classList.toggle('devfull',ui.view==='devmode');setThemeColor(ui.view==='devmode'?DEV_BG[devLight()]:null);$('#body').style.background=ui.view==='devmode'?DEV_BG[devLight()]:'';document.documentElement.style.background=ui.view==='devmode'?DEV_BG[devLight()]:ui.view==='devo'?getComputedStyle(document.documentElement).getPropertyValue('--paper'):'';
+ const app=$('#app');app.classList.remove('noside');app.classList.toggle('under',SET.nlay==='under');app.classList.toggle('notabs',!!['search','settings'].includes(ui.view)&&!WIDE.matches);app.classList.toggle('devfull',ui.view==='devmode');setThemeColor(ui.view==='devmode'?DEV_BG[devLight()]:null);document.documentElement.classList.toggle('edge',ui.view==='devmode'||focusOn());$('#body').style.background=ui.view==='devmode'?DEV_BG[devLight()]:'';document.documentElement.style.background=ui.view==='devmode'?DEV_BG[devLight()]:ui.view==='devo'?getComputedStyle(document.documentElement).getPropertyValue('--paper'):'';
  if(ui.view!=='study')ui.rpOver=false;
  if(WIDE.matches&&!focusOn())ui.sideOver=false;
  app.classList.toggle('focus',focusOn());app.classList.toggle('sidedock',sideDocked());app.classList.toggle('sideover',!!ui.sideOver);app.classList.toggle('rpdock',rpDocked());app.classList.toggle('rpover',!!ui.rpOver&&ui.view==='study');
@@ -926,6 +926,8 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 /* ---------- What's new and keyboard shortcuts ---------- */
 const CHANGES={
+ '1.4.4':['Focus and the devotional now use the whole screen: the text scrolls all the way to the bottom edge and under the clock, instead of stopping short.'],
+ '1.4.3':['Fixed: after selecting words, the first tap on a color now marks them (it used to take two taps).'],
  '1.4.2':['Selecting words now shows the selection everywhere, including the devotional.','Tapping a color on an underline, circle or comment recolors it; the highlighter turns it into a highlight.','The page runs under the clock and down to the bottom edge, with no bands (remove and re-add the app to the Home Screen once).'],
  '1.4.1':['Focus: the pill hides as soon as you scroll and comes back at the top or when you tap the page; Notes now opens the Study notes in Focus.','The study and the devotional each keep their own Verses / Paragraphs setting.','Notes: the first tap opens a note, the second closes it; edit from ••• > Edit note.','Filter: marks and notes that don’t match are hidden, and the scripture text stays normal.'],
  '1.4.0':['The desktop’s look: the same top bar, sidebar (Studies · Devotional), study page, note cards and right panel (Study notes · Guide), in the desktop’s colors.','Focus: one tap for just the page, with a small pill for what you need while reading; everything else one tap away under ⋯.','Select scripture by pressing and holding a word, then dragging: no more Copy / Look Up menu. Long-press a verse number for the verse menu.','A new devotional home, like the desktop’s: verse of the day, today’s reading, choose your own passage, past readings and Recent.'],
@@ -1071,7 +1073,8 @@ function extendTo(x,y){
  else if(o<d.anchor){d.s=ws;d.e=d.anchorEnd}else{d.s=d.anchor;d.e=we}
  drawSel();
 }
-let lp=null,suppressClick=false;
+let lp=null,suppressUntil=0;
+const suppressSoon=()=>{suppressUntil=Date.now()+450};
 function startAt(x,y,target){
  const vtx=target.closest&&target.closest('.vtx');if(!vtx)return false;
  const o=caretIn(vtx,x,y);if(o==null)return false;const [s,e]=wordBounds(vtx.textContent,o);
@@ -1088,8 +1091,8 @@ document.addEventListener('touchstart',e=>{
  if(stylus){lp.active=startAt(t.clientX,t.clientY,el);return}
  lp.timer=setTimeout(()=>{if(!lp)return;
   const vn=lp.el.closest&&lp.el.closest('.vn');
-  if(vn&&ui.view==='study'){suppressClick=true;lp=null;verseMenu(vn);return}
-  lp.active=startAt(lp.x,lp.y,lp.el);if(lp.active){suppressClick=true;if(navigator.vibrate)try{navigator.vibrate(8)}catch(x){}}
+  if(vn&&ui.view==='study'){suppressSoon();lp=null;verseMenu(vn);return}
+  lp.active=startAt(lp.x,lp.y,lp.el);if(lp.active){if(navigator.vibrate)try{navigator.vibrate(8)}catch(x){}}
  },380);
 },{passive:true});
 document.addEventListener('touchmove',e=>{
@@ -1097,15 +1100,16 @@ document.addEventListener('touchmove',e=>{
  if(!lp.active){if(Math.hypot(t.clientX-lp.x,t.clientY-lp.y)>10){clearTimeout(lp.timer);lp=null}return}
  e.preventDefault();extendTo(t.clientX,t.clientY);
 },{passive:false});
-document.addEventListener('touchend',()=>{if(!lp)return;clearTimeout(lp.timer);const was=lp.active;lp=null;if(was){if(ui.selDrag)ui.selDrag.handle=null;finishOwnSel()}},{passive:true});
+document.addEventListener('touchend',()=>{if(!lp)return;clearTimeout(lp.timer);const was=lp.active;lp=null;if(was){suppressSoon();if(ui.selDrag)ui.selDrag.handle=null;finishOwnSel()}},{passive:true});
 document.addEventListener('touchcancel',()=>{if(lp){clearTimeout(lp.timer);lp=null}},{passive:true});
 /* Mouse or trackpad: press and drag over words. */
 let mdown=null;
 document.addEventListener('mousedown',e=>{if(!selView()||e.button!==0||e.sourceCapabilities&&e.sourceCapabilities.firesTouchEvents)return;if(!(e.target.closest&&e.target.closest('.vtx')))return;mdown={x:e.clientX,y:e.clientY,el:e.target,active:false}});
 document.addEventListener('mousemove',e=>{if(!mdown)return;if(!mdown.active){if(Math.hypot(e.clientX-mdown.x,e.clientY-mdown.y)<4)return;mdown.active=startAt(mdown.x,mdown.y,mdown.el);if(!mdown.active){mdown=null;return}}extendTo(e.clientX,e.clientY)});
-document.addEventListener('mouseup',()=>{if(!mdown)return;const was=mdown.active;mdown=null;if(was){suppressClick=true;finishOwnSel()}});
+document.addEventListener('mouseup',()=>{if(!mdown)return;const was=mdown.active;mdown=null;if(was){suppressSoon();finishOwnSel()}});
 document.addEventListener('contextmenu',e=>{const vn=e.target.closest&&e.target.closest('.vn');if(vn&&ui.view==='study'){e.preventDefault();verseMenu(vn)}});
-document.addEventListener('click',e=>{if(suppressClick){suppressClick=false;e.stopImmediatePropagation();e.preventDefault()}},true);
+/* Only the click that ends a long-press is swallowed (some browsers send one); never a later tap, and never a tap on the colors or a menu. */
+document.addEventListener('click',e=>{if(Date.now()<suppressUntil&&!(e.target.closest&&e.target.closest('#mbar,#menu,#selk'))){suppressUntil=0;e.stopImmediatePropagation();e.preventDefault()}},true);
 
 /* ---------- the verse menu (long-press a verse number) ---------- */
 function verseMenu(vn){
@@ -1193,7 +1197,7 @@ function vodContext(){
  showSheetHtml(`<div class="gl" style="margin-bottom:6px">${esc(bname(r.b,true))} ${r.c1}:${a}–${z} · ${esc(trName(devoTr()))}</div><p class="vt ctx">${Array.from({length:z-a+1},(_,i)=>a+i).map(v=>`<span class="${v===r.v1?'vod-on':''}"><span class="vn">${v}</span>${esc(ch.v[v-1]||'')} </span>`).join('')}</p><div style="display:flex;gap:12px;margin-top:12px"><button class="btn" data-act="vodread">Read this chapter</button><button class="quiet" data-act="sheetx">Close</button></div>`);
 }
 
-window.MarginaliaState=S;window.MarginaliaTest={selectWords,parseRef,verseMenu};
+window.MarginaliaState=S;window.MarginaliaTest={selectWords,parseRef,verseMenu,state:()=>({sel:ui.sel,bar:ui.bar&&ui.bar.mode,edit:ui.edit,supp:suppressUntil-Date.now(),drag:!!ui.selDrag})};
 /* ---------- start ---------- */
 (async function start(){
  applyTheme();applyText();

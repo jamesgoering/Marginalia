@@ -1,5 +1,5 @@
 /* Marginalia app.css: --mg-css must match CSS_VER in app.js */
-:root{--mg-css:142}
+:root{--mg-css:144}
 :root{--paper:#fff;--panel:#f6f7f9;--side:#eef0f3;--card:#fff;--ink:#1d1f24;--ink2:#444a55;--muted:#6f7580;--line:#e3e5ea;--line2:#cdd1d8;--accent:#3560e8;--tint:rgba(53,96,232,.12);--fill:#eceef2;--danger:#c8443f;--c1:#4c7af0;--c2:#dd5d62;--c3:#3fa874;--c4:#e5b72a;--c5:#ee8a3e;--c6:#8f78f0;--ui:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;--serif:"Source Serif 4",Georgia,serif;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#1c1d22;--panel:#212228;--side:#18191d;--card:#26272e;--ink:#eceef2;--ink2:#c9cdd5;--muted:#9096a0;--line:#2f3037;--line2:#3e3f48;--accent:#8aa6ff;--tint:rgba(138,166,255,.17);--fill:#2b2c33;--danger:#f0868a;--c1:#7b9dff;--c2:#f0868a;--c3:#6fd0a0;--c4:#f2c94c;--c5:#f5a463;--c6:#b6a3fb;color-scheme:dark}}
 :root[data-theme="dark"]{--paper:#1c1d22;--panel:#212228;--side:#18191d;--card:#26272e;--ink:#eceef2;--ink2:#c9cdd5;--muted:#9096a0;--line:#2f3037;--line2:#3e3f48;--accent:#8aa6ff;--tint:rgba(138,166,255,.17);--fill:#2b2c33;--danger:#f0868a;--c1:#7b9dff;--c2:#f0868a;--c3:#6fd0a0;--c4:#f2c94c;--c5:#f5a463;--c6:#b6a3fb;color-scheme:dark}
@@ -639,3 +639,20 @@ body::after{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body::after{background:none}}
 :root[data-theme="dark"] body::after{background:none}
 #app.devfull~*{}
+
+/* ===== 1.4.4: Focus and the devotional use the whole screen ===== */
+html.edge{padding-top:0;padding-bottom:0}
+html.edge .dvcol{padding-top:calc(46px + env(safe-area-inset-top,0px));padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}
+@media (min-width:680px){html.edge .dvcol{padding-top:calc(56px + env(safe-area-inset-top,0px));padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}}
+html.edge #app.focus .studywrap{padding-top:calc(10px + env(safe-area-inset-top,0px));padding-bottom:env(safe-area-inset-bottom,0px)}
+
+/* Whole screen everywhere: no padding on the page itself; each part keeps its own content clear of the clock and the home indicator,
+   so backgrounds (top bar, sidebar, skies) run to the edges in iPadOS windows too. */
+:root,html.edge{padding-top:0!important;padding-bottom:0!important}
+#bar{padding-top:calc(4px + env(safe-area-inset-top,0px))}
+#side,#rpanel{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+#app.sideover #side,#app.rpover #rpanel{padding-top:0}
+#app.rpover #rpanel{padding-bottom:env(safe-area-inset-bottom,0px)}
+.dh{padding-bottom:env(safe-area-inset-bottom,0px)}
+.pg,.setup{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+.studywrap{padding-bottom:env(safe-area-inset-bottom,0px)}

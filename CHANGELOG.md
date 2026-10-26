@@ -1,5 +1,14 @@
 # Marginalia for iPad and phone: changelog
 
+## 1.4.4 (2026-10-26)
+Fixes
+- A band at the bottom of the window (and under the clock) cut the page off, worst in an iPadOS window, in Focus, the devotional and the devotional home. The page itself no longer leaves room for the clock and the home indicator; instead the top bar, sidebar, right panel and each page keep their own content clear of them, so backgrounds (the top bar, the sidebar, the skies, the reading) run to every edge and the text scrolls to the very bottom.
+
+## 1.4.3 (2026-10-26)
+Fixes
+- After selecting words, the first tap on a color didn't mark them (it took two). The long-press set a flag to swallow the click that can follow it, but on the iPad no such click comes, so the flag swallowed the next real tap. Now only a click within half a second of the long-press is ignored, and never a tap on the colors or a menu.
+- (From 1.4.2, which wasn't on the site yet) the selection tint is drawn by Marginalia itself, so it shows in light and dark mode on every iPad.
+
 ## 1.4.2 (2026-10-26)
 Fixes
 - Selecting words in the devotional (and anywhere else) didn't show the selection on the iPad: the tint relied on the CSS Highlight API, which didn't paint there. The selection is now drawn as its own tinted shapes under the words.

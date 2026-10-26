@@ -1,5 +1,5 @@
 /* Marginalia app.css: --mg-css must match CSS_VER in app.js */
-:root{--mg-css:140}
+:root{--mg-css:141}
 :root{--paper:#fff;--panel:#f6f7f9;--side:#eef0f3;--card:#fff;--ink:#1d1f24;--ink2:#444a55;--muted:#6f7580;--line:#e3e5ea;--line2:#cdd1d8;--accent:#3560e8;--tint:rgba(53,96,232,.12);--fill:#eceef2;--danger:#c8443f;--c1:#4c7af0;--c2:#dd5d62;--c3:#3fa874;--c4:#e5b72a;--c5:#ee8a3e;--c6:#8f78f0;--ui:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;--serif:"Source Serif 4",Georgia,serif;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#1c1d22;--panel:#212228;--side:#18191d;--card:#26272e;--ink:#eceef2;--ink2:#c9cdd5;--muted:#9096a0;--line:#2f3037;--line2:#3e3f48;--accent:#8aa6ff;--tint:rgba(138,166,255,.17);--fill:#2b2c33;--danger:#f0868a;--c1:#7b9dff;--c2:#f0868a;--c3:#6fd0a0;--c4:#f2c94c;--c5:#f5a463;--c6:#b6a3fb;color-scheme:dark}}
 :root[data-theme="dark"]{--paper:#1c1d22;--panel:#212228;--side:#18191d;--card:#26272e;--ink:#eceef2;--ink2:#c9cdd5;--muted:#9096a0;--line:#2f3037;--line2:#3e3f48;--accent:#8aa6ff;--tint:rgba(138,166,255,.17);--fill:#2b2c33;--danger:#f0868a;--c1:#7b9dff;--c2:#f0868a;--c3:#6fd0a0;--c4:#f2c94c;--c5:#f5a463;--c6:#b6a3fb;color-scheme:dark}
@@ -539,7 +539,7 @@ html,body{background:var(--paper)}
 .k-hl{background:color-mix(in srgb,var(--mc) 34%,transparent)}
 /* Focus: just the page */
 #pill{display:none}
-#app.focus #bar,#app.focus #side,#app.focus #rpanel:not(.keep),#app.focus .hrow{display:none!important}
+#app.focus #bar,#app.focus #side,#app.focus:not(.rpover) #rpanel,#app.focus .hrow{display:none!important}
 #app.focus .studywrap{max-width:920px;margin:0 auto;padding-top:calc(6px + env(safe-area-inset-top,0px))}
 @media (max-width:679px){#app.focus .studywrap{max-width:none}}
 #pill.on{display:flex;position:fixed;z-index:30;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));align-items:center;gap:2px;background:var(--glass);-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);border-radius:999px;padding:5px;box-shadow:0 0 0 1px var(--line),0 8px 24px rgba(var(--shade),.16);transition:opacity .25s,transform .25s;max-width:calc(100vw - 16px)}
@@ -620,3 +620,11 @@ html,body{background:var(--paper)}
 .dh .rdot{width:8px;height:8px;border-radius:50%;flex:none;align-self:center}
 .dh .rrow b{font:600 15px var(--serif);flex:none}.dh .rrow i{font:italic 14px var(--serif);color:var(--dmut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}.dh .rrow small{color:var(--dmut);font-size:12px;flex:none}
 @media (prefers-reduced-motion:reduce){#pill.on{transition:none}}
+
+/* ===== 1.4.1 ===== */
+/* Filter: marks that don't match lose their color; the text itself stays as it is. Notes that don't match are hidden. */
+.m.fdim{opacity:1;background:none!important;text-decoration-color:transparent!important;border-color:transparent!important;border-bottom-color:transparent!important}
+.m.fdim::before{content:none!important}
+.k-above.fdim{padding-top:0}
+.nc.fdim{display:none!important}
+.k-circ.fdim{padding:0;margin:0}

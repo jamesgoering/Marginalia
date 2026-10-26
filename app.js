@@ -1,7 +1,7 @@
 'use strict';
 /* Marginalia for iPad and phone. Reads and writes the desktop app's study files in OneDrive. */
-const VERSION='1.4.0';
-const CSS_VER='140';
+const VERSION='1.4.1';
+const CSS_VER='141';
 const $=s=>document.querySelector(s);
 /* Older index.html files lack some parts; add any that are missing so a partial upload can't break menus. */
 [['mbar','toolbar'],['scrim',''],['menu','menu'],['ed','dialog'],['tx','dialog'],['toast','status'],['wn','dialog'],['pill','toolbar'],['sheet','dialog'],['selk','']].forEach(([id,role])=>{if(!document.getElementById(id)){const d=document.createElement('div');d.id=id;if(role)d.setAttribute('role',role);if(id==='scrim')d.dataset.act='scrim';document.body.appendChild(d)}});
@@ -329,9 +329,10 @@ const FONTS=[['source','Source Serif','"Source Serif 4",Georgia,serif'],['litera
 const LH=[['1.5','Tight'],['1.75','Normal'],['2','Relaxed'],['2.3','Airy']];
 const TDEF={font:'source',size:1,lh:'1.75',vn:true,layout:'verse'};
 const tset=()=>Object.assign({},TDEF,LS.get('text',{}));
+const curLayout=()=>ui.view==='devmode'?LS.get('devLayout',tset().layout):tset().layout;
 function applyText(){const t=tset(),r=document.documentElement.style,f=FONTS.find(x=>x[0]===t.font)||FONTS[0];r.setProperty('--sfont',f[2]);r.setProperty('--tsz',t.size);r.setProperty('--tlh',t.lh);$('#app').classList.toggle('novn',!t.vn);$('#tx').classList.toggle('novn',!t.vn)}
-function txtHtml(){const t=tset();return `<div class="grab"></div><div style="display:flex;align-items:center;margin-bottom:8px"><b style="font-size:16px;flex:1">Scripture text</b>${ib('x','txtx','Close')}</div><p class="vt tpv"><span class="vn">1</span>In the beginning was the Word, and the Word was with God…</p><div class="lbl">Font</div><div class="tfs">${FONTS.map(([k,l,f])=>`<button class="${t.font===k?'on':''}" style="font-family:${f.replace(/"/g,'&quot;')}" data-act="tfont" data-k="${k}">${l}</button>`).join('')}</div><div class="lbl">Size</div><div class="trw"><button class="btn2" style="padding:6px 12px" data-act="tsize" data-d="-1" aria-label="Smaller">A−</button><input type="range" id="tsz" min="0.8" max="1.6" step="0.05" value="${t.size}" aria-label="Text size"><button class="btn2" style="padding:6px 12px;font-size:17px" data-act="tsize" data-d="1" aria-label="Larger">A+</button><b id="tszv">${Math.round(t.size*100)}%</b></div><div class="lbl">Line spacing</div><div class="seg" style="margin-bottom:12px">${LH.map(([v,l])=>`<button class="${t.lh===v?'on':''}" data-act="tlh" data-v="${v}">${l}</button>`).join('')}</div><div class="lbl">Verse numbers</div><div class="seg" style="margin-bottom:14px"><button class="${t.vn?'on':''}" data-act="tvn" data-v="1">Show</button><button class="${t.vn?'':'on'}" data-act="tvn" data-v="0">Hide</button></div>${ui.view==='devmode'?`<div class="lbl">Layout</div><div class="seg" style="margin-bottom:12px">${[['verse','Verses'],['para','Paragraphs']].map(([v,l])=>`<button class="${t.layout===v?'on':''}" data-act="tlay" data-v="${v}">${l}</button>`).join('')}</div><div class="lbl">Comments beside the text</div><div class="seg" style="margin-bottom:8px"><button class="${SET.devMargin!==false?'on':''}" data-act="dmargin" data-v="1">Show</button><button class="${SET.devMargin===false?'on':''}" data-act="dmargin" data-v="0">Hide</button></div><div class="lbl">Light</div><div class="seg" style="margin-bottom:14px"><button class="${SET.devLight!=='day'?'on':''}" data-act="dlight" data-v="hour">By the hour</button><button class="${SET.devLight==='day'?'on':''}" data-act="dlight" data-v="day">Always day</button></div>`:''}<div style="display:flex;justify-content:flex-start"><button class="quiet" data-act="treset">Reset to the defaults</button></div>`}
-function setText(p){LS.set('text',Object.assign(tset(),p));applyText();if('layout' in p)render();const x=$('#tx');if(x.classList.contains('open'))x.innerHTML=txtHtml()}
+function txtHtml(){const t=tset();return `<div class="grab"></div><div style="display:flex;align-items:center;margin-bottom:8px"><b style="font-size:16px;flex:1">Scripture text</b>${ib('x','txtx','Close')}</div><p class="vt tpv"><span class="vn">1</span>In the beginning was the Word, and the Word was with God…</p><div class="lbl">Font</div><div class="tfs">${FONTS.map(([k,l,f])=>`<button class="${t.font===k?'on':''}" style="font-family:${f.replace(/"/g,'&quot;')}" data-act="tfont" data-k="${k}">${l}</button>`).join('')}</div><div class="lbl">Size</div><div class="trw"><button class="btn2" style="padding:6px 12px" data-act="tsize" data-d="-1" aria-label="Smaller">A−</button><input type="range" id="tsz" min="0.8" max="1.6" step="0.05" value="${t.size}" aria-label="Text size"><button class="btn2" style="padding:6px 12px;font-size:17px" data-act="tsize" data-d="1" aria-label="Larger">A+</button><b id="tszv">${Math.round(t.size*100)}%</b></div><div class="lbl">Line spacing</div><div class="seg" style="margin-bottom:12px">${LH.map(([v,l])=>`<button class="${t.lh===v?'on':''}" data-act="tlh" data-v="${v}">${l}</button>`).join('')}</div><div class="lbl">Verse numbers</div><div class="seg" style="margin-bottom:14px"><button class="${t.vn?'on':''}" data-act="tvn" data-v="1">Show</button><button class="${t.vn?'':'on'}" data-act="tvn" data-v="0">Hide</button></div>${ui.view==='devmode'?`<div class="lbl">Layout</div><div class="seg" style="margin-bottom:12px">${[['verse','Verses'],['para','Paragraphs']].map(([v,l])=>`<button class="${curLayout()===v?'on':''}" data-act="tlay" data-v="${v}">${l}</button>`).join('')}</div><div class="lbl">Comments beside the text</div><div class="seg" style="margin-bottom:8px"><button class="${SET.devMargin!==false?'on':''}" data-act="dmargin" data-v="1">Show</button><button class="${SET.devMargin===false?'on':''}" data-act="dmargin" data-v="0">Hide</button></div><div class="lbl">Light</div><div class="seg" style="margin-bottom:14px"><button class="${SET.devLight!=='day'?'on':''}" data-act="dlight" data-v="hour">By the hour</button><button class="${SET.devLight==='day'?'on':''}" data-act="dlight" data-v="day">Always day</button></div>`:''}<div style="display:flex;justify-content:flex-start"><button class="quiet" data-act="treset">Reset to the defaults</button></div>`}
+function setText(p){if('layout' in p&&ui.view==='devmode'){LS.set('devLayout',p.layout);render();const x=$('#tx');if(x.classList.contains('open'))x.innerHTML=txtHtml();return}LS.set('text',Object.assign(tset(),p));applyText();if('layout' in p)render();const x=$('#tx');if(x.classList.contains('open'))x.innerHTML=txtHtml()}
 
 /* ---------- UI state ---------- */
 const WIDE=matchMedia('(min-width:980px)');
@@ -393,7 +394,7 @@ function filterPane(st){
 }
 function passageRows(st,p,tr){
  const r=p.ref;if(!r)return '';
- const para=tset().layout==='para';const rows=[];let err=null,loading=false,copy='';
+ const para=curLayout()==='para';const rows=[];let err=null,loading=false,copy='';
  for(let c=r.c1;c<=r.c2;c++){
   const ch=chapter(tr,r.b,c);
   if(!ch){const e=CHERR[chKey(tr,r.b,c)];if(e)err=e;else loading=true;continue}
@@ -534,7 +535,7 @@ function devVerseHtml(st,tr,b,x,para){
 function vDevMode(){
  const st=cur();if(!st){ui.view='devo';return vDevo()}
  const tr=(st.translations||[])[0]||devoTr(),p=(st.passages||[])[0],r=p&&p.ref;
- const para=tset().layout==='para',light=devLight();
+ const para=curLayout()==='para',light=devLight();
  let rows='',vcount=0,words=0,loading=false,err=null,copy='';
  if(r){for(let c=r.c1;c<=r.c2;c++){const ch=chapter(tr,r.b,c);if(!ch){const e=CHERR[chKey(tr,r.b,c)];if(e)err=e;else loading=true;continue}
    if(ch.copy)copy=ch.copy;
@@ -650,7 +651,7 @@ function openMenu(btn,kind){
  if(kind==='tr'&&st){const tr=studyTr(st),anns=st.annotations||[];
   const list=[...new Set([...(st.translations||[]),'kjv','web','esv','net','nkjv'])].filter(t=>TRS[t]&&TRS[t].src!=='none');
   items=list.map(t=>{const n=anns.filter(a=>(a.spans||[]).some(s=>s.tr===t)).length;return {act:'settr',d:{tr:t},label:trName(t)+(n?` <small>${n} mark${n>1?'s':''}</small>`:''),on:t===tr,off:!trAvailable(t)}})}
- else if(kind==='layout')items=[['verse','Verse by verse'],['para','Paragraphs and poetry']].map(([v,l])=>({act:'tlay',d:{v},label:l,on:tset().layout===v}));
+ else if(kind==='layout')items=[['verse','Verse by verse'],['para','Paragraphs and poetry']].map(([v,l])=>({act:'tlay',d:{v},label:l,on:curLayout()===v}));
  else if(kind==='nlay')items=[['margin','Margin','Notes beside the text'],['under','Under','Notes under each verse']].map(([v,l,h])=>({act:'nlay',d:{v},label:`${l} <small>${h}</small>`,on:(SET.nlay||'margin')===v}));
  else if(kind==='dtpl'&&st){const curT=st.dev&&DTPL[st.dev.tmpl]?st.dev.tmpl:LS.get('devTpl','inductive');items=Object.entries(DTPL).map(([k,t])=>({act:'dtplset',d:{t:k},label:t.n,on:k===curT}))}
  else if(kind==='dmore'){items=[{act:'dmargin',d:{v:SET.devMargin===false?'1':'0'},label:SET.devMargin===false?'Show comments':'Hide comments',icon:'comment'},{hr:1},{act:'dexit',d:{},label:'Back to today',icon:'chevL'}]}
@@ -803,7 +804,7 @@ const A={
  fold:()=>{SET.fold=!(SET.fold!==false);ui.unfold.clear();saveSet();render()},
  retry:el=>{Object.keys(CHERR).forEach(k=>{if(k.startsWith(el.dataset.tr+'|'))delete CHERR[k]});render()},
  sum:()=>{ui.sumOpen=!ui.sumOpen;render()},
- card:el=>{const id=el.dataset.m;if(el.classList.contains('fold')){ui.unfold.add(id);ui.selCard=id;render();return}if(ui.edit===id)return;if(ui.selCard!==id){ui.selCard=id;hideBar();render();return}openEd(id)},
+ card:el=>{const id=el.dataset.m;if(ui.edit===id)return;hideBar();if(ui.selCard===id){ui.selCard=null;ui.unfold.delete(id);render();return}ui.selCard=id;ui.unfold.add(id);render()},
  cedit:el=>{closeMenu();openEd(el.dataset.id)},
  cpin:el=>{closeMenu();const a=findAnn(el.dataset.id);if(!a)return;commit({op:'upd',sid:cur().id,id:a.id,patch:{titleTag:el.dataset.t}});render()},
  cdelnote:el=>{closeMenu();const a=findAnn(el.dataset.id);if(!a)return;const old={note:a.note||'',tags:[...(a.tags||[])],titleTag:a.titleTag};const sid=cur().id;commit({op:'upd',sid,id:a.id,patch:{note:''}});ui.selCard=null;render();toast('Note deleted',()=>{commit({op:'upd',sid,id:a.id,patch:{note:old.note}});render()})},
@@ -883,6 +884,7 @@ document.addEventListener('click',e=>{
  if(ui.bar&&ui.bar.mode==='edit'&&!inBar)hideBar();
  if(ui.selDrag&&!inBar&&!e.target.closest('#selk')){clearOwnSel();if(ui.bar&&ui.bar.mode==='new')hideBar()}
  if($('#tx').classList.contains('open')&&!e.target.closest('#tx')){$('#tx').classList.remove('open');return}
+if(focusOn()&&!inMenu&&!e.target.closest('#pill,button,.nc,.vtx [data-m],#mbar')){const p=$('#pill');if(p)p.classList.remove('hide')}
  if(ui.view==='devmode'&&!inMenu&&!inBar&&!inEd&&!e.target.closest('#tx,.vtx,.mw,.copen,#devnotes,.dctl,button,input,a')){const s=getSelection();if(!s||s.isCollapsed)devShowCtl(!ui.devCtl)}
 });
 document.addEventListener('input',e=>{
@@ -906,7 +908,7 @@ document.addEventListener('keydown',e=>{
  if(e.key==='Escape'){if($('#menu').classList.contains('open'))closeMenu();else if($('#tx').classList.contains('open'))$('#tx').classList.remove('open');else if(ui.edit)closeEd();else if(ui.bar)hideBar();else if(ui.view==='devmode'&&!/INPUT|TEXTAREA/.test(e.target.tagName)&&e.target.id!=='devnotes')devExit();else if($('#wn').classList.contains('open'))$('#wn').classList.remove('open')}
 });
 let lastTop=0;
-$('#body').addEventListener('scroll',()=>{const b=$('#body');if(focusOn()){const p=$('#pill');if(p)p.classList.toggle('hide',b.scrollTop>lastTop+4&&b.scrollTop>80);}lastTop=b.scrollTop;if(ui.selDrag)drawSel();if(ui.bar)placeBar();closeMenu();if(ui.view==='devmode'){const b=$('#body'),pr=$('#dprog');if(pr)pr.style.width=Math.min(100,b.scrollTop/Math.max(1,b.scrollHeight-b.clientHeight)*100)+'%'}},{passive:true});
+$('#body').addEventListener('scroll',()=>{const b=$('#body');if(focusOn()){const p=$('#pill');if(p){if(b.scrollTop<=24)p.classList.remove('hide');else if(Math.abs(b.scrollTop-lastTop)>2)p.classList.add('hide')}}lastTop=b.scrollTop;if(ui.selDrag)drawSel();if(ui.bar)placeBar();closeMenu();if(ui.view==='devmode'){const b=$('#body'),pr=$('#dprog');if(pr)pr.style.width=Math.min(100,b.scrollTop/Math.max(1,b.scrollHeight-b.clientHeight)*100)+'%'}},{passive:true});
 document.addEventListener('focusout',e=>{if(e.target&&(e.target.id==='devnotes'||e.target.id==='enote')&&ui.pendRender)setTimeout(()=>{if(document.activeElement.id!=='enote'&&document.activeElement.id!=='devnotes')render()},0)});
 let swipeX=null;
 $('#body').addEventListener('touchstart',e=>{swipeX=ui.view==='devmode'&&e.touches[0].clientX<24?e.touches[0].clientX:null},{passive:true});
@@ -923,6 +925,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 /* ---------- What's new and keyboard shortcuts ---------- */
 const CHANGES={
+ '1.4.1':['Focus: the pill hides as soon as you scroll and comes back at the top or when you tap the page; Notes now opens the Study notes in Focus.','The study and the devotional each keep their own Verses / Paragraphs setting.','Notes: the first tap opens a note, the second closes it; edit from ••• > Edit note.','Filter: marks and notes that don’t match are hidden, and the scripture text stays normal.'],
  '1.4.0':['The desktop’s look: the same top bar, sidebar (Studies · Devotional), study page, note cards and right panel (Study notes · Guide), in the desktop’s colors.','Focus: one tap for just the page, with a small pill for what you need while reading; everything else one tap away under ⋯.','Select scripture by pressing and holding a word, then dragging: no more Copy / Look Up menu. Long-press a verse number for the verse menu.','A new devotional home, like the desktop’s: verse of the day, today’s reading, choose your own passage, past readings and Recent.'],
  '1.3.3':['Devotional: comments now appear beside their verse (in the margin on an iPad, under the verse on a phone), like the desktop’s writing beside the text. Select words and choose Comment: the box opens right there, ready to type.'],
  '1.3.2':['Fixed: menus, Filter, translations and Verses not responding when some app files were from an older version; the app now repairs this itself and tells you if files need uploading again.','Fixed: Paragraphs now works in KJV and other translations without their own paragraph marks.','Fixed: note cards keep the title and marked words on one line and stay inside the notes column.'],
@@ -1012,7 +1015,7 @@ function rpanelHtml(){
 function headerRow(st,tr){
  const t=tset(),fold=SET.fold!==false,fon=filterOn();
  const filt=FS.just?`<button class="hq on fchip" data-act="fjust">${ic('eyeoff',14)}Just the text<span class="fx2">${ic('x',12)}</span></button>`:fon?`<span class="fchip2"><button class="hq on" data-act="menu" data-m="filter">${ic('solid/filter',14)}${esc(filterLabel())} · ${filterCount(st)}</button><button class="hq on fx3" data-act="fclear" aria-label="Clear the filter">${ic('x',12)}</button></span>`:`<button class="hq" data-act="menu" data-m="filter">Filter</button>`;
- return `<div class="hrow"><div class="hl"><button class="hm strong" data-act="menu" data-m="layout">${t.layout==='para'?'Paragraphs':'Verses'} ▾</button><button class="hm" data-act="menu" data-m="tr">${esc(trName(tr))} ▾</button></div><div class="hr"><button class="hm midonly" data-act="menu" data-m="nlay">${SET.nlay==='under'?'Under':'Margin'} ▾</button><span class="sp"></span>${filt}<button class="hq" data-act="fold">${fold?'Expand':'Collapse'}</button></div></div>`;
+ return `<div class="hrow"><div class="hl"><button class="hm strong" data-act="menu" data-m="layout">${curLayout()==='para'?'Paragraphs':'Verses'} ▾</button><button class="hm" data-act="menu" data-m="tr">${esc(trName(tr))} ▾</button></div><div class="hr"><button class="hm midonly" data-act="menu" data-m="nlay">${SET.nlay==='under'?'Under':'Margin'} ▾</button><span class="sp"></span>${filt}<button class="hq" data-act="fold">${fold?'Expand':'Collapse'}</button></div></div>`;
 }
 function vStudy(){
  const st=cur();if(!st){ui.view='studies';return vStudies()}

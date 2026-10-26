@@ -1,5 +1,15 @@
 # Marginalia for iPad and phone: changelog
 
+## 1.4.1 (2026-10-25)
+Fixes
+- Focus: Notes darkened the screen but showed nothing (the panel was hidden in Focus); it now opens the Study notes.
+- Focus pill: hides as soon as you start scrolling, comes back at the top of the page or when you tap the page.
+- Filter: marks that don't match lose their color instead of fading the scripture text with them; notes that don't match are hidden.
+- Android: the white strip under the app: the manifest's window colors are now dark by default (light kept as the light-mode preference). Remove and re-add the app to the Home Screen once.
+Tweaks
+- The study and the devotional keep separate Verses / Paragraphs settings.
+- Notes: the first tap opens and selects a note, the second closes it; editing only from ••• > Edit note.
+
 ## 1.4.0 (2026-10-25)
 New
 - The desktop's look and layout, simplified: the desktop's Refined colors (light and dark), its slim frosted top bar (sidebar, title, sync dot, Focus, search, settings, right panel), the sidebar with Studies · Devotional (the open study as a raised card with its passage chip; docked on a wide iPad, floating on iPad portrait and phone), the study title on the page, the column header in the desktop's order (Verses ▾, translation ▾ | Margin ▾, Filter, Collapse), note cards whose marked words show in their own mark style, and the right panel with Study notes · Guide (Guide: summary, tags, every note with a jump to its verse). The bottom tab bar is gone.

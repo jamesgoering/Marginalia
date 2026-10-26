@@ -1,5 +1,15 @@
 # Marginalia for iPad and phone: changelog
 
+## 1.4.7 (2026-10-26)
+Fixes
+- Phones and iPad portrait: Settings, the Devotional tab and anything else in the floating sidebar (and the right panel sheet) did nothing. 1.4.6's position:fixed on the app put them under the dimmed backdrop, so every tap closed the sidebar. The app is now pinned with position:absolute, which doesn't change the layering; checked with real taps in Chrome.
+- The Devotional tab in the sidebar opens the devotional home on every screen size (on a phone it used to only switch the sidebar's tab).
+- iPad bottom band, third look: Settings > About this screen shows what the iPad reports (window, visible area, screen, large viewport, safe areas, the app's height); and where the iPad's large viewport is taller than the window the app was given, the app uses it.
+Tweaks
+- iPad: a handle on the line between the scripture and the notes; drag it to make the notes wider or narrower (remembered; double-tap to reset).
+- Editing a note is a line shorter: the title, the marked words, the mark's kind and its color dot share one row; tap the mark or the dot for all kinds and colors. No more blue bar beside the text.
+- Settings moved from the top bar to the bottom of the sidebar, by the Synced line, on every screen size.
+
 ## 1.4.6 (2026-10-26)
 Fixes
 - Still a band at the bottom of an iPad window after reinstalling (James's screenshot, 1.4.4): the app was sized with height:100%, which on the iPad stops above the strip by the home indicator. The app is now pinned to all four edges of the window (position:fixed, inset 0), and behind it the page color matches the bottom of the current screen (the devotional home's sky, the reading page).

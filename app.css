@@ -1,5 +1,5 @@
 /* Marginalia app.css: --mg-css must match CSS_VER in app.js */
-:root{--mg-css:146}
+:root{--mg-css:147}
 :root{--paper:#fff;--panel:#f6f7f9;--side:#eef0f3;--card:#fff;--ink:#1d1f24;--ink2:#444a55;--muted:#6f7580;--line:#e3e5ea;--line2:#cdd1d8;--accent:#3560e8;--tint:rgba(53,96,232,.12);--fill:#eceef2;--danger:#c8443f;--c1:#4c7af0;--c2:#dd5d62;--c3:#3fa874;--c4:#e5b72a;--c5:#ee8a3e;--c6:#8f78f0;--ui:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;--serif:"Source Serif 4",Georgia,serif;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#1c1d22;--panel:#212228;--side:#18191d;--card:#26272e;--ink:#eceef2;--ink2:#c9cdd5;--muted:#9096a0;--line:#2f3037;--line2:#3e3f48;--accent:#8aa6ff;--tint:rgba(138,166,255,.17);--fill:#2b2c33;--danger:#f0868a;--c1:#7b9dff;--c2:#f0868a;--c3:#6fd0a0;--c4:#f2c94c;--c5:#f5a463;--c6:#b6a3fb;color-scheme:dark}}
 :root[data-theme="dark"]{--paper:#1c1d22;--panel:#212228;--side:#18191d;--card:#26272e;--ink:#eceef2;--ink2:#c9cdd5;--muted:#9096a0;--line:#2f3037;--line2:#3e3f48;--accent:#8aa6ff;--tint:rgba(138,166,255,.17);--fill:#2b2c33;--danger:#f0868a;--c1:#7b9dff;--c2:#f0868a;--c3:#6fd0a0;--c4:#f2c94c;--c5:#f5a463;--c6:#b6a3fb;color-scheme:dark}
@@ -706,3 +706,29 @@ html.edge #app.focus .studywrap{padding-top:calc(10px + env(safe-area-inset-top,
 #side .stabs button,#rpanel .stabs button{display:flex;align-items:center;padding:0;margin-bottom:-1px}
 #rpanel .stabs .caret{align-self:center}
 #app.sideover #side .stabs,#app.rpover #rpanel .stabs{height:48px}
+
+/* ===== 1.4.7 ===== */
+/* pinned to the window without making a stacking layer (1.4.6's position:fixed put the floating sidebar under the backdrop) */
+#app{position:absolute;left:0;right:0;top:0;bottom:0;height:auto}
+/* the note being edited: no quote bar; title, words and tools on one row */
+.nc.ed .enote{border-left:0;padding:2px 0;min-height:1.5em;max-height:none}
+.nc.ed .row1{display:flex;align-items:center;gap:6px;min-width:0;margin-bottom:6px}
+.nc.ed .row1 .nt{flex:none;font:700 10.5px var(--ui);letter-spacing:.06em;text-transform:uppercase;display:inline-flex;align-items:center;gap:3px}
+.nc.ed .row1 .nq{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:15px var(--serif);color:var(--ink)}
+.nc.ed .tools2{display:flex;align-items:center;gap:3px;flex:none;margin-left:auto}
+.nc.ed .tools2 .ek{width:30px;height:28px}
+.nc.ed .edot{width:20px;height:20px;border-radius:50%;border:2px solid var(--card);box-shadow:0 0 0 1.5px var(--ink2);padding:0;cursor:pointer;margin:0 4px}
+.nc.ed .tools2 .emore{margin-left:0}
+.nc.ed .edpop{display:flex;align-items:center;gap:5px;flex-wrap:wrap;background:var(--panel);border-radius:10px;padding:6px 8px;margin:0 0 6px}
+/* drag the line between the scripture and the notes */
+.studywrap{position:relative}
+.studywrap[style*="--ncol"] .vrow,.studywrap[style*="--ncol"] .hrow,.studywrap[style*="--ncol"] .nh{grid-template-columns:minmax(0,1fr) var(--ncol)!important}
+.coldiv{position:absolute;bottom:0;width:22px;z-index:6;cursor:col-resize;display:flex;justify-content:center;touch-action:none}
+.coldiv .knob{position:sticky;top:45%;width:8px;height:46px;border-radius:4px;background:var(--line2);box-shadow:0 0 0 3px var(--paper);margin-top:80px}
+.coldiv.drag .knob,.coldiv:hover .knob{background:var(--accent)}
+.coldiv.drag{background:linear-gradient(var(--accent),var(--accent)) center/1px 100% no-repeat}
+.coldiv .wtip{position:sticky;top:calc(45% - 30px);display:none;font:600 11px var(--ui);color:var(--accent-ink);background:var(--tint);border-radius:6px;padding:3px 7px;white-space:nowrap;height:fit-content;margin-left:-60px}
+.coldiv.drag .wtip{display:block}
+#app.focus .coldiv{display:none!important}
+.scrinfo{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:13px;color:var(--ink2);margin-bottom:6px}
+.scrinfo b{font-weight:600;color:var(--ink)}

@@ -1,7 +1,7 @@
 'use strict';
 /* Marginalia for iPad and phone. Reads and writes the desktop app's study files in OneDrive. */
-const VERSION='1.4.6';
-const CSS_VER='146';
+const VERSION='1.4.7';
+const CSS_VER='147';
 const $=s=>document.querySelector(s);
 /* Older index.html files lack some parts; add any that are missing so a partial upload can't break menus. */
 [['mbar','toolbar'],['scrim',''],['menu','menu'],['ed','dialog'],['tx','dialog'],['toast','status'],['wn','dialog'],['pill','toolbar'],['sheet','dialog'],['selk',''],['tsug','listbox'],['biu','toolbar']].forEach(([id,role])=>{if(!document.getElementById(id)){const d=document.createElement('div');d.id=id;if(role)d.setAttribute('role',role);if(id==='scrim')d.dataset.act='scrim';document.body.appendChild(d)}});
@@ -614,6 +614,7 @@ function vSettings(){
  <div class="lbl">Bible text keys</div><div class="card" style="margin-bottom:16px"><p style="font-size:13.5px;margin:0 0 6px" class="muted">KJV, WEB and NET need no key. ESV and API.Bible keys load by themselves from the desktop app’s keys.json when it’s in OneDrive; otherwise paste them here. They stay on this device.</p><label class="fld"><span>ESV API key</span><input id="k-esv" value="${esc(SET.esvKey)}" autocapitalize="off" spellcheck="false" autocomplete="off"></label><label class="fld"><span>API.Bible key (NKJV, CSB, NLT)</span><input id="k-ab" value="${esc(SET.abKey)}" autocapitalize="off" spellcheck="false" autocomplete="off"></label><button class="quiet" data-act="savekeys">Save keys</button></div>
  <details class="adv"${CFG.clientId?'':' open'}><summary>Advanced</summary><div class="card" style="margin-top:8px">${acctSeg()}<label class="fld"><span>Application (client) ID</span><input id="cfg-client" value="${esc(CFG.clientId)}" autocapitalize="off" spellcheck="false"><small>${window.MARGINALIA_CONFIG&&window.MARGINALIA_CONFIG.clientId?'Set in config.js on the site.':'Not in config.js; saved on this device only.'}</small></label><label class="fld" id="tenant-fld"${CFG.personal?' hidden':''}><span>Directory (tenant) ID</span><input id="cfg-tenant" value="${esc(CFG.tenant==='organizations'?'':CFG.tenant)}" autocapitalize="off" spellcheck="false"></label><label class="fld"><span>Studies folder</span><input id="cfg-folder" value="${esc(CFG.folder)}" autocapitalize="off" spellcheck="false"><small>The folder that holds “studies”, counted from the top of your OneDrive.</small></label><button class="quiet" data-act="savecfg">Save</button></div></details>
  <div class="lbl">Keyboard</div><div style="margin-bottom:16px"><button class="quiet" data-act="keys">Keyboard shortcuts (⌘/)</button></div>
+ <div class="lbl">About this screen</div><div style="margin-bottom:16px">${ui.scrInfo?`<div class="scrinfo">${Object.entries(screenInfo()).map(([k,v])=>`<span>${k}</span><b>${esc(String(v))}</b>`).join('')}</div><p class="muted" style="font-size:12.5px">If there’s a band at the bottom of the window, a screenshot of this helps track it down.</p>`:`<button class="quiet" data-act="scrinfo">Show what this iPad tells the app about the window</button>`}</div>
  <p class="muted" style="font-size:12.5px;margin-top:18px">Marginalia for iPad and phone, version ${VERSION}. Changes you make here are saved into the same study files the desktop app uses. Close a study on the computer before marking it here, or the computer may save over your changes.</p></div>`};
 }
 const acctSeg=()=>`<div class="lbl" style="margin-top:4px">Account type</div><div class="seg" id="acct" data-v="${CFG.personal?'personal':'work'}"><button class="${CFG.personal?'on':''}" data-act="acct" data-v="personal">Personal (OneDrive)</button><button class="${CFG.personal?'':'on'}" data-act="acct" data-v="work">Work or school</button></div>`;
@@ -643,6 +644,7 @@ function render(){
  if(!['study','devmode'].includes(ui.view)){hideBar();closeEd(true)}
  else if(ui.bar)placeBar();
  if(ui.view==='devmode')requestAnimationFrame(alignMargin);
+ if(ui.view==='study')requestAnimationFrame(posDiv);
  if(ui.flashV){const el=document.getElementById('v-'+ui.flashV);ui.flashV=null;if(el){el.scrollIntoView({block:'start'});setTimeout(()=>document.querySelectorAll('.vrow.flash').forEach(x=>x.classList.remove('flash')),1600)}}
 }
 
@@ -765,7 +767,7 @@ function htmlToMd(root){
  root.childNodes.forEach(walk);
  return out.replace(/\n{3,}/g,'\n\n').replace(/\s+$/,'');
 }
-function openEd(id){hideBar();ui.edit=id;ui.unfold.add(id);render();renderEd();const n=$('#enote');if(n){n.focus();try{const r=document.createRange();r.selectNodeContents(n);r.collapse(false);const s=getSelection();s.removeAllRanges();s.addRange(r)}catch(e){}}}
+function openEd(id){hideBar();ui.edPop=false;ui.edit=id;ui.unfold.add(id);render();renderEd();const n=$('#enote');if(n){n.focus();try{const r=document.createRange();r.selectNodeContents(n);r.collapse(false);const s=getSelection();s.removeAllRanges();s.addRange(r)}catch(e){}}}
 function renderEd(){
  const ed=$('#ed');const a=ui.edit&&findAnn(ui.edit);
  if(true){ed.classList.remove('open');ed.innerHTML='';return}
@@ -815,7 +817,7 @@ const A={
  scrim:()=>{closeMenu();closeSheet();if(ui.sideOver||ui.rpOver){ui.sideOver=false;ui.rpOver=false;render()}},
  sidebtn:()=>{if(WIDE.matches&&!focusOn()){SET.side=SET.side===false;saveSet();render();return}ui.sideOver=!ui.sideOver;ui.rpOver=false;render()},
  sideopen:el=>{closeMenu();ui.sideTab=el.dataset.t||null;ui.sideOver=true;ui.rpOver=false;render()},
- sidetab:el=>{ui.sideTab=el.dataset.t;if(el.dataset.t==='Devotional'&&ui.view!=='devo'&&ui.view!=='devmode'&&WIDE.matches&&!ui.sideOver){ui.view='devo';ui.sideTab=null}render()},
+ sidetab:el=>{ui.sideTab=el.dataset.t;if(el.dataset.t==='Devotional'&&ui.view!=='devo'&&ui.view!=='devmode'){ui.view='devo';ui.sideTab=null;ui.sideOver=false;closeSheet();clearOwnSel();lastKey=''}render()},
  rpbtn:()=>{if(WIDE.matches&&!focusOn()){SET.rp=SET.rp===false;saveSet();ui.rpOver=false}else{ui.rpOver=!ui.rpOver;ui.sideOver=false}render()},
  rpopen:el=>{closeMenu();ui.rpTab=el.dataset.t||'notes';if(!rpDocked())ui.rpOver=true;render()},
  rptab:el=>{ui.rpTab=el.dataset.t;render()},
@@ -873,6 +875,8 @@ const A={
  tagmenu:el=>{const a=findAnn(el.dataset.id);if(!a)return;const t=el.dataset.t,pinned=a.titleTag===t,id=esc(a.id),tt=esc(t);const m=$('#menu');m.dataset.k='tag';
   m.innerHTML=`<div class="msec">#${tt}</div><button class="mi" data-act="tagpin" data-id="${id}" data-t="${tt}"${pinned?' data-on="1"':''}><span class="ck">${ic('pin',15)}</span><span>${pinned?'Unpin the title':'Pin as the title'}</span></button><div class="msec">Color for this tag</div><div class="mswr">${PALETTE.map((c,i)=>`<button class="esw" style="background:${c}" data-act="tagcolor" data-t="${tt}" data-c="${i}" aria-label="Color ${i+1}"></button>`).join('')}</div><div class="mhr"></div><button class="mi" data-act="managetags"><span class="ck">${ic('tag',15)}</span><span>Manage tags…</span></button><button class="mi red" data-act="tagremove" data-id="${id}" data-t="${tt}"><span class="ck">${ic('trash',15)}</span><span>Remove from this note</span></button>`;
   m.classList.remove('asSheet');m.classList.add('open');const r=el.getBoundingClientRect(),w=m.offsetWidth||230,h=m.offsetHeight||240;m.style.top=(r.bottom+6+h>innerHeight-10?Math.max(8,r.top-h-6):r.bottom+6)+'px';m.style.left=Math.max(8,Math.min(r.left,innerWidth-w-8))+'px'},
+ scrinfo:()=>{ui.scrInfo=true;render()},
+ edpop:()=>{ui.edPop=!ui.edPop;rerender()},
  tagadd:()=>{ui.tagAdd=true;rerender();const i=$('#etagin');if(i){i.focus();showTagSug('',i)}},
  tagpick:el=>{const fromHash=!$('#etagin');addTag(el.dataset.t,fromHash);if(fromHash){const n=$('#enote');if(n)n.focus()}else{ui.tagAdd=false;rerender()}},
  tagpin:el=>{closeMenu();const a=findAnn(el.dataset.id);if(!a)return;commit({op:'upd',sid:cur().id,id:a.id,patch:{titleTag:el.dataset.on?'':el.dataset.t}});rerender()},
@@ -946,6 +950,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 /* ---------- What's new and keyboard shortcuts ---------- */
 const CHANGES={
+ '1.4.7':['On iPad, drag the line between the scripture and the notes to make the notes wider (double-tap it to reset).','Editing a note is a line shorter: the mark and its color sit by the title; tap them for all kinds and colors.','Settings is at the bottom of the sidebar.','Fixed: Settings and Devotional in the sidebar did nothing on a phone.'],
  '1.4.6':['The app now fills the whole window down to the bottom edge, and the top bar lines up with the sidebar.'],
  '1.4.5':['Edit a note right in its card: ••• > Edit note. The mark’s kind and color sit along the top, its tags along the bottom.','Select words in a note for a small B · I · U pop-up.','Tags like the desktop’s: type # in a note for your tags, tap a tag to pin it as the title, give it a color or remove it, and Manage tags… to rename, merge, recolor or delete across studies.'],
  '1.4.4':['Focus and the devotional now use the whole screen: the text scrolls all the way to the bottom edge and under the clock, instead of stopping short.'],
@@ -996,7 +1001,7 @@ const rpShown=()=>ui.view==='study'&&(rpDocked()||ui.rpOver);
 function topbar(title,opt={}){
  const sideOn=WIDE.matches?sideDocked():ui.sideOver;
  const name=title?`<div class="bt">${title}</div>`:`<div class="bname">Marginalia</div>`;
- return `<button class="ib${sideOn?' on':''}" data-act="sidebtn" aria-label="Sidebar" title="Sidebar">${ic('side',18)}</button>${name}${(account||CFG.clientId)?syncDot():''}<span class="sp"></span>${opt.extra||''}${opt.focus?`<button class="fbtn" data-act="focus" aria-label="Focus" title="Focus: just the page">${ic('focus',17)}<span class="lab">Focus</span></button>`:''}${ib('search','nav','Search','data-v="search"')}${MID.matches?ib('sliders','nav','Settings','data-v="settings"'):''}${opt.rp?`<button class="ib${rpShown()?' on':''}" data-act="rpbtn" aria-label="Study notes and Guide" title="Study notes and Guide">${ic('rside',18)}</button>`:''}`;
+ return `<button class="ib${sideOn?' on':''}" data-act="sidebtn" aria-label="Sidebar" title="Sidebar">${ic('side',18)}</button>${name}${(account||CFG.clientId)?syncDot():''}<span class="sp"></span>${opt.extra||''}${opt.focus?`<button class="fbtn" data-act="focus" aria-label="Focus" title="Focus: just the page">${ic('focus',17)}<span class="lab">Focus</span></button>`:''}${ib('search','nav','Search','data-v="search"')}${opt.rp?`<button class="ib${rpShown()?' on':''}" data-act="rpbtn" aria-label="Study notes and Guide" title="Study notes and Guide">${ic('rside',18)}</button>`:''}`;
 }
 
 /* ---------- sidebar: Studies · Devotional, like the desktop's ---------- */
@@ -1011,7 +1016,7 @@ function sideHtml(){
  }else{
   inner=`<button class="srow strong" data-act="nav" data-v="devo">${ic('cal',17)}Today’s reading</button>${devCalCard()}${devPlanCard()}`;
  }
- return `${tabs}<div class="sbody">${inner}</div><div class="sfoot2">${MID.matches?'':`<button class="srow" data-act="nav" data-v="settings">${ic('sliders',16)}Settings</button>`}${syncLine()}</div>`;
+ return `${tabs}<div class="sbody">${inner}</div><div class="sfoot2"><button class="srow" data-act="nav" data-v="settings">${ic('sliders',16)}Settings</button>${syncLine()}</div>`;
 }
 function devPlanCard(){const n=devList().length;return `<div class="scard"><small style="margin:0">Plan</small><b>Surprise me</b><small>${Object.keys(DEV_POOLS).join(' · ')} · ${n} reading${n===1?'':'s'}</small></div>`}
 function devCalCard(){
@@ -1043,12 +1048,13 @@ function headerRow(st,tr){
  const filt=FS.just?`<button class="hq on fchip" data-act="fjust">${ic('eyeoff',14)}Just the text<span class="fx2">${ic('x',12)}</span></button>`:fon?`<span class="fchip2"><button class="hq on" data-act="menu" data-m="filter">${ic('solid/filter',14)}${esc(filterLabel())} · ${filterCount(st)}</button><button class="hq on fx3" data-act="fclear" aria-label="Clear the filter">${ic('x',12)}</button></span>`:`<button class="hq" data-act="menu" data-m="filter">Filter</button>`;
  return `<div class="hrow"><div class="hl"><button class="hm strong" data-act="menu" data-m="layout">${curLayout()==='para'?'Paragraphs':'Verses'} ▾</button><button class="hm" data-act="menu" data-m="tr">${esc(trName(tr))} ▾</button></div><div class="hr"><button class="hm midonly" data-act="menu" data-m="nlay">${SET.nlay==='under'?'Under':'Margin'} ▾</button><span class="sp"></span>${filt}<button class="hq" data-act="fold">${fold?'Expand':'Collapse'}</button></div></div>`;
 }
+function ncolStyle(){return SET.ncol&&MID.matches&&SET.nlay!=='under'?` style="--ncol:${SET.ncol}px"`:''}
 function vStudy(){
  const st=cur();if(!st){ui.view='studies';return vStudies()}
  const tr=studyTr(st);ui.tab='passage';
- let body=`${banners()}<div class="studywrap"><div class="shd"><div class="ser">${esc(st.series||'')}</div><div class="ttl">${esc(st.title||'Untitled')}</div><div class="ref">${esc((st.passages||[]).map(p=>refStr(p.ref)).join(', '))}</div>${st.summary?`<button class="qsum${ui.sumOpen?' open':''}" data-act="sum">${esc(plainMd(st.summary))}</button>`:''}</div>${headerRow(st,tr)}`;
+ let body=`${banners()}<div class="studywrap"${ncolStyle()}><div class="shd"><div class="ser">${esc(st.series||'')}</div><div class="ttl">${esc(st.title||'Untitled')}</div><div class="ref">${esc((st.passages||[]).map(p=>refStr(p.ref)).join(', '))}</div>${st.summary?`<button class="qsum${ui.sumOpen?' open':''}" data-act="sum">${esc(plainMd(st.summary))}</button>`:''}</div>${headerRow(st,tr)}`;
  (st.passages||[]).forEach(p=>{if((st.passages||[]).length>1)body+=`<div class="pref">${esc(refStr(p.ref))}</div>`;body+=passageRows(st,p,tr)});
- body+='<div style="height:140px"></div></div>';
+ body+=`<div style="height:140px"></div>${MID.matches&&SET.nlay!=='under'?'<div class="coldiv" id="coldiv" role="separator" aria-orientation="vertical" aria-label="Scripture and notes width" title="Drag to change the width; double-tap to reset"><span class="knob"></span><span class="wtip"></span></div>':''}</div>`;
  return {bar:topbar(WIDE.matches?'':esc(st.title||'Untitled'),{focus:1,rp:1}),body};
 }
 function pillHtml(){
@@ -1229,11 +1235,12 @@ function editCardHtml(a){
  const tag=a.titleTag||(a.tags||[])[0],col=(tag&&tagCol(tag))||okHex(a.color);
  const words=(a.spans||[]).map(s=>s.text).filter(Boolean).join(' … ');
  const K=[['highlight','hlt','Highlight'],['underline','underline','Underline'],['circle','circle','Circle'],['note','note','Comment']];
- const tools=a.kind==='above'||a.kind==='connect'?'':`${K.map(([k,i,l])=>`<button class="ek${a.kind===k?' on':''}" data-act="ekind" data-k="${k}" aria-label="${l}" title="${l}" style="color:${okHex(a.color)}">${ic(i,17)}</button>`).join('')}<span class="edv"></span>`;
+ const simple=a.kind!=='above'&&a.kind!=='connect';const kk=K.find(k=>k[0]===a.kind);
+ const tools=`<span class="tools2">${simple&&kk?`<button class="ek on" data-act="edpop" aria-label="Mark kind and color" title="${kk[2]}" style="color:${okHex(a.color)}">${ic(kk[1],16)}</button>`:''}<button class="edot" data-act="edpop" aria-label="Color" style="background:${okHex(a.color)}"></button><button class="emore" data-act="menu" data-m="card" data-id="${esc(a.id)}" aria-label="More">${ic('more',17)}</button></span>`;
+ const pop=ui.edPop?`<div class="edpop">${simple?K.map(([k,i,l])=>`<button class="ek${a.kind===k?' on':''}" data-act="ekind" data-k="${k}" aria-label="${l}" title="${l}" style="color:${okHex(a.color)}">${ic(i,16)}</button>`).join('')+'<span class="edv"></span>':''}${PALETTE.map((c,i)=>`<button class="esw${String(a.color).toLowerCase()===c?' on':''}" style="background:${c}" data-act="ecol" data-c="${i}" aria-label="Color ${i+1}"></button>`).join('')}</div>`:'';
  const look=a.kind==='above'?`<label class="efld"><span>Words above</span><input id="eabove" value="${esc(a.above||'')}" autocomplete="off" autocapitalize="off" spellcheck="false"></label>`:a.kind==='connect'?`<div class="seg" style="margin:6px 0">${[['dotted','Dotted'],['dashed','Dashed'],['solid','Solid']].map(([v,l])=>`<button class="${((a.line||{}).style||'dotted')===v?'on':''}" data-act="eline" data-v="${v}">${l}</button>`).join('')}</div>`:'';
  const mine=a.tags||[];
- return `<div class="nc ed" data-m="${esc(a.id)}" style="--mc:${okHex(a.color)}"><div class="ntop"><span class="nt" style="color:${col}">${tag?ic('pin',11):''}${esc(tag||KLABEL[a.kind]||'Note')}</span><em class="nq k-${KIND[a.kind]||'cm'}">${esc(words)}</em></div>
- <div class="etool">${tools}${PALETTE.map((c,i)=>`<button class="esw${String(a.color).toLowerCase()===c?' on':''}" style="background:${c}" data-act="ecol" data-c="${i}" aria-label="Color ${i+1}"></button>`).join('')}<button class="emore" data-act="menu" data-m="card" data-id="${esc(a.id)}" aria-label="More">${ic('more',17)}</button></div>${look}
+ return `<div class="nc ed" data-m="${esc(a.id)}" style="--mc:${okHex(a.color)}"><div class="row1"><span class="nt" style="color:${col}">${tag?ic('pin',11):''}${esc(tag||KLABEL[a.kind]||'Note')}</span><em class="nq k-${KIND[a.kind]||'cm'}">${esc(words)}</em>${tools}</div>${pop}${look}
  <div class="enote" id="enote" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Note" data-ph="Write a note; type # for a tag">${a.note?md(a.note):''}</div>
  <div class="etags" id="etags">${mine.map(t=>tagChip(t,a,t===a.titleTag)).join('')}${ui.tagAdd?`<input id="etagin" placeholder="Tag" autocomplete="off" autocapitalize="off" spellcheck="false">`:`<button class="tgc add" data-act="tagadd">+ Tag</button>`}</div></div>`;
 }
@@ -1274,6 +1281,20 @@ function manageTags(){
 }
 function forEachTagged(t,fn){studyList().forEach(s=>(s.annotations||[]).forEach(a=>{if((a.tags||[]).includes(t)||a.titleTag===t)fn(s,a)}))}
 
+/* drag the line between the scripture and the notes */
+(function(){let d=null;
+ const at=x=>{const w=$('.studywrap');if(!w)return;const r=w.getBoundingClientRect();const pad=24;const max=Math.min(560,r.width-pad*2-320),min=220;const v=Math.round(Math.max(min,Math.min(max,r.right-pad-x)));w.style.setProperty('--ncol',v+'px');const t=$('#coldiv .wtip');if(t)t.textContent='Notes '+v+' px';d.v=v;posDiv()};
+ document.addEventListener('pointerdown',e=>{const c=e.target.closest&&e.target.closest('#coldiv');if(!c)return;e.preventDefault();d={v:SET.ncol||null};c.classList.add('drag');try{c.setPointerCapture(e.pointerId)}catch(x){}});
+ document.addEventListener('pointermove',e=>{if(!d)return;e.preventDefault();at(e.clientX)});
+ document.addEventListener('pointerup',()=>{if(!d)return;const c=$('#coldiv');if(c)c.classList.remove('drag');if(d.v){SET.ncol=d.v;saveSet()}d=null;if(ui.bar)placeBar()});
+ document.addEventListener('dblclick',e=>{if(e.target.closest&&e.target.closest('#coldiv')){delete SET.ncol;saveSet();lastKey='';render()}});
+})();
+function posDiv(){const c=$('#coldiv'),w=$('.studywrap');if(!c||!w)return;const row=w.querySelector('.vrow .cards');if(!row){c.style.display='none';return}c.style.display='';const wr=w.getBoundingClientRect(),cr=row.getBoundingClientRect();c.style.left=(cr.left-wr.left-11)+'px';const hr=w.querySelector('.hrow');c.style.top=(hr?hr.offsetTop+hr.offsetHeight:0)+'px'}
+/* About this screen (Settings): what the iPad tells the app about the window */
+function screenInfo(){const pr=document.createElement('div');pr.style.cssText='position:fixed;left:0;top:0;width:1px;height:100lvh;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);visibility:hidden;pointer-events:none';document.body.appendChild(pr);const cs=getComputedStyle(pr);const out={window:`${innerWidth}×${innerHeight}`,visible:window.visualViewport?`${Math.round(visualViewport.width)}×${Math.round(visualViewport.height)}`:'–',screen:`${screen.width}×${screen.height}`,page:`${document.documentElement.clientWidth}×${document.documentElement.clientHeight}`,large:Math.round(pr.getBoundingClientRect().height-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom))+' high',top:cs.paddingTop,bottom:cs.paddingBottom,app:Math.round($('#app').getBoundingClientRect().height)+' high',standalone:String(!!(navigator.standalone||matchMedia('(display-mode: standalone)').matches))};pr.remove();return out}
+/* if the iPad's large viewport is taller than the window the app was given, use it */
+function fitApp(){const pr=document.createElement('div');pr.style.cssText='position:fixed;top:0;height:100lvh;width:1px;visibility:hidden';document.body.appendChild(pr);const lv=pr.getBoundingClientRect().height;pr.remove();const a=$('#app');if(!a)return;if(lv>innerHeight+2&&(navigator.standalone||matchMedia('(display-mode: standalone)').matches)){a.style.bottom='auto';a.style.height=lv+'px'}else{a.style.bottom='';a.style.height=''}}
+addEventListener('resize',()=>{fitApp();posDiv()});setTimeout(fitApp,50);
 window.MarginaliaState=S;window.MarginaliaTest={selectWords,parseRef,verseMenu,state:()=>({sel:ui.sel,bar:ui.bar&&ui.bar.mode,edit:ui.edit,supp:suppressUntil-Date.now(),drag:!!ui.selDrag})};
 /* ---------- start ---------- */
 (async function start(){

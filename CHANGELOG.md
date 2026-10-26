@@ -1,5 +1,16 @@
 # Marginalia for iPad and phone: changelog
 
+## 1.4.6 (2026-10-26)
+Fixes
+- Still a band at the bottom of an iPad window after reinstalling (James's screenshot, 1.4.4): the app was sized with height:100%, which on the iPad stops above the strip by the home indicator. The app is now pinned to all four edges of the window (position:fixed, inset 0), and behind it the page color matches the bottom of the current screen (the devotional home's sky, the reading page).
+- The line under the top bar and the line under the sidebar's (and right panel's) tabs didn't meet: both are now the same height (54 px plus the clock's space).
+
+## 1.4.5 (2026-10-26)
+New (the three note items James had put on 1.4.2, which was built without them)
+- Edit a note in place: ••• > Edit note turns the card itself into the editor where it sits (accent ring). Along its top: the mark kinds (highlight, underline, circle, comment) drawn in the mark's color, the six colors and •••; for words-above, the words; for a connection, the line style. Its tags along the bottom. Tap outside to finish. The separate editor panel and sheet are gone.
+- B · I · U: select words in a note (also Study notes and the devotional writing) for a small Bold · Italic · Underline pop-up under them. Underline is kept as <u>…</u> in the note's Markdown.
+- Tags like the desktop's: type # in a note and your tags appear (most used first, in their colors; Enter or Tab picks; "New tag"); the #word leaves the text and joins the tags. "+ Tag" does the same with a small box. Tap a tag: Pin as the title (or Unpin), a color for that tag (the study's tag colors, as on the desktop), Manage tags…, Remove from this note. Manage tags (also in the Filter's Tags heading): every tag with its color and how many notes and studies use it; Rename (rename onto another tag to merge), Color, Delete (with Undo), across all studies.
+
 ## 1.4.4 (2026-10-26)
 Fixes
 - A band at the bottom of the window (and under the clock) cut the page off, worst in an iPadOS window, in Focus, the devotional and the devotional home. The page itself no longer leaves room for the clock and the home indicator; instead the top bar, sidebar, right panel and each page keep their own content clear of them, so backgrounds (the top bar, the sidebar, the skies, the reading) run to every edge and the text scrolls to the very bottom.

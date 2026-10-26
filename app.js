@@ -1,10 +1,10 @@
 'use strict';
 /* Marginalia for iPad and phone. Reads and writes the desktop app's study files in OneDrive. */
-const VERSION='1.4.4';
-const CSS_VER='144';
+const VERSION='1.4.6';
+const CSS_VER='146';
 const $=s=>document.querySelector(s);
 /* Older index.html files lack some parts; add any that are missing so a partial upload can't break menus. */
-[['mbar','toolbar'],['scrim',''],['menu','menu'],['ed','dialog'],['tx','dialog'],['toast','status'],['wn','dialog'],['pill','toolbar'],['sheet','dialog'],['selk','']].forEach(([id,role])=>{if(!document.getElementById(id)){const d=document.createElement('div');d.id=id;if(role)d.setAttribute('role',role);if(id==='scrim')d.dataset.act='scrim';document.body.appendChild(d)}});
+[['mbar','toolbar'],['scrim',''],['menu','menu'],['ed','dialog'],['tx','dialog'],['toast','status'],['wn','dialog'],['pill','toolbar'],['sheet','dialog'],['selk',''],['tsug','listbox'],['biu','toolbar']].forEach(([id,role])=>{if(!document.getElementById(id)){const d=document.createElement('div');d.id=id;if(role)d.setAttribute('role',role);if(id==='scrim')d.dataset.act='scrim';document.body.appendChild(d)}});
 if(!document.getElementById('rpanel')){const r=document.createElement('aside');r.id='rpanel';(document.getElementById('app')||document.body).appendChild(r)}
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const cap=s=>s?s[0].toUpperCase()+s.slice(1):s;
@@ -310,7 +310,7 @@ function markup(t,ms,lines){
 }
 
 /* ---------- markdown for notes and Study notes ---------- */
-function inl(s){s=esc(s);return s.replace(/==\{(#[0-9a-fA-F]{6})\}(.+?)==/g,'<mark style="background:color-mix(in srgb,$1 30%,transparent)">$2</mark>').replace(/==(.+?)==/g,'<mark>$1</mark>').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/(^|[^*])\*([^*]+)\*/g,'$1<i>$2</i>').replace(/(^|\W)_([^_]+)_(?=\W|$)/g,'$1<i>$2</i>')}
+function inl(s){s=esc(s);return s.replace(/&lt;u&gt;(.+?)&lt;\/u&gt;/g,'<u>$1</u>').replace(/==\{(#[0-9a-fA-F]{6})\}(.+?)==/g,'<mark style="background:color-mix(in srgb,$1 30%,transparent)">$2</mark>').replace(/==(.+?)==/g,'<mark>$1</mark>').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/(^|[^*])\*([^*]+)\*/g,'$1<i>$2</i>').replace(/(^|\W)_([^_]+)_(?=\W|$)/g,'$1<i>$2</i>')}
 function md(src){
  let h='',list=null;const close=()=>{if(list){h+=`</${list}>`;list=null}};
  for(const raw of String(src||'').split('\n')){const l=raw.replace(/\s+$/,'');let m;
@@ -389,7 +389,7 @@ function filterPane(st){
  return `<div class="fpane"><button class="fjust" data-act="fjust"><span class="tog${FS.just?' on':''}"></span><span><b>Just the text</b><small>Hides every mark and note</small></span></button>
  <div class="msec">Type</div><div class="fchips">${kinds.map(k=>`<button class="fc${FS.kinds.has(k)?' on':''}" data-act="ftog" data-g="kinds" data-v="${k}"${FS.just?' disabled':''}>${ic(KICON[k],14)}${KLABEL[k]}<small>${cnt(a=>a.kind===k)}</small></button>`).join('')||'<span class="muted" style="font-size:12.5px">No marks yet</span>'}</div>
  ${colors.length?`<div class="msec">Color</div><div class="fchips">${colors.map(c=>`<button class="fsw${FS.colors.has(c)?' on':''}" style="background:${c}" data-act="ftog" data-g="colors" data-v="${c}" aria-label="Color ${c}"${FS.just?' disabled':''}></button>`).join('')}</div>`:''}
- ${tags.length?`<div class="msec">Tags</div><div class="fchips">${tags.map(t=>`<button class="fc${FS.tags.has(t)?' on':''}" data-act="ftog" data-g="tags" data-v="${esc(t)}"${FS.just?' disabled':''}>#${esc(t)}<small>${cnt(a=>(a.tags||[]).includes(t))}</small></button>`).join('')}</div>`:''}
+ ${tags.length?`<div class="msec">Tags <button class="mlink" data-act="managetags">Manage tags…</button></div><div class="fchips">${tags.map(t=>`<button class="fc${FS.tags.has(t)?' on':''}" data-act="ftog" data-g="tags" data-v="${esc(t)}"${FS.just?' disabled':''}>#${esc(t)}<small>${cnt(a=>(a.tags||[]).includes(t))}</small></button>`).join('')}</div>`:''}
  <div class="ffoot">${FS.just?'<span class="muted">Everything hidden; your work is kept</span>':filterOn()?`<button class="quiet" data-act="fclear">Clear</button><button class="quiet red" data-act="fdel">${ui.fdelArm?`Tap again to delete ${n} mark${n===1?'':'s'}`:`Delete these ${n} mark${n===1?'':'s'}…`}</button>`:'<span class="muted">Pick a type, color or tag</span>'}</div></div>`;
 }
 function passageRows(st,p,tr){
@@ -416,7 +416,7 @@ function passageRows(st,p,tr){
   const ids=g.items.map(x=>`${p.id}-${x.c}-${x.v}`);const cards=[];
   const parts=g.items.map((x,i)=>{
    const ms=marksFor(st,tr,r.b,x.c,x.v,x.t);
-   (st.annotations||[]).forEach(a=>{if(!annVisible(a))return;const sp=(a.spans||[]).find(s=>s.tr===tr&&s.b===r.b&&s.c===x.c&&s.v===x.v);if(!sp)return;if((a.spans||[]).find(s=>s.tr===tr)!==sp)return;if(a.note||(a.tags&&a.tags.length)||a.kind==='connect'||a.kind==='above'||ui.edit===a.id)cards.push({a,anch:!!anchor(sp,x.t)})});
+   (st.annotations||[]).forEach(a=>{if(!annVisible(a))return;const sp=(a.spans||[]).find(s=>s.tr===tr&&s.b===r.b&&s.c===x.c&&s.v===x.v);if(!sp)return;if((a.spans||[]).find(s=>s.tr===tr)!==sp)return;if(a.note||(a.tags&&a.tags.length)||a.kind==='connect'||a.kind==='above'||ui.edit===a.id||ui.edit===a.id)cards.push({a,anch:!!anchor(sp,x.t)})});
    return (i?`<span class="va" id="v-${ids[i]}"></span>`:'')+vlabel(x.c,x.v,gi===0&&i===0)+`<span class="vtx" data-p="${esc(p.id)}" data-c="${x.c}" data-v="${x.v}">${markup(x.t,ms,para&&x.ch.q?x.ch.q[x.v]:null)}</span>`;
   }).join(' ');
   return `<div class="vrow${ids.includes(ui.flashV)?' flash':''}${g.stz?' stz':''}" id="v-${ids[0]}"><p class="vt${g.poem?' poem':''}">${parts}</p><div class="cards">${cards.map(cardHtml).join('')}</div></div>`;
@@ -425,6 +425,7 @@ function passageRows(st,p,tr){
  return html+(cp?`<p class="copy">${esc(cp)}</p>`:'');
 }
 function cardHtml({a,anch}){
+ if(ui.edit===a.id&&ui.view==='study')return editCardHtml(a);
  const st=cur()||{};const tag=a.titleTag||(a.tags||[])[0];const t=tag||KLABEL[a.kind]||cap(a.kind);
  const col=(tag&&st.tagColors&&st.tagColors[tag])||okHex(a.color);
  const words=(a.spans||[]).map(s=>s.text).filter(Boolean);
@@ -622,7 +623,7 @@ function tabOf(v){return {studies:'Studies',study:'Studies',devo:'Devotional',de
 function tabsHtml(){const t=tabOf(ui.view);return [['Studies','book','studies'],['Devotional','cal','devo']].map(([l,i,v])=>`<button class="tab${t===l?' on':''}" data-act="nav" data-v="${v}">${ic(i,22)}${l}</button>`).join('')}
 let lastKey='';
 function render(){
- if(ui.view==='devmode'&&document.activeElement&&(document.activeElement.id==='devnotes'||document.activeElement.id==='enote')){ui.pendRender=true;return}
+ if(document.activeElement&&(document.activeElement.id==='devnotes'||document.activeElement.id==='enote'||document.activeElement.id==='etagin'||document.activeElement.id==='rpnotes')&&(ui.view==='devmode'||ui.view==='study')){ui.pendRender=true;return}
  ui.pendRender=false;
  if(WIDE.matches&&ui.view==='studies'&&cur())ui.view='study';
  if(ui.view==='study'&&!cur())ui.view='studies';
@@ -630,7 +631,7 @@ function render(){
  const ae=document.activeElement,keepFocus=ae&&ae.id&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA')&&!ae.closest('#ed')?{id:ae.id,s:ae.selectionStart,e:ae.selectionEnd}:null;
  const V=fn(),body=$('#body'),key=ui.view+'|'+(ui.view==='devmode'?ui.devSid:ui.sid)+'|'+focusOn(),top=key===lastKey?body.scrollTop:0;
  $('#bar').innerHTML=V.bar;body.innerHTML=V.body;
- const app=$('#app');app.classList.remove('noside');app.classList.toggle('under',SET.nlay==='under');app.classList.toggle('notabs',!!['search','settings'].includes(ui.view)&&!WIDE.matches);app.classList.toggle('devfull',ui.view==='devmode');setThemeColor(ui.view==='devmode'?DEV_BG[devLight()]:null);document.documentElement.classList.toggle('edge',ui.view==='devmode'||focusOn());$('#body').style.background=ui.view==='devmode'?DEV_BG[devLight()]:'';document.documentElement.style.background=ui.view==='devmode'?DEV_BG[devLight()]:ui.view==='devo'?getComputedStyle(document.documentElement).getPropertyValue('--paper'):'';
+ const app=$('#app');app.classList.remove('noside');app.classList.toggle('under',SET.nlay==='under');app.classList.toggle('notabs',!!['search','settings'].includes(ui.view)&&!WIDE.matches);app.classList.toggle('devfull',ui.view==='devmode');setThemeColor(ui.view==='devmode'?DEV_BG[devLight()]:null);document.documentElement.classList.toggle('edge',ui.view==='devmode'||focusOn());$('#body').style.background=ui.view==='devmode'?DEV_BG[devLight()]:'';document.documentElement.style.background=ui.view==='devmode'?DEV_BG[devLight()]:ui.view==='devo'?({morn:'#fbf8f2',aft:'#fbf8f2',eve:'#fbdcc2',night:'#3d2430'})[skyOf()]:'';
  if(ui.view!=='study')ui.rpOver=false;
  if(WIDE.matches&&!focusOn())ui.sideOver=false;
  app.classList.toggle('focus',focusOn());app.classList.toggle('sidedock',sideDocked());app.classList.toggle('sideover',!!ui.sideOver);app.classList.toggle('rpdock',rpDocked());app.classList.toggle('rpover',!!ui.rpOver&&ui.view==='study');
@@ -755,6 +756,7 @@ function htmlToMd(root){
   if(t==='LI'){const ol=n.parentElement&&n.parentElement.tagName==='OL';out+=ol?([...n.parentElement.children].indexOf(n)+1)+'. ':'- '}
   if(t==='BLOCKQUOTE')out+='> ';
   if(/^H[1-6]$/.test(t))out+='#'.repeat(Math.max(1,Math.min(3,+t[1]-1)))+' ';
+  if(t==='U'){let save=out;out='';n.childNodes.forEach(walk);const s2=out;out=save;out+=s2.trim()?'<u>'+s2+'</u>':s2;return}
   const w=(t==='B'||t==='STRONG')?'**':(t==='I'||t==='EM')?'*':t==='MARK'?'==':'';
   if(w){const inner=document.createElement('div');let save=out;out='';n.childNodes.forEach(walk);const s=out;out=save;const m=s.match(/^(\s*)([\s\S]*?)(\s*)$/);out+=m[2]?m[1]+w+m[2]+w+m[3]:s;return}
   n.childNodes.forEach(walk);
@@ -766,7 +768,7 @@ function htmlToMd(root){
 function openEd(id){hideBar();ui.edit=id;ui.unfold.add(id);render();renderEd();const n=$('#enote');if(n){n.focus();try{const r=document.createRange();r.selectNodeContents(n);r.collapse(false);const s=getSelection();s.removeAllRanges();s.addRange(r)}catch(e){}}}
 function renderEd(){
  const ed=$('#ed');const a=ui.edit&&findAnn(ui.edit);
- if(!a||ui.view==='devmode'){ed.classList.remove('open');ed.innerHTML='';return}
+ if(true){ed.classList.remove('open');ed.innerHTML='';return}
  const st=cur(),tag=a.titleTag||(a.tags||[])[0],col=(tag&&st.tagColors&&st.tagColors[tag])||okHex(a.color);
  const words=(a.spans||[]).map(s=>s.text).filter(Boolean).join(' … ');
  const mine=a.tags||[],others=allTags().filter(t=>!mine.includes(t));
@@ -867,14 +869,29 @@ const A={
  dlight:el=>{SET.devLight=el.dataset.v;saveSet();render();const x=$('#tx');if(x.classList.contains('open'))x.innerHTML=txtHtml()},
  vwrite:el=>{const st=cur();if(!st)return;const p=st.passages[0],tr=(st.translations||[])[0]||devoTr(),c=+el.dataset.c,v=+el.dataset.v;const ex=(st.annotations||[]).find(a=>a.kind==='note'&&(a.spans||[]).some(sp=>sp.tr===tr&&sp.c===c&&sp.v===v&&sp.s<=0&&sp.e>=((CH[chKey(tr,p.ref.b,c)]||{v:[]}).v[v-1]||'').replace(/\s+$/,'').length-1));if(ex){openEd(ex.id);return}const t=((CH[chKey(tr,p.ref.b,c)]||{v:[]}).v[v-1])||'';const a={id:newId(),kind:'note',color:'#5bba88',spans:[{tr,b:p.ref.b,c,v,s:0,e:t.length,text:t}],note:'',tags:[],created:new Date().toISOString()};commit({op:'add',sid:st.id,a});ui.justMade=a.id;openEd(a.id)},
  mwedit:el=>openEd(el.dataset.id),
- ecol:el=>{const st=cur(),a=findAnn(ui.edit);if(!a)return;commit({op:'upd',sid:st.id,id:a.id,patch:{color:PALETTE[+el.dataset.c]}});render();renderEd()},
+ ekind:el=>{const st=cur(),a=findAnn(ui.edit);if(!a)return;commit({op:'upd',sid:st.id,id:a.id,patch:{kind:el.dataset.k}});rerender();const n=$('#enote');if(n)n.focus()},
+ tagmenu:el=>{const a=findAnn(el.dataset.id);if(!a)return;const t=el.dataset.t,pinned=a.titleTag===t,id=esc(a.id),tt=esc(t);const m=$('#menu');m.dataset.k='tag';
+  m.innerHTML=`<div class="msec">#${tt}</div><button class="mi" data-act="tagpin" data-id="${id}" data-t="${tt}"${pinned?' data-on="1"':''}><span class="ck">${ic('pin',15)}</span><span>${pinned?'Unpin the title':'Pin as the title'}</span></button><div class="msec">Color for this tag</div><div class="mswr">${PALETTE.map((c,i)=>`<button class="esw" style="background:${c}" data-act="tagcolor" data-t="${tt}" data-c="${i}" aria-label="Color ${i+1}"></button>`).join('')}</div><div class="mhr"></div><button class="mi" data-act="managetags"><span class="ck">${ic('tag',15)}</span><span>Manage tags…</span></button><button class="mi red" data-act="tagremove" data-id="${id}" data-t="${tt}"><span class="ck">${ic('trash',15)}</span><span>Remove from this note</span></button>`;
+  m.classList.remove('asSheet');m.classList.add('open');const r=el.getBoundingClientRect(),w=m.offsetWidth||230,h=m.offsetHeight||240;m.style.top=(r.bottom+6+h>innerHeight-10?Math.max(8,r.top-h-6):r.bottom+6)+'px';m.style.left=Math.max(8,Math.min(r.left,innerWidth-w-8))+'px'},
+ tagadd:()=>{ui.tagAdd=true;rerender();const i=$('#etagin');if(i){i.focus();showTagSug('',i)}},
+ tagpick:el=>{const fromHash=!$('#etagin');addTag(el.dataset.t,fromHash);if(fromHash){const n=$('#enote');if(n)n.focus()}else{ui.tagAdd=false;rerender()}},
+ tagpin:el=>{closeMenu();const a=findAnn(el.dataset.id);if(!a)return;commit({op:'upd',sid:cur().id,id:a.id,patch:{titleTag:el.dataset.on?'':el.dataset.t}});rerender()},
+ tagremove:el=>{closeMenu();const a=findAnn(el.dataset.id);if(!a)return;const t=el.dataset.t;const patch={tags:(a.tags||[]).filter(x=>x!==t)};if(a.titleTag===t)patch.titleTag='';commit({op:'upd',sid:cur().id,id:a.id,patch});rerender()},
+ tagcolor:el=>{closeMenu();const st=cur();if(!st)return;commit({op:'set',sid:st.id,patch:{tagColors:Object.assign({},st.tagColors||{},{[el.dataset.t]:PALETTE[+el.dataset.c]})}});rerender()},
+ managetags:()=>{closeMenu();ui.mtColor=null;manageTags()},
+ mtcolor:el=>{ui.mtColor=ui.mtColor===el.dataset.t?null:el.dataset.t;manageTags()},
+ mtsetcolor:el=>{const t=el.dataset.t,c=PALETTE[+el.dataset.c];const ids=new Set();forEachTagged(t,s=>ids.add(s.id));studyList().forEach(s=>{if(ids.has(s.id)||(s.tagColors||{})[t])commit({op:'set',sid:s.id,patch:{tagColors:Object.assign({},s.tagColors||{},{[t]:c})}})});ui.mtColor=null;manageTags();render()},
+ mtrename:el=>{const t=el.dataset.t;const v=(prompt(`Rename #${t} to:`,t)||'').replace(/^#/,'').trim();if(!v||v===t)return;forEachTagged(t,(s,a)=>{const tags=[...new Set((a.tags||[]).map(x=>x===t?v:x))];const patch={tags};if(a.titleTag===t)patch.titleTag=v;commit({op:'upd',sid:s.id,id:a.id,patch})});studyList().forEach(s=>{const tc=s.tagColors||{};if(tc[t]&&!tc[v]){const n=Object.assign({},tc,{[v]:tc[t]});delete n[t];commit({op:'set',sid:s.id,patch:{tagColors:n}})}});FS.tags.delete(t);manageTags();render();toast(`Renamed #${t} to #${v}`)},
+ mtdelete:el=>{const t=el.dataset.t;const undo=[];forEachTagged(t,(s,a)=>{undo.push([s.id,a.id,{tags:[...(a.tags||[])],titleTag:a.titleTag||''}]);const patch={tags:(a.tags||[]).filter(x=>x!==t)};if(a.titleTag===t)patch.titleTag='';commit({op:'upd',sid:s.id,id:a.id,patch})});FS.tags.delete(t);manageTags();render();toast(`Deleted #${t}`,()=>{undo.forEach(([sid,id,patch])=>commit({op:'upd',sid,id,patch}));manageTags();render()})},
+ fmtb:el=>{const s=getSelection();const host=s.anchorNode&&(s.anchorNode.nodeType===1?s.anchorNode:s.anchorNode.parentElement);const box=host&&host.closest('#enote,#devnotes,#rpnotes');if(!box)return;document.execCommand(el.dataset.k,false,null);box.dispatchEvent(new Event('input',{bubbles:true}));placeBiu()},
+ ecol:el=>{const st=cur(),a=findAnn(ui.edit);if(!a)return;commit({op:'upd',sid:st.id,id:a.id,patch:{color:PALETTE[+el.dataset.c]}});rerender();renderEd()},
  eline:el=>{const st=cur(),a=findAnn(ui.edit);if(!a)return;commit({op:'upd',sid:st.id,id:a.id,patch:{line:{...(a.line||{}),style:el.dataset.v}}});render();renderEd()},
  bub:el=>openEd(el.dataset.id),
  goto:el=>{ui.sid=el.dataset.s;const st=cur();if(st&&el.dataset.tr&&TRS[el.dataset.tr]){SET.tr[st.id]=el.dataset.tr;saveSet()}ui.view='study';ui.tab='passage';fsReset();if(el.dataset.m)ui.unfold.add(el.dataset.m);ui.flashV=`${el.dataset.p}-${el.dataset.c}-${el.dataset.v}`;lastKey='';render()},
  gonotes:el=>{ui.sid=el.dataset.s;ui.view='study';ui.tab='passage';ui.rpTab='notes';if(!rpDocked())ui.rpOver=true;lastKey='';render()}
 };
 document.addEventListener('click',e=>{
- const inMenu=e.target.closest('#menu'),inEd=e.target.closest('#ed')||e.target.closest('.mw.editing'),inBar=e.target.closest('#mbar');
+ const inMenu=e.target.closest('#menu'),inEd=e.target.closest('#ed')||e.target.closest('.mw.editing')||e.target.closest('.nc.ed')||e.target.closest('#tsug')||e.target.closest('#biu')||(e.target.closest('#menu')&&ui.edit),inBar=e.target.closest('#mbar');
  if(!inMenu&&!e.target.closest('[data-act=menu]'))closeMenu();
  const a=e.target.closest('[data-act]');
  if(ui.selCard&&!e.target.closest('.nc.sel')&&!inMenu&&!(a&&a.dataset.act==='card')){ui.selCard=null;if(ui.view==='study'){const c=document.querySelector('.nc.sel');if(c)render()}}
@@ -892,14 +909,17 @@ document.addEventListener('input',e=>{
  const t=e.target;
  if(t.id==='devnotes'){t.querySelectorAll('p.hp').forEach(x=>{if(x.textContent.trim())x.classList.remove('hp')});const st=cur();if(st)commit({op:'set',sid:st.id,patch:{outline:htmlToMd(t)}})}
  else if(t.id==='eabove'){const st=cur();if(st&&ui.edit){commit({op:'upd',sid:st.id,id:ui.edit,patch:{above:t.value}});const m=document.querySelector(`.vtx [data-m="${ui.edit}"]`);if(m)m.dataset.above=t.value}}
- else if(t.id==='enote'){if(ui.view==='devmode')alignMargin();const st=cur();if(st&&ui.edit)commit({op:'upd',sid:st.id,id:ui.edit,patch:{note:htmlToMd(t)}})}
+ else if(t.id==='etagin'){showTagSug(t.value.replace(/^#/,''),t);return}
+ else if(t.id==='enote'){setTimeout(()=>{const h=hashBeforeCaret();if(h&&ui.view==='study'){const r=document.createRange();r.setStart(h.node,h.start);r.setEnd(h.node,h.end);showTagSug(h.q,r)}else hideTagSug()},0);if(ui.view==='devmode')alignMargin();const st=cur();if(st&&ui.edit)commit({op:'upd',sid:st.id,id:ui.edit,patch:{note:htmlToMd(t)}})}
  else if(t.id==='q'){ui.q=t.value;$('#res').innerHTML=results()}
  else if(t.id==='tsz'){LS.set('text',Object.assign(tset(),{size:+t.value}));applyText();$('#tszv').textContent=Math.round(t.value*100)+'%'}
  else if(t.dataset&&t.dataset.f&&ui.dr){ui.dr.f[t.dataset.f]=t.value}
 });
 document.addEventListener('keydown',e=>{
  if(e.target.id==='gopass'&&e.key==='Enter'){e.preventDefault();A.goopen();return}
- if(e.target.id==='etagin'&&e.key==='Enter'){e.preventDefault();const v=e.target.value.trim().replace(/^#/,'');if(!v)return;const st=cur(),a=findAnn(ui.edit);if(a&&!(a.tags||[]).includes(v))commit({op:'upd',sid:st.id,id:a.id,patch:{tags:[...(a.tags||[]),v]}});render();renderEd();const n=$('#etagin');if(n)n.focus();return}
+ if((e.target.id==='enote'||e.target.id==='etagin')&&$('#tsug.show')&&(e.key==='Enter'||e.key==='Tab')){e.preventDefault();const f=$('#tsug button');if(f)f.click();return}
+ if(e.key==='Escape'&&$('#tsug.show')){hideTagSug();return}
+ if(e.target.id==='etagin'&&e.key==='Enter'&&false){e.preventDefault();const v=e.target.value.trim().replace(/^#/,'');if(!v)return;const st=cur(),a=findAnn(ui.edit);if(a&&!(a.tags||[]).includes(v))commit({op:'upd',sid:st.id,id:a.id,patch:{tags:[...(a.tags||[]),v]}});render();renderEd();const n=$('#etagin');if(n)n.focus();return}
  if((e.ctrlKey||e.metaKey)&&['b','i'].includes(e.key.toLowerCase())){
   if(e.target.id==='enote'){e.preventDefault();document.execCommand(e.key.toLowerCase()==='b'?'bold':'italic');e.target.dispatchEvent(new Event('input',{bubbles:true}));return}
   if(e.target.tagName==='TEXTAREA'){e.preventDefault();fmtText(e.target,e.key.toLowerCase());return}
@@ -926,6 +946,8 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 /* ---------- What's new and keyboard shortcuts ---------- */
 const CHANGES={
+ '1.4.6':['The app now fills the whole window down to the bottom edge, and the top bar lines up with the sidebar.'],
+ '1.4.5':['Edit a note right in its card: ••• > Edit note. The mark’s kind and color sit along the top, its tags along the bottom.','Select words in a note for a small B · I · U pop-up.','Tags like the desktop’s: type # in a note for your tags, tap a tag to pin it as the title, give it a color or remove it, and Manage tags… to rename, merge, recolor or delete across studies.'],
  '1.4.4':['Focus and the devotional now use the whole screen: the text scrolls all the way to the bottom edge and under the clock, instead of stopping short.'],
  '1.4.3':['Fixed: after selecting words, the first tap on a color now marks them (it used to take two taps).'],
  '1.4.2':['Selecting words now shows the selection everywhere, including the devotional.','Tapping a color on an underline, circle or comment recolors it; the highlighter turns it into a highlight.','The page runs under the clock and down to the bottom edge, with no bands (remove and re-add the app to the Home Screen once).'],
@@ -1120,6 +1142,7 @@ function verseMenu(vn){
  m.classList.remove('asSheet');m.classList.add('open');const r=vn.getBoundingClientRect(),w=m.offsetWidth||220;
  m.style.top=Math.min(r.bottom+6,innerHeight-(m.offsetHeight||170)-12)+'px';m.style.left=Math.max(8,Math.min(r.left,innerWidth-w-8))+'px';
 }
+ICO['mg-tag']='<path d="M3 12V4h8l10 10-8 8z" stroke="currentColor" stroke-linejoin="round"/><circle cx="7.5" cy="8" r="1.3" stroke="currentColor"/>';IC_ALIAS.tag='mg-tag';
 ICO['copyI']='<rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3" stroke="currentColor" stroke-linecap="round"/>';
 
 /* ---------- devotional home, like the desktop's ---------- */
@@ -1196,6 +1219,60 @@ function vodContext(){
  const a=Math.max(1,r.v1-4),z=Math.min(ch.v.length,r.v1+4);
  showSheetHtml(`<div class="gl" style="margin-bottom:6px">${esc(bname(r.b,true))} ${r.c1}:${a}–${z} · ${esc(trName(devoTr()))}</div><p class="vt ctx">${Array.from({length:z-a+1},(_,i)=>a+i).map(v=>`<span class="${v===r.v1?'vod-on':''}"><span class="vn">${v}</span>${esc(ch.v[v-1]||'')} </span>`).join('')}</p><div style="display:flex;gap:12px;margin-top:12px"><button class="btn" data-act="vodread">Read this chapter</button><button class="quiet" data-act="sheetx">Close</button></div>`);
 }
+/* ===================== 1.4.5: notes edited in place, B · I · U, tags like the desktop's ===================== */
+/* Re-render while the note box has focus (render() waits while you type). */
+function rerender(){const ae=document.activeElement;if(ae&&/^(enote|etagin|devnotes|rpnotes)$/.test(ae.id))ae.blur();ui.pendRender=false;render()}
+function tagStats(){const m={};studyList().forEach(s=>{(s.annotations||[]).forEach(a=>(a.tags||[]).forEach(t=>{m[t]=m[t]||{n:0,studies:new Set(),color:null};m[t].n++;m[t].studies.add(s.id)}));Object.entries(s.tagColors||{}).forEach(([t,c])=>{m[t]=m[t]||{n:0,studies:new Set(),color:null};if(!m[t].color)m[t].color=c})});return m}
+const tagCol=t=>{const st=cur();return (st&&st.tagColors&&st.tagColors[t])||(tagStats()[t]||{}).color||'#6c7891'};
+function tagChip(t,a,pinned){return `<button class="tgc${pinned?' pin':''}" style="--tc:${okHex(tagCol(t))}" data-act="tagmenu" data-t="${esc(t)}" data-id="${esc(a.id)}">${pinned?ic('pin',11):''}#${esc(t)}</button>`}
+function editCardHtml(a){
+ const tag=a.titleTag||(a.tags||[])[0],col=(tag&&tagCol(tag))||okHex(a.color);
+ const words=(a.spans||[]).map(s=>s.text).filter(Boolean).join(' … ');
+ const K=[['highlight','hlt','Highlight'],['underline','underline','Underline'],['circle','circle','Circle'],['note','note','Comment']];
+ const tools=a.kind==='above'||a.kind==='connect'?'':`${K.map(([k,i,l])=>`<button class="ek${a.kind===k?' on':''}" data-act="ekind" data-k="${k}" aria-label="${l}" title="${l}" style="color:${okHex(a.color)}">${ic(i,17)}</button>`).join('')}<span class="edv"></span>`;
+ const look=a.kind==='above'?`<label class="efld"><span>Words above</span><input id="eabove" value="${esc(a.above||'')}" autocomplete="off" autocapitalize="off" spellcheck="false"></label>`:a.kind==='connect'?`<div class="seg" style="margin:6px 0">${[['dotted','Dotted'],['dashed','Dashed'],['solid','Solid']].map(([v,l])=>`<button class="${((a.line||{}).style||'dotted')===v?'on':''}" data-act="eline" data-v="${v}">${l}</button>`).join('')}</div>`:'';
+ const mine=a.tags||[];
+ return `<div class="nc ed" data-m="${esc(a.id)}" style="--mc:${okHex(a.color)}"><div class="ntop"><span class="nt" style="color:${col}">${tag?ic('pin',11):''}${esc(tag||KLABEL[a.kind]||'Note')}</span><em class="nq k-${KIND[a.kind]||'cm'}">${esc(words)}</em></div>
+ <div class="etool">${tools}${PALETTE.map((c,i)=>`<button class="esw${String(a.color).toLowerCase()===c?' on':''}" style="background:${c}" data-act="ecol" data-c="${i}" aria-label="Color ${i+1}"></button>`).join('')}<button class="emore" data-act="menu" data-m="card" data-id="${esc(a.id)}" aria-label="More">${ic('more',17)}</button></div>${look}
+ <div class="enote" id="enote" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Note" data-ph="Write a note; type # for a tag">${a.note?md(a.note):''}</div>
+ <div class="etags" id="etags">${mine.map(t=>tagChip(t,a,t===a.titleTag)).join('')}${ui.tagAdd?`<input id="etagin" placeholder="Tag" autocomplete="off" autocapitalize="off" spellcheck="false">`:`<button class="tgc add" data-act="tagadd">+ Tag</button>`}</div></div>`;
+}
+/* the # / + Tag suggestions */
+function showTagSug(q,anchor){
+ const st=tagStats(),a=findAnn(ui.edit);if(!a)return hideTagSug();const mine=a.tags||[];const qRaw=(q||'').trim();q=qRaw.toLowerCase();
+ const list=Object.keys(st).concat(['Question','Observation','Interpretation','Application','Cross-reference']).filter((t,i,arr)=>arr.indexOf(t)===i&&!mine.includes(t)&&t.toLowerCase().startsWith(q)).sort((x,y)=>((st[y]||{}).n||0)-((st[x]||{}).n||0)).slice(0,6);
+ const sg=$('#tsug');const r=anchor&&anchor.getBoundingClientRect?anchor.getBoundingClientRect():($('#enote')||document.body).getBoundingClientRect();
+ sg.innerHTML=list.map((t,i)=>`<button class="${i===0?'on':''}" data-act="tagpick" data-t="${esc(t)}"><i style="background:${okHex(tagCol(t))}"></i>#${esc(t)}<small>${(st[t]||{}).n||''}</small></button>`).join('')+(q&&!list.some(t=>t.toLowerCase()===q)&&!mine.some(t=>t.toLowerCase()===q)?`<button data-act="tagpick" data-t="${esc(qRaw)}" data-new="1"><i style="background:#6c7891"></i>New tag “${esc(qRaw)}”</button>`:'');
+ if(!sg.innerHTML){hideTagSug();return}
+ sg.classList.add('show');sg.style.top=Math.min(r.bottom+6,innerHeight-sg.offsetHeight-10)+'px';sg.style.left=Math.max(8,Math.min(r.left,innerWidth-230))+'px';
+}
+function hideTagSug(){const sg=$('#tsug');if(sg){sg.classList.remove('show');sg.innerHTML=''}}
+function hashBeforeCaret(){const s=getSelection();if(!s.rangeCount||!s.isCollapsed)return null;const n=s.anchorNode;if(!n||n.nodeType!==3||!n.parentElement.closest('#enote'))return null;const before=n.data.slice(0,s.anchorOffset);const m=before.match(/(^|\s)#([\p{L}\p{N}_-]*)$/u);return m?{node:n,start:s.anchorOffset-m[2].length-1,end:s.anchorOffset,q:m[2]}:null}
+function addTag(t,fromHash){
+ const st=cur(),a=findAnn(ui.edit);if(!a||!t)return;t=t.replace(/^#/,'').trim();if(!t)return;
+ if(fromHash){const h=hashBeforeCaret();if(h){h.node.data=h.node.data.slice(0,h.start)+h.node.data.slice(h.end);const en=$('#enote');commit({op:'upd',sid:st.id,id:a.id,patch:{note:htmlToMd(en)}})}}
+ if(!(a.tags||[]).includes(t))commit({op:'upd',sid:st.id,id:a.id,patch:{tags:[...(a.tags||[]),t]}});
+ ui.tagAdd=false;hideTagSug();const et=$('#etags'),a2=findAnn(a.id);if(et&&a2)et.innerHTML=(a2.tags||[]).map(x=>tagChip(x,a2,x===a2.titleTag)).join('')+'<button class="tgc add" data-act="tagadd">+ Tag</button>'
+}
+/* B · I · U */
+function placeBiu(){
+ const b=$('#biu');if(!b)return;const s=getSelection();
+ const host=s.rangeCount&&s.anchorNode&&(s.anchorNode.nodeType===1?s.anchorNode:s.anchorNode.parentElement);
+ const box=host&&host.closest&&host.closest('#enote,#devnotes,#rpnotes');
+ if(!box||s.isCollapsed){b.classList.remove('show');return}
+ const r=s.getRangeAt(0).getBoundingClientRect();if(!r.width&&!r.height){b.classList.remove('show');return}
+ const st=k=>{try{return document.queryCommandState(k)}catch(e){return false}};
+ b.innerHTML=`<button data-act="fmtb" data-k="bold" class="${st('bold')?'on':''}" aria-label="Bold"><b>B</b></button><button data-act="fmtb" data-k="italic" class="${st('italic')?'on':''}" aria-label="Italic"><i>I</i></button><button data-act="fmtb" data-k="underline" class="${st('underline')?'on':''}" aria-label="Underline"><u>U</u></button>`;
+ b.classList.add('show');const h=b.offsetHeight||38,w=b.offsetWidth||120;
+ let top=r.bottom+10;if(top+h>innerHeight-10)top=r.top-h-56;b.style.top=Math.max(8,top)+'px';b.style.left=Math.max(8,Math.min(r.left+r.width/2-w/2,innerWidth-w-8))+'px';
+}
+document.addEventListener('selectionchange',()=>{clearTimeout(placeBiu.t);placeBiu.t=setTimeout(placeBiu,120)});
+/* Manage tags */
+function manageTags(){
+ const st=tagStats(),rows=Object.entries(st).filter(([,v])=>v.n).sort((x,y)=>y[1].n-x[1].n);
+ showSheetHtml(`<div style="display:flex;align-items:center;margin-bottom:6px"><b style="flex:1;font-size:15.5px">Tags</b><button class="quiet" data-act="sheetx">Done</button></div>${rows.length?rows.map(([t,v])=>`<div class="mtrow"><i style="background:${okHex(v.color||'#6c7891')}"></i><span class="mtn">#${esc(t)}<small>${v.n} note${v.n===1?'':'s'} · ${v.studies.size} stud${v.studies.size===1?'y':'ies'}</small></span><button class="quiet" data-act="mtrename" data-t="${esc(t)}">Rename</button><button class="quiet" data-act="mtcolor" data-t="${esc(t)}">Color</button><button class="quiet danger" data-act="mtdelete" data-t="${esc(t)}">Delete</button></div>${ui.mtColor===t?`<div class="mtsw">${PALETTE.map((c,i)=>`<button class="esw" style="background:${c}" data-act="mtsetcolor" data-t="${esc(t)}" data-c="${i}" aria-label="Color ${i+1}"></button>`).join('')}</div>`:''}`).join(''):'<p class="muted">No tags yet.</p>'}<p class="muted" style="font-size:12.5px;margin:10px 0 0">Rename a tag to another tag’s name to merge them. Changes reach every study.</p>`);
+}
+function forEachTagged(t,fn){studyList().forEach(s=>(s.annotations||[]).forEach(a=>{if((a.tags||[]).includes(t)||a.titleTag===t)fn(s,a)}))}
 
 window.MarginaliaState=S;window.MarginaliaTest={selectWords,parseRef,verseMenu,state:()=>({sel:ui.sel,bar:ui.bar&&ui.bar.mode,edit:ui.edit,supp:suppressUntil-Date.now(),drag:!!ui.selDrag})};
 /* ---------- start ---------- */

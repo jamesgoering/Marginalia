@@ -1,5 +1,5 @@
 /* Marginalia app.css: --mg-css must match CSS_VER in app.js */
-:root{--mg-css:147}
+:root{--mg-css:150}
 :root{--paper:#fff;--panel:#f6f7f9;--side:#eef0f3;--card:#fff;--ink:#1d1f24;--ink2:#444a55;--muted:#6f7580;--line:#e3e5ea;--line2:#cdd1d8;--accent:#3560e8;--tint:rgba(53,96,232,.12);--fill:#eceef2;--danger:#c8443f;--c1:#4c7af0;--c2:#dd5d62;--c3:#3fa874;--c4:#e5b72a;--c5:#ee8a3e;--c6:#8f78f0;--ui:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;--serif:"Source Serif 4",Georgia,serif;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#1c1d22;--panel:#212228;--side:#18191d;--card:#26272e;--ink:#eceef2;--ink2:#c9cdd5;--muted:#9096a0;--line:#2f3037;--line2:#3e3f48;--accent:#8aa6ff;--tint:rgba(138,166,255,.17);--fill:#2b2c33;--danger:#f0868a;--c1:#7b9dff;--c2:#f0868a;--c3:#6fd0a0;--c4:#f2c94c;--c5:#f5a463;--c6:#b6a3fb;color-scheme:dark}}
 :root[data-theme="dark"]{--paper:#1c1d22;--panel:#212228;--side:#18191d;--card:#26272e;--ink:#eceef2;--ink2:#c9cdd5;--muted:#9096a0;--line:#2f3037;--line2:#3e3f48;--accent:#8aa6ff;--tint:rgba(138,166,255,.17);--fill:#2b2c33;--danger:#f0868a;--c1:#7b9dff;--c2:#f0868a;--c3:#6fd0a0;--c4:#f2c94c;--c5:#f5a463;--c6:#b6a3fb;color-scheme:dark}
@@ -732,3 +732,36 @@ html.edge #app.focus .studywrap{padding-top:calc(10px + env(safe-area-inset-top,
 #app.focus .coldiv{display:none!important}
 .scrinfo{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:13px;color:var(--ink2);margin-bottom:6px}
 .scrinfo b{font-weight:600;color:var(--ink)}
+
+/* ===================== 1.5 ===================== */
+.nsf .efld{display:block;margin-bottom:10px}.nsf .efld span{display:block;font-size:12.5px;color:var(--muted);margin-bottom:4px}
+.nsf input{width:100%;box-sizing:border-box;border:0;border-radius:10px;background:var(--fill);color:var(--ink);font:16px var(--ui);padding:11px 12px;outline:none}
+.nsf .nserr{color:var(--danger)}
+.newst{display:flex;align-items:center;gap:6px;width:100%;border:0;background:var(--tint);color:var(--accent-ink);font:600 14px var(--ui);border-radius:10px;padding:9px 12px;margin:0 0 10px;cursor:pointer;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 22%,transparent)}
+.rpedit{outline:none;min-height:50vh;cursor:text}
+.rpedit:empty::before{content:attr(data-ph);color:var(--muted)}
+.rpgrip{position:absolute;z-index:3;touch-action:none}
+.rpgrip.side{left:-6px;top:0;bottom:0;width:12px;cursor:col-resize}
+.rpgrip.side::after{content:"";position:absolute;left:5px;top:0;bottom:0;width:2px;background:transparent}
+.rpgrip.side:hover::after,.rpgrip.side.drag::after{background:var(--accent)}
+.rpgrip.sheet{left:0;right:0;top:0;height:22px;cursor:row-resize}
+.rpgrip.sheet::after{content:"";position:absolute;left:50%;top:7px;width:40px;height:4px;margin-left:-20px;border-radius:2px;background:var(--line2)}
+#rpanel{position:relative}
+#app.rpover #rpanel{position:fixed}
+#app.rpover #rpanel .stabs{margin-top:14px}
+/* Bible */
+.bpk{padding-bottom:10px}
+.bgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.cgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+.bgrid button,.cgrid button{border:0;background:var(--card);border-radius:8px;padding:7px 2px;font:500 12.5px var(--ui);color:var(--ink2);box-shadow:0 0 0 1px var(--line);cursor:pointer}
+.bgrid button.on{background:var(--tint);color:var(--accent-ink)}
+.btext{padding:4px 24px}
+.btext .vt{margin:0 0 8px}
+.bdot{width:9px;height:9px;border-radius:50%;border:0;padding:0;background:var(--accent);margin:0 5px 0 1px;vertical-align:2px;cursor:pointer;box-shadow:0 0 0 4px transparent}
+.studywrap.bible .shd .ser{text-transform:uppercase}
+/* notes as dots */
+.ndot{display:inline-block;width:12px;height:12px;border-radius:50%;border:0;padding:0;margin:0 0 0 5px;vertical-align:1px;background:var(--mc);cursor:pointer;box-shadow:0 0 0 2px var(--paper),0 0 0 3px color-mix(in srgb,var(--mc) 45%,transparent)}
+.ndot.open{box-shadow:0 0 0 2px var(--paper),0 0 0 3.5px var(--ink)}
+.dotcards{padding:0 0 4px 30px}
+#app.dots .vrow{grid-template-columns:1fr!important}
+#app.dots .vrow .cards:empty{display:none}

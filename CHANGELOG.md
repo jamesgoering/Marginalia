@@ -1,5 +1,18 @@
 # Marginalia for iPad and phone: changelog
 
+## 1.5.0 (2026-10-26)
+New
+- The Bible: a Bible tab in the sidebar (Studies · Bible · Devotional) with every book and its chapters; the chapter opens in its own translation (Translation ▾), with previous/next chapter, Verses or Paragraphs, and Focus. A dot by every verse that's in one of your studies opens that study at the verse (or lists them if several). Select words to "Start a study at" that verse, or Copy them.
+- New study: at the top of the sidebar's Studies tab. Passage (typed, e.g. John 3:1–21 or Romans 8), title (the passage if left empty), series (your series suggested), translation. Saved to OneDrive as a desktop-format study file, with Study notes started as Observe / Interpret / Apply, and opened ready to mark.
+- Study notes are editable in the right panel, formatted as you type (saved as Markdown in the study's outline, as on the desktop). Resize the right panel: drag its left edge on the iPad (width remembered), or drag the phone sheet's grab bar up or down (height remembered).
+- Notes as dots: Margin ▾ > Dots. Each note becomes a small dot in its tag's or mark's color at the end of its verse; tap it to open that note right there, tap again to close it.
+Fixes
+- (1.4.8, not yet on the site) the iPad bottom band: the app fills the strip the iPad left empty under it.
+
+## 1.4.8 (2026-10-26)
+Fixes
+- iPad bottom band, found with About this screen: the installed app is 922 px high on a 954 px screen and starts at the very top (under the clock), so a strip exactly the clock's height (32 px) was left empty at the bottom. iPadOS sizes the page as if the clock still took room at the top. When the missing height matches the clock's space, the app now takes the full screen height. About this screen shows whether the fix applied.
+
 ## 1.4.7 (2026-10-26)
 Fixes
 - Phones and iPad portrait: Settings, the Devotional tab and anything else in the floating sidebar (and the right panel sheet) did nothing. 1.4.6's position:fixed on the app put them under the dimmed backdrop, so every tap closed the sidebar. The app is now pinned with position:absolute, which doesn't change the layering; checked with real taps in Chrome.

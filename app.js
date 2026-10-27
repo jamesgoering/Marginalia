@@ -1,7 +1,7 @@
 'use strict';
 /* Marginalia for iPad and phone. Reads and writes the desktop app's study files in OneDrive. */
-const VERSION='1.4.7';
-const CSS_VER='147';
+const VERSION='1.5.0';
+const CSS_VER='150';
 const $=s=>document.querySelector(s);
 /* Older index.html files lack some parts; add any that are missing so a partial upload can't break menus. */
 [['mbar','toolbar'],['scrim',''],['menu','menu'],['ed','dialog'],['tx','dialog'],['toast','status'],['wn','dialog'],['pill','toolbar'],['sheet','dialog'],['selk',''],['tsug','listbox'],['biu','toolbar']].forEach(([id,role])=>{if(!document.getElementById(id)){const d=document.createElement('div');d.id=id;if(role)d.setAttribute('role',role);if(id==='scrim')d.dataset.act='scrim';document.body.appendChild(d)}});
@@ -419,7 +419,9 @@ function passageRows(st,p,tr){
    (st.annotations||[]).forEach(a=>{if(!annVisible(a))return;const sp=(a.spans||[]).find(s=>s.tr===tr&&s.b===r.b&&s.c===x.c&&s.v===x.v);if(!sp)return;if((a.spans||[]).find(s=>s.tr===tr)!==sp)return;if(a.note||(a.tags&&a.tags.length)||a.kind==='connect'||a.kind==='above'||ui.edit===a.id||ui.edit===a.id)cards.push({a,anch:!!anchor(sp,x.t)})});
    return (i?`<span class="va" id="v-${ids[i]}"></span>`:'')+vlabel(x.c,x.v,gi===0&&i===0)+`<span class="vtx" data-p="${esc(p.id)}" data-c="${x.c}" data-v="${x.v}">${markup(x.t,ms,para&&x.ch.q?x.ch.q[x.v]:null)}</span>`;
   }).join(' ');
-  return `<div class="vrow${ids.includes(ui.flashV)?' flash':''}${g.stz?' stz':''}" id="v-${ids[0]}"><p class="vt${g.poem?' poem':''}">${parts}</p><div class="cards">${cards.map(cardHtml).join('')}</div></div>`;
+  const dots=SET.nlay==='dots'&&ui.view==='study';const shown=dots?cards.filter(c=>ui.dotOpen.has(c.a.id)||ui.edit===c.a.id):cards;
+  const dotHtml=dots?cards.map(c=>`<button class="ndot${ui.dotOpen.has(c.a.id)?' open':''}" data-act="ndot" data-m="${esc(c.a.id)}" style="--mc:${okHex((c.a.titleTag&&tagCol(c.a.titleTag))||c.a.color)}" aria-label="Note: ${esc((c.a.spans||[{}])[0].text||'')}"></button>`).join(''):'';
+  return `<div class="vrow${ids.includes(ui.flashV)?' flash':''}${g.stz?' stz':''}" id="v-${ids[0]}"><p class="vt${g.poem?' poem':''}">${parts}${dotHtml}</p><div class="cards">${shown.map(cardHtml).join('')}</div></div>`;
  }).join('');
  const cp=copy||(TRS[tr]&&TRS[tr].copy)||'';
  return html+(cp?`<p class="copy">${esc(cp)}</p>`:'');
@@ -628,16 +630,16 @@ function render(){
  ui.pendRender=false;
  if(WIDE.matches&&ui.view==='studies'&&cur())ui.view='study';
  if(ui.view==='study'&&!cur())ui.view='studies';
- const fn={studies:vStudies,study:vStudy,search:vSearch,devo:vDevo,devmode:vDevMode,settings:vSettings}[ui.view]||vStudies;
+ const fn={studies:vStudies,study:vStudy,search:vSearch,devo:vDevo,devmode:vDevMode,settings:vSettings,bible:vBible}[ui.view]||vStudies;
  const ae=document.activeElement,keepFocus=ae&&ae.id&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA')&&!ae.closest('#ed')?{id:ae.id,s:ae.selectionStart,e:ae.selectionEnd}:null;
  const V=fn(),body=$('#body'),key=ui.view+'|'+(ui.view==='devmode'?ui.devSid:ui.sid)+'|'+focusOn(),top=key===lastKey?body.scrollTop:0;
  $('#bar').innerHTML=V.bar;body.innerHTML=V.body;
- const app=$('#app');app.classList.remove('noside');app.classList.toggle('under',SET.nlay==='under');app.classList.toggle('notabs',!!['search','settings'].includes(ui.view)&&!WIDE.matches);app.classList.toggle('devfull',ui.view==='devmode');setThemeColor(ui.view==='devmode'?DEV_BG[devLight()]:null);document.documentElement.classList.toggle('edge',ui.view==='devmode'||focusOn());$('#body').style.background=ui.view==='devmode'?DEV_BG[devLight()]:'';document.documentElement.style.background=ui.view==='devmode'?DEV_BG[devLight()]:ui.view==='devo'?({morn:'#fbf8f2',aft:'#fbf8f2',eve:'#fbdcc2',night:'#3d2430'})[skyOf()]:'';
+ const app=$('#app');app.classList.remove('noside');app.classList.toggle('under',SET.nlay==='under'||SET.nlay==='dots');app.classList.toggle('dots',SET.nlay==='dots');app.classList.toggle('notabs',!!['search','settings'].includes(ui.view)&&!WIDE.matches);app.classList.toggle('devfull',ui.view==='devmode');setThemeColor(ui.view==='devmode'?DEV_BG[devLight()]:null);document.documentElement.classList.toggle('edge',ui.view==='devmode'||focusOn());$('#body').style.background=ui.view==='devmode'?DEV_BG[devLight()]:'';document.documentElement.style.background=ui.view==='devmode'?DEV_BG[devLight()]:ui.view==='devo'?({morn:'#fbf8f2',aft:'#fbf8f2',eve:'#fbdcc2',night:'#3d2430'})[skyOf()]:'';
  if(ui.view!=='study')ui.rpOver=false;
  if(WIDE.matches&&!focusOn())ui.sideOver=false;
  app.classList.toggle('focus',focusOn());app.classList.toggle('sidedock',sideDocked());app.classList.toggle('sideover',!!ui.sideOver);app.classList.toggle('rpdock',rpDocked());app.classList.toggle('rpover',!!ui.rpOver&&ui.view==='study');
  $('#scrim').classList.toggle('show',!!ui.sideOver||(!!ui.rpOver&&!rpDocked()&&ui.view==='study'));
- $('#side').innerHTML=sideHtml();$('#rpanel').innerHTML=rpShown()?rpanelHtml():'';$('#pill').innerHTML=focusOn()?pillHtml():'';$('#pill').classList.toggle('on',focusOn());if(!focusOn())$('#pill').classList.remove('hide');
+ $('#side').innerHTML=sideHtml();$('#rpanel').innerHTML=rpShown()?rpanelHtml():'';applyRpSize();$('#pill').innerHTML=focusOn()?pillHtml():'';$('#pill').classList.toggle('on',focusOn());if(!focusOn())$('#pill').classList.remove('hide');
  body.scrollTop=top;lastKey=key;
  if(keepFocus){const el=document.getElementById(keepFocus.id);if(el&&el!==ae){el.focus();try{el.setSelectionRange(keepFocus.s,keepFocus.e)}catch(e){}}}
  if(!['study','devmode'].includes(ui.view))$('#tx').classList.remove('open');
@@ -655,7 +657,7 @@ function openMenu(btn,kind){
   const list=[...new Set([...(st.translations||[]),'kjv','web','esv','net','nkjv'])].filter(t=>TRS[t]&&TRS[t].src!=='none');
   items=list.map(t=>{const n=anns.filter(a=>(a.spans||[]).some(s=>s.tr===t)).length;return {act:'settr',d:{tr:t},label:trName(t)+(n?` <small>${n} mark${n>1?'s':''}</small>`:''),on:t===tr,off:!trAvailable(t)}})}
  else if(kind==='layout')items=[['verse','Verse by verse'],['para','Paragraphs and poetry']].map(([v,l])=>({act:'tlay',d:{v},label:l,on:curLayout()===v}));
- else if(kind==='nlay')items=[['margin','Margin','Notes beside the text'],['under','Under','Notes under each verse']].map(([v,l,h])=>({act:'nlay',d:{v},label:`${l} <small>${h}</small>`,on:(SET.nlay||'margin')===v}));
+ else if(kind==='nlay')items=[['margin','Margin','Notes beside the text'],['under','Under','Notes under each verse'],['dots','Dots','A small dot for each note']].map(([v,l,h])=>({act:'nlay',d:{v},label:`${l} <small>${h}</small>`,on:(SET.nlay||'margin')===v}));
  else if(kind==='dtpl'&&st){const curT=st.dev&&DTPL[st.dev.tmpl]?st.dev.tmpl:LS.get('devTpl','inductive');items=Object.entries(DTPL).map(([k,t])=>({act:'dtplset',d:{t:k},label:t.n,on:k===curT}))}
  else if(kind==='dmore'){items=[{act:'dmargin',d:{v:SET.devMargin===false?'1':'0'},label:SET.devMargin===false?'Show comments':'Hide comments',icon:'comment'},{hr:1},{act:'dexit',d:{},label:'Back to today',icon:'chevL'}]}
  if(kind==='card'){const a=findAnn(btn.dataset.id);if(!a)return;const lbl=(KLABEL[a.kind]||'mark').toLowerCase(),id=esc(a.id);const tags=a.tags||[];const cur=a.titleTag||tags[0];
@@ -666,7 +668,8 @@ function openMenu(btn,kind){
   else{if(a.note)items.push({act:'cdelnote',d:{id:a.id},label:`Delete the note <small>keeps the ${esc(lbl)}</small>`,icon:'note'});items.push({act:'cdelmark',d:{id:a.id},label:a.note?`Delete the ${esc(lbl)} and note`:`Delete the ${esc(lbl)}`,icon:'trash',red:1})}
  }
  if(kind==='dtplh'){const tk=dkey(new Date()),d=devFor(tk),curT=d&&d.dev&&DTPL[d.dev.tmpl]?d.dev.tmpl:LS.get('devTpl','inductive');items=Object.entries(DTPL).map(([k,t])=>({act:'dtplhome',d:{t:k},label:t.n,on:k===curT}))}
- const heads={tr:'Translation',layout:'Layout',nlay:'Notes',dtpl:'Template',dtplh:'Template',dmore:'Reading'};
+ if(kind==='btr'){items=Object.keys(TRS).filter(trAvailable).map(k=>({act:'bsettr',d:{tr:k},label:TRS[k].n,on:bibleTr()===k}))}
+ const heads={btr:'Translation',tr:'Translation',layout:'Layout',nlay:'Notes',dtpl:'Template',dtplh:'Template',dmore:'Reading'};
  if(kind==='fmore'){m.innerHTML=`<div class="mgrid"><button data-act="sideopen" data-t="Studies">${ic('book',20)}Studies</button><button data-act="nav" data-v="devo">${ic('cal',20)}Devotional</button><button data-act="nav" data-v="search">${ic('search',20)}Search</button><button data-act="rpopen" data-t="guide">${ic('guide',20)}Guide</button></div><div class="mhr"></div><button class="mi" data-act="fold"><span class="ck">${ic('collapse',16)}</span><span>${SET.fold!==false?'Expand notes':'Collapse notes'}</span></button><button class="mi" data-act="nav" data-v="settings"><span class="ck">${ic('sliders',16)}</span><span>Settings</span></button><div class="mhr"></div><button class="mi on" data-act="focus"><span class="ck">${ic('unfocus',16)}</span><span>Leave Focus <small>everything back</small></span></button>`}
  else if(kind==='filter'&&st){m.innerHTML=filterPane(st)}else m.innerHTML=(heads[kind]?`<div class="msec">${heads[kind]}</div>`:'')+items.map(it=>it.hr?'<div class="mhr"></div>':`<button class="mi${it.on?' on':''}${it.off?' off':''}${it.red?' red':''}" data-act="${it.act}" ${Object.entries(it.d).map(([k,v])=>`data-${k}="${esc(v)}"`).join(' ')}><span class="ck">${it.icon?ic(it.icon,16):it.on?ic('check',15):''}</span><span>${it.label}</span></button>`).join('')+(kind==='layout'?`<div class="mhr"></div><button class="mi" data-act="txt"><span class="ck"></span><span>Text size, font and spacing…</span></button>`:'');
  m.dataset.k=kind;
@@ -703,6 +706,7 @@ function readSel(){
  ui.barMore=false;ui.bar={mode:'new'};showBar(r.getBoundingClientRect?r.getBoundingClientRect():a.getBoundingClientRect());
 }
 function barHtml(){
+ if(ui.view==='bible'&&ui.sel){const r=`${bname(+bibleRef().b,true)} ${ui.sel.c}:${ui.sel.v}`;return `<button class="tb2 txtb" data-act="bnewsel">${ic('plusI',16)}Start a study at ${esc(r)}</button><span class="dv"></span><button class="tb2 txtb" data-act="bcopysel">Copy</button>`}
  const a=ui.bar&&ui.bar.mode==='edit'?findAnn(ui.bar.id):null;
  const curCol=a?String(a.color).toLowerCase():null;
  const hlBtn=a&&a.kind!=='highlight'?`<button class="tb2" data-act="bkind" data-k="highlight" aria-label="Make it a highlight" title="Highlight">${ic('hlt',18)}</button>`:'';
@@ -817,12 +821,13 @@ const A={
  scrim:()=>{closeMenu();closeSheet();if(ui.sideOver||ui.rpOver){ui.sideOver=false;ui.rpOver=false;render()}},
  sidebtn:()=>{if(WIDE.matches&&!focusOn()){SET.side=SET.side===false;saveSet();render();return}ui.sideOver=!ui.sideOver;ui.rpOver=false;render()},
  sideopen:el=>{closeMenu();ui.sideTab=el.dataset.t||null;ui.sideOver=true;ui.rpOver=false;render()},
- sidetab:el=>{ui.sideTab=el.dataset.t;if(el.dataset.t==='Devotional'&&ui.view!=='devo'&&ui.view!=='devmode'){ui.view='devo';ui.sideTab=null;ui.sideOver=false;closeSheet();clearOwnSel();lastKey=''}render()},
+ sidetab:el=>{if(el.dataset.t==='Bible'){ui.sideTab='Bible';ui.bpickB=null;if(ui.view!=='bible'){ui.view='bible';lastKey=''}render();return}
+  ui.sideTab=el.dataset.t;if(el.dataset.t==='Devotional'&&ui.view!=='devo'&&ui.view!=='devmode'){ui.view='devo';ui.sideTab=null;ui.sideOver=false;closeSheet();clearOwnSel();lastKey=''}render()},
  rpbtn:()=>{if(WIDE.matches&&!focusOn()){SET.rp=SET.rp===false;saveSet();ui.rpOver=false}else{ui.rpOver=!ui.rpOver;ui.sideOver=false}render()},
  rpopen:el=>{closeMenu();ui.rpTab=el.dataset.t||'notes';if(!rpDocked())ui.rpOver=true;render()},
  rptab:el=>{ui.rpTab=el.dataset.t;render()},
  rpclose:()=>{ui.rpOver=false;render()},
- focus:()=>{closeMenu();const st=cur();if(!st)return;SET.focus[st.id]=!SET.focus[st.id];if(!SET.focus[st.id])delete SET.focus[st.id];saveSet();ui.sideOver=false;ui.rpOver=false;hideBar();clearOwnSel();render()},
+ focus:()=>{closeMenu();if(ui.view==='bible'){SET.focus.__bible=!SET.focus.__bible;saveSet();hideBar();clearOwnSel();render();return}const st=cur();if(!st)return;SET.focus[st.id]=!SET.focus[st.id];if(!SET.focus[st.id])delete SET.focus[st.id];saveSet();ui.sideOver=false;ui.rpOver=false;hideBar();clearOwnSel();render()},
  gtag:el=>{FS.tags.clear();FS.tags.add(el.dataset.t);ui.rpOver=false;render()},
  vnote:el=>{closeMenu();const st=cur();if(!st)return;const p=st.passages.find(x=>x.id===el.dataset.p)||st.passages[0],c=+el.dataset.c,v=+el.dataset.v,tr=studyTr(st);const t=((CH[chKey(tr,p.ref.b,c)]||{v:[]}).v[v-1])||'';const a={id:newId(),kind:'note',color:'#5b8afe',spans:[{tr,b:p.ref.b,c,v,s:0,e:t.length,text:t}],note:'',tags:[],created:new Date().toISOString()};commit({op:'add',sid:st.id,a});ui.justMade=a.id;openEd(a.id)},
  vcopy:el=>{closeMenu();const st=cur();if(!st)return;const p=st.passages.find(x=>x.id===el.dataset.p)||st.passages[0],c=+el.dataset.c,v=+el.dataset.v,tr=studyTr(st);const t=((CH[chKey(tr,p.ref.b,c)]||{v:[]}).v[v-1])||'';const ref=`${bname(p.ref.b,true)} ${c}:${v}`;const txt=el.dataset.ref?ref:`“${t}” ${ref} (${trName(tr)})`;(navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('Copied')).catch(()=>toast('Couldn’t copy here'))},
@@ -875,6 +880,20 @@ const A={
  tagmenu:el=>{const a=findAnn(el.dataset.id);if(!a)return;const t=el.dataset.t,pinned=a.titleTag===t,id=esc(a.id),tt=esc(t);const m=$('#menu');m.dataset.k='tag';
   m.innerHTML=`<div class="msec">#${tt}</div><button class="mi" data-act="tagpin" data-id="${id}" data-t="${tt}"${pinned?' data-on="1"':''}><span class="ck">${ic('pin',15)}</span><span>${pinned?'Unpin the title':'Pin as the title'}</span></button><div class="msec">Color for this tag</div><div class="mswr">${PALETTE.map((c,i)=>`<button class="esw" style="background:${c}" data-act="tagcolor" data-t="${tt}" data-c="${i}" aria-label="Color ${i+1}"></button>`).join('')}</div><div class="mhr"></div><button class="mi" data-act="managetags"><span class="ck">${ic('tag',15)}</span><span>Manage tags…</span></button><button class="mi red" data-act="tagremove" data-id="${id}" data-t="${tt}"><span class="ck">${ic('trash',15)}</span><span>Remove from this note</span></button>`;
   m.classList.remove('asSheet');m.classList.add('open');const r=el.getBoundingClientRect(),w=m.offsetWidth||230,h=m.offsetHeight||240;m.style.top=(r.bottom+6+h>innerHeight-10?Math.max(8,r.top-h-6):r.bottom+6)+'px';m.style.left=Math.max(8,Math.min(r.left,innerWidth-w-8))+'px'},
+ newstudy:()=>{ui.sideOver=false;render();newStudyForm()},
+ nstr:el=>{document.querySelectorAll('.nstr button').forEach(b=>b.classList.toggle('on',b===el))},
+ nscreate:()=>createStudy(),
+ bpick:()=>{ui.sideTab='Bible';ui.bpickB=bibleRef().b;if(WIDE.matches&&!focusOn()){if(SET.side===false){SET.side=true;saveSet()}}else ui.sideOver=true;render()},
+ bbook:el=>{const b=+el.dataset.b;ui.bpickB=b<0?null:b;render()},
+ bgo:el=>{ui.bib={b:+el.dataset.b,c:+el.dataset.c};LS.set('bibAt',ui.bib);ui.bpickB=null;ui.view='bible';ui.sideOver=false;clearOwnSel();hideBar();lastKey='';render();const b=$('#body');if(b)b.scrollTop=0},
+ bstep:el=>{const r=bibleRef();let b=r.b,c=r.c+(+el.dataset.d);if(c<1){b=Math.max(0,b-1);c=b===r.b?1:CHAPS[b]}else if(c>CHAPS[b]){if(b<65){b++;c=1}else c=CHAPS[b]}ui.bib={b,c};LS.set('bibAt',ui.bib);clearOwnSel();hideBar();lastKey='';render();const bd=$('#body');if(bd)bd.scrollTop=0},
+ bretry:()=>{const r=bibleRef();delete CHERR[chKey(bibleTr(),r.b,r.c)];render()},
+ bsettr:el=>{closeMenu();LS.set('bibTr',el.dataset.tr);render()},
+ bstudy:el=>{const r=bibleRef(),hit=versesInStudies(r.b,r.c)[+el.dataset.v]||[];if(hit.length===1){A.goto({dataset:{s:hit[0].sid,p:hit[0].pid,c:r.c,v:el.dataset.v}});return}
+  const m=$('#menu');m.dataset.k='bstudy';m.innerHTML=`<div class="msec">In your studies</div>`+hit.map(h=>`<button class="mi" data-act="goto" data-s="${esc(h.sid)}" data-p="${esc(h.pid)}" data-c="${r.c}" data-v="${el.dataset.v}"><span class="ck"></span><span>${esc(h.title)}</span></button>`).join('');m.classList.remove('asSheet');m.classList.add('open');const b=el.getBoundingClientRect();m.style.top=Math.min(b.bottom+6,innerHeight-(m.offsetHeight||160)-10)+'px';m.style.left=Math.max(8,Math.min(b.left,innerWidth-(m.offsetWidth||220)-8))+'px'},
+ bnewsel:()=>{const r=bibleRef(),sl=ui.sel;hideBar();clearOwnSel();newStudyForm({ref:`${bname(r.b,true)} ${sl.c}:${sl.v}`,tr:bibleTr()})},
+ bcopysel:()=>{const r=bibleRef(),sl=ui.sel;const txt=`“${sl.w}” ${bname(r.b,true)} ${sl.c}:${sl.v} (${trName(bibleTr())})`;hideBar();clearOwnSel();(navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('Copied')).catch(()=>toast('Couldn’t copy here'))},
+ ndot:el=>{const id=el.dataset.m;if(ui.dotOpen.has(id)){ui.dotOpen.delete(id);if(ui.selCard===id)ui.selCard=null}else{ui.dotOpen.add(id);ui.selCard=id;ui.unfold.add(id)}render()},
  scrinfo:()=>{ui.scrInfo=true;render()},
  edpop:()=>{ui.edPop=!ui.edPop;rerender()},
  tagadd:()=>{ui.tagAdd=true;rerender();const i=$('#etagin');if(i){i.focus();showTagSug('',i)}},
@@ -911,6 +930,7 @@ if(focusOn()&&!inMenu&&!e.target.closest('#pill,button,.nc,.vtx [data-m],#mbar')
 });
 document.addEventListener('input',e=>{
  const t=e.target;
+ if(t.id==='rpnotes'){const st=cur();if(st)commit({op:'set',sid:st.id,patch:{outline:htmlToMd(t)}});return}
  if(t.id==='devnotes'){t.querySelectorAll('p.hp').forEach(x=>{if(x.textContent.trim())x.classList.remove('hp')});const st=cur();if(st)commit({op:'set',sid:st.id,patch:{outline:htmlToMd(t)}})}
  else if(t.id==='eabove'){const st=cur();if(st&&ui.edit){commit({op:'upd',sid:st.id,id:ui.edit,patch:{above:t.value}});const m=document.querySelector(`.vtx [data-m="${ui.edit}"]`);if(m)m.dataset.above=t.value}}
  else if(t.id==='etagin'){showTagSug(t.value.replace(/^#/,''),t);return}
@@ -934,7 +954,7 @@ document.addEventListener('keydown',e=>{
 });
 let lastTop=0;
 $('#body').addEventListener('scroll',()=>{const b=$('#body');if(focusOn()){const p=$('#pill');if(p){if(b.scrollTop<=24)p.classList.remove('hide');else if(Math.abs(b.scrollTop-lastTop)>2)p.classList.add('hide')}}lastTop=b.scrollTop;if(ui.selDrag)drawSel();if(ui.bar)placeBar();closeMenu();if(ui.view==='devmode'){const b=$('#body'),pr=$('#dprog');if(pr)pr.style.width=Math.min(100,b.scrollTop/Math.max(1,b.scrollHeight-b.clientHeight)*100)+'%'}},{passive:true});
-document.addEventListener('focusout',e=>{if(e.target&&(e.target.id==='devnotes'||e.target.id==='enote')&&ui.pendRender)setTimeout(()=>{if(document.activeElement.id!=='enote'&&document.activeElement.id!=='devnotes')render()},0)});
+document.addEventListener('focusout',e=>{if(e.target&&(e.target.id==='devnotes'||e.target.id==='enote'||e.target.id==='rpnotes')&&ui.pendRender)setTimeout(()=>{if(document.activeElement.id!=='enote'&&document.activeElement.id!=='devnotes')render()},0)});
 let swipeX=null;
 $('#body').addEventListener('touchstart',e=>{swipeX=ui.view==='devmode'&&e.touches[0].clientX<24?e.touches[0].clientX:null},{passive:true});
 $('#body').addEventListener('touchend',e=>{if(swipeX!=null&&e.changedTouches[0].clientX-swipeX>70)devExit();swipeX=null},{passive:true});
@@ -950,6 +970,8 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 /* ---------- What's new and keyboard shortcuts ---------- */
 const CHANGES={
+ '1.5.0':['The Bible: a Bible tab in the sidebar opens any book and chapter. Dots by verses in your studies open them; select words to start a study there.','New study: in the sidebar’s Studies tab. Type a passage, then a title, series and translation.','Edit your Study notes in the right panel; drag its edge (or the sheet on a phone) to resize it.','Notes as dots: Margin ▾ > Dots shows a small colored dot for each note; tap it to open the note.'],
+ '1.4.8':['iPad: the band at the bottom of the window should be gone: the app now fills the strip the iPad was leaving empty.'],
  '1.4.7':['On iPad, drag the line between the scripture and the notes to make the notes wider (double-tap it to reset).','Editing a note is a line shorter: the mark and its color sit by the title; tap them for all kinds and colors.','Settings is at the bottom of the sidebar.','Fixed: Settings and Devotional in the sidebar did nothing on a phone.'],
  '1.4.6':['The app now fills the whole window down to the bottom edge, and the top bar lines up with the sidebar.'],
  '1.4.5':['Edit a note right in its card: ••• > Edit note. The mark’s kind and color sit along the top, its tags along the bottom.','Select words in a note for a small B · I · U pop-up.','Tags like the desktop’s: type # in a note for your tags, tap a tag to pin it as the title, give it a color or remove it, and Manage tags… to rename, merge, recolor or delete across studies.'],
@@ -992,7 +1014,7 @@ Object.assign(ICO,{
 Object.assign(IC_ALIAS,{side:'mg-side',rside:'mg-rside',focus:'mg-focus',unfocus:'mg-unfocus',notesI:'mg-notes',calendar:'mg-calendar',guide:'@guide'});
 Object.assign(ui,{sideOver:false,rpOver:false,rpTab:'notes',sideTab:null,selDrag:null});
 SET.focus=SET.focus||{};
-const focusOn=()=>ui.view==='study'&&!!SET.focus[ui.sid]&&!!cur();
+const focusOn=()=>(ui.view==='study'&&!!SET.focus[ui.sid]&&!!cur())||(ui.view==='bible'&&!!SET.focus.__bible);
 const sideDocked=()=>WIDE.matches&&SET.side!==false&&!focusOn();
 const rpDocked=()=>WIDE.matches&&SET.rp!==false&&ui.view==='study'&&!focusOn();
 const rpShown=()=>ui.view==='study'&&(rpDocked()||ui.rpOver);
@@ -1006,12 +1028,13 @@ function topbar(title,opt={}){
 
 /* ---------- sidebar: Studies · Devotional, like the desktop's ---------- */
 function sideHtml(){
- const t=ui.sideTab||(['devo','devmode'].includes(ui.view)?'Devotional':'Studies');
- const tabs=`<div class="stabs"><button class="${t==='Studies'?'on':''}" data-act="sidetab" data-t="Studies">Studies</button><button class="${t==='Devotional'?'on':''}" data-act="sidetab" data-t="Devotional">Devotional</button></div>`;
+ const t=ui.sideTab||(['devo','devmode'].includes(ui.view)?'Devotional':ui.view==='bible'?'Bible':'Studies');
+ const tabs=`<div class="stabs"><button class="${t==='Studies'?'on':''}" data-act="sidetab" data-t="Studies">Studies</button><button class="${t==='Bible'?'on':''}" data-act="sidetab" data-t="Bible">Bible</button><button class="${t==='Devotional'?'on':''}" data-act="sidetab" data-t="Devotional">Devotional</button></div>`;
  let inner='';
- if(t==='Studies'){
+ if(t==='Bible'){inner=bookPicker()}
+ else if(t==='Studies'){
   const list=studyList(),open=ui.view==='study'?cur():null;
-  inner=(open?`<div class="scard"><b>${esc(open.title||'Untitled')}</b><small>${esc((open.passages||[]).map(p=>refStr(p.ref)).join(', '))} · ${(open.annotations||[]).length} marks</small>${(open.passages||[]).map(p=>`<div class="pchip">${esc(refStr(p.ref))}</div>`).join('')}</div>`:'')+
+  inner=`<button class="newst" data-act="newstudy">${ic('plusI',16)}New study</button>`+(open?`<div class="scard"><b>${esc(open.title||'Untitled')}</b><small>${esc((open.passages||[]).map(p=>refStr(p.ref)).join(', '))} · ${(open.annotations||[]).length} marks</small>${(open.passages||[]).map(p=>`<div class="pchip">${esc(refStr(p.ref))}</div>`).join('')}</div>`:'')+
    (list.filter(s=>!open||s.id!==open.id).map(s=>`<button class="srow" data-act="open" data-s="${esc(s.id)}">${esc(s.title||'Untitled')}<small>${esc((s.passages||[]).map(p=>refStr(p.ref)).join(', '))}</small></button>`).join('')||(open?'':'<p class="muted" style="padding:4px 8px;font-size:13px">No studies yet.</p>'));
  }else{
   inner=`<button class="srow strong" data-act="nav" data-v="devo">${ic('cal',17)}Today’s reading</button>${devCalCard()}${devPlanCard()}`;
@@ -1032,14 +1055,14 @@ function rpanelHtml(){
  const st=cur();if(!st||ui.view!=='study')return '';
  const tabs=`<div class="stabs"><button class="${ui.rpTab==='notes'?'on':''}" data-act="rptab" data-t="notes">Study notes</button><button class="${ui.rpTab==='guide'?'on':''}" data-act="rptab" data-t="guide">Guide</button>${WIDE.matches&&!ui.rpOver?'':`<button class="caret" data-act="rpclose" aria-label="Close">${ic('x',16)}</button>`}</div>`;
  let body;
- if(ui.rpTab==='notes')body=`<div class="outline rpo">${st.outline&&st.outline.trim()?md(st.outline):'<p class="muted">No Study notes yet.</p>'}</div>`;
+ if(ui.rpTab==='notes')body=rpNotesHtml(st);
  else{
   const tr=studyTr(st),anns=(st.annotations||[]).filter(a=>(a.spans||[]).some(s=>s.tr===tr));
   const tags={};(st.annotations||[]).forEach(a=>(a.tags||[]).forEach(t=>tags[t]=(tags[t]||0)+1));
   const notes=anns.filter(a=>a.note).sort((a,b)=>{const x=a.spans[0],y=b.spans[0];return (x.c-y.c)||(x.v-y.v)||(x.s-y.s)});
   body=`${st.summary?`<div class="gcard"><div class="gl">Summary</div><div>${md(st.summary)}</div></div>`:''}${Object.keys(tags).length?`<div class="gcard"><div class="gl">Tags</div><div class="xchips">${Object.entries(tags).map(([t,n])=>`<button data-act="gtag" data-t="${esc(t)}">#${esc(t)} <small>${n}</small></button>`).join('')}</div></div>`:''}<div class="gcard"><div class="gl">Notes in this study</div>${notes.length?notes.map(a=>{const sp=a.spans.find(s=>s.tr===tr)||a.spans[0];const p=(st.passages||[]).find(p=>p.ref&&p.ref.b===sp.b)||{};return `<button class="gnote" data-act="goto" data-s="${esc(st.id)}" data-p="${esc(p.id||'')}" data-c="${sp.c}" data-v="${sp.v}" data-m="${esc(a.id)}"><small>${esc(bname(sp.b,true))} ${sp.c}:${sp.v}</small><span class="gq">${esc(sp.text||'')}</span><span class="gn">${esc(plainMd(a.note).slice(0,140))}</span></button>`}).join(''):'<p class="muted" style="margin:4px 0 0">No notes yet.</p>'}</div>`;
  }
- return `${tabs}<div class="rbody">${body}</div>`;
+ return `<div class="rpgrip ${!MID.matches&&ui.rpOver?'sheet':'side'}" aria-hidden="true"></div>${tabs}<div class="rbody">${body}</div>`;
 }
 
 /* ---------- the study page ---------- */
@@ -1058,6 +1081,7 @@ function vStudy(){
  return {bar:topbar(WIDE.matches?'':esc(st.title||'Untitled'),{focus:1,rp:1}),body};
 }
 function pillHtml(){
+ if(ui.view==='bible')return `<button data-act="focus" aria-label="Leave Focus" title="Leave Focus">${ic('unfocus',17)}</button><span class="psep"></span><button data-act="bstep" data-d="-1" aria-label="Previous chapter">${ic('chevL',16)}</button><button data-act="menu" data-m="btr">${esc(trName(bibleTr()))} ▾</button><button data-act="bstep" data-d="1" aria-label="Next chapter">${ic('chevR',16)}</button><button class="aa" data-act="txt" aria-label="Text settings">Aa</button><button data-act="menu" data-m="fmore" aria-label="More">${ic('more',17)}</button>`;
  const st=cur();if(!st)return '';
  return `<button data-act="focus" aria-label="Leave Focus" title="Leave Focus">${ic('unfocus',17)}</button><span class="psep"></span><button data-act="menu" data-m="tr">${esc(trName(studyTr(st)))} ▾</button><button data-act="rpopen" data-t="notes">${ic('notesI',16)}Notes</button><button data-act="menu" data-m="filter" aria-label="Filter" class="${filterOn()||FS.just?'on':''}">${ic('filter',16)}</button><button class="aa" data-act="txt" aria-label="Text settings">Aa</button><button data-act="menu" data-m="fmore" aria-label="More">${ic('more',17)}</button>`;
 }
@@ -1108,7 +1132,7 @@ function startAt(x,y,target){
  const o=caretIn(vtx,x,y);if(o==null)return false;const [s,e]=wordBounds(vtx.textContent,o);
  hideBar();ui.selDrag={vtx,anchor:s,anchorEnd:e,s,e};drawSel();return true;
 }
-const selView=()=>ui.view==='study'||ui.view==='devmode';
+const selView=()=>ui.view==='study'||ui.view==='devmode'||ui.view==='bible';
 document.addEventListener('touchstart',e=>{
  if(!selView()||e.touches.length!==1)return;const t=e.touches[0],el=e.target;
  const knob=el.closest&&el.closest('#selk i');
@@ -1291,10 +1315,75 @@ function forEachTagged(t,fn){studyList().forEach(s=>(s.annotations||[]).forEach(
 })();
 function posDiv(){const c=$('#coldiv'),w=$('.studywrap');if(!c||!w)return;const row=w.querySelector('.vrow .cards');if(!row){c.style.display='none';return}c.style.display='';const wr=w.getBoundingClientRect(),cr=row.getBoundingClientRect();c.style.left=(cr.left-wr.left-11)+'px';const hr=w.querySelector('.hrow');c.style.top=(hr?hr.offsetTop+hr.offsetHeight:0)+'px'}
 /* About this screen (Settings): what the iPad tells the app about the window */
-function screenInfo(){const pr=document.createElement('div');pr.style.cssText='position:fixed;left:0;top:0;width:1px;height:100lvh;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);visibility:hidden;pointer-events:none';document.body.appendChild(pr);const cs=getComputedStyle(pr);const out={window:`${innerWidth}×${innerHeight}`,visible:window.visualViewport?`${Math.round(visualViewport.width)}×${Math.round(visualViewport.height)}`:'–',screen:`${screen.width}×${screen.height}`,page:`${document.documentElement.clientWidth}×${document.documentElement.clientHeight}`,large:Math.round(pr.getBoundingClientRect().height-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom))+' high',top:cs.paddingTop,bottom:cs.paddingBottom,app:Math.round($('#app').getBoundingClientRect().height)+' high',standalone:String(!!(navigator.standalone||matchMedia('(display-mode: standalone)').matches))};pr.remove();return out}
+function screenInfo(){const pr=document.createElement('div');pr.style.cssText='position:fixed;left:0;top:0;width:1px;height:100lvh;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);visibility:hidden;pointer-events:none';document.body.appendChild(pr);const cs=getComputedStyle(pr);const out={window:`${innerWidth}×${innerHeight}`,visible:window.visualViewport?`${Math.round(visualViewport.width)}×${Math.round(visualViewport.height)}`:'–',screen:`${screen.width}×${screen.height}`,page:`${document.documentElement.clientWidth}×${document.documentElement.clientHeight}`,large:Math.round(pr.getBoundingClientRect().height-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom))+' high',top:cs.paddingTop,bottom:cs.paddingBottom,app:Math.round($('#app').getBoundingClientRect().height)+' high',fix:ui.fitNote||'none needed',standalone:String(!!(navigator.standalone||matchMedia('(display-mode: standalone)').matches))};pr.remove();return out}
 /* if the iPad's large viewport is taller than the window the app was given, use it */
-function fitApp(){const pr=document.createElement('div');pr.style.cssText='position:fixed;top:0;height:100lvh;width:1px;visibility:hidden';document.body.appendChild(pr);const lv=pr.getBoundingClientRect().height;pr.remove();const a=$('#app');if(!a)return;if(lv>innerHeight+2&&(navigator.standalone||matchMedia('(display-mode: standalone)').matches)){a.style.bottom='auto';a.style.height=lv+'px'}else{a.style.bottom='';a.style.height=''}}
-addEventListener('resize',()=>{fitApp();posDiv()});setTimeout(fitApp,50);
+function fitApp(){
+ /* The installed iPad app runs under the clock (black-translucent), but iPadOS sizes its page as if it didn't:
+    window 922 high on a 954-high screen, starting at the top, so a strip the height of the clock was left empty at the bottom.
+    Give the app the full screen height when the missing part matches the clock's space. */
+ const a=$('#app');if(!a)return;const sa=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+ const pr=document.createElement('div');pr.style.cssText='position:fixed;top:0;height:0;padding-top:env(safe-area-inset-top,0px);visibility:hidden';document.body.appendChild(pr);const top=parseFloat(getComputedStyle(pr).paddingTop)||0;pr.remove();
+ const landscape=innerWidth>innerHeight,sh=landscape?Math.min(screen.width,screen.height):Math.max(screen.width,screen.height);
+ const gap=sh-innerHeight;
+ if(sa&&top>0&&gap>4&&Math.abs(gap-top)<=4){a.style.bottom='auto';a.style.height=sh+'px';ui.fitNote=`filled the ${Math.round(gap)} px left under the app`}
+ else{a.style.bottom='';a.style.height='';ui.fitNote=''}
+}
+addEventListener('resize',()=>{fitApp();posDiv()});setTimeout(fitApp,50);/* ===================== 1.5: new studies, Study notes editing, the Bible view, notes as dots ===================== */
+ICO['mg-new']='<path d="M12 5v14M5 12h14" stroke="currentColor" stroke-linecap="round"/>';IC_ALIAS.plusI='mg-new';
+/* ---------- new study ---------- */
+function seriesList(){return [...new Set(studyList().map(s=>s.series).filter(Boolean).filter(x=>x!=='Devotional'))].sort()}
+function newStudyForm(pre={}){
+ const trs=Object.keys(TRS).filter(k=>trAvail(k));const deftr=pre.tr||LS.get('lastTr',trs[0]||'kjv');
+ showSheetHtml(`<div class="nsf"><div style="display:flex;align-items:center;margin-bottom:8px"><b style="flex:1;font-size:16px">New study</b><button class="quiet" data-act="sheetx">Cancel</button></div>
+ <label class="efld"><span>Passage</span><input id="nsref" value="${esc(pre.ref||'')}" placeholder="e.g. John 3:1–21 or Romans 8" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="next"></label>
+ <label class="efld"><span>Title</span><input id="nstitle" value="${esc(pre.title||'')}" placeholder="The passage, if left empty" autocomplete="off" enterkeyhint="next"></label>
+ <label class="efld"><span>Series</span><input id="nsseries" list="nsserieslist" value="${esc(pre.series||'')}" placeholder="Optional" autocomplete="off" enterkeyhint="done"><datalist id="nsserieslist">${seriesList().map(s=>`<option value="${esc(s)}">`).join('')}</datalist></label>
+ <div class="lbl" style="margin-top:4px">Translation</div><div class="seg nstr" style="flex-wrap:wrap">${trs.map(k=>`<button class="${k===deftr?'on':''}" data-act="nstr" data-tr="${k}">${esc(trName(k))}</button>`).join('')}</div>
+ <p class="muted nserr" id="nserr" style="min-height:1.2em;margin:6px 0"></p><button class="btn" data-act="nscreate" style="width:100%">Create study</button></div>`);
+ setTimeout(()=>{const i=$('#nsref');if(i&&!pre.ref)i.focus()},60);
+}
+const trAvail=k=>trAvailable(k);
+async function createStudy(){
+ const r=parseRef(($('#nsref')||{}).value);const err=$('#nserr');
+ if(!r){if(err)err.textContent='Type a passage like John 3:1–21 or Romans 8.';return}
+ const ref=await settleRef(r);const tr=($('.nstr button.on')||{}).dataset?$('.nstr button.on').dataset.tr:'kjv';
+ const title=(($('#nstitle')||{}).value||'').trim()||refStr(ref),series=(($('#nsseries')||{}).value||'').trim();
+ const id='st_'+rid(),now=new Date().toISOString();
+ const d={id,title,series,createdAt:now,updatedAt:now,translations:[tr],layout:'margin',passages:[{id:'p_'+rid(),ref}],annotations:[],outline:'### Observe\n\n### Interpret\n\n### Apply\n',summary:'',headings:[],labels:[],boxes:[],v18:1,tagColors:{},v19:1};
+ S.studies[id]={d,itemId:null,eTag:null};S.pending.push({op:'new',sid:id,d:JSON.parse(JSON.stringify(d))});
+ savePending();saveStudies();clearTimeout(syncT);syncT=setTimeout(()=>sync(),1200);LS.set('lastTr',tr);
+ closeSheet();ui.sid=id;ui.view='study';ui.sideOver=false;ui.sideTab=null;lastKey='';render();toast('Study created');
+}
+/* ---------- Study notes edited in the right panel ---------- */
+function rpNotesHtml(st){return `<div class="outline rpo rpedit" id="rpnotes" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Study notes" data-ph="Write your Study notes">${st.outline&&st.outline.trim()?md(st.outline):''}</div>`}
+/* resize the right panel: drag its edge (iPad) or its grab bar (phone sheet) */
+(function(){let d=null;
+ document.addEventListener('pointerdown',e=>{const h=e.target.closest&&e.target.closest('.rpgrip');if(!h)return;e.preventDefault();const p=$('#rpanel');const r=p.getBoundingClientRect();d={sheet:h.classList.contains('sheet'),x:e.clientX,y:e.clientY,w:r.width,h:r.height};h.classList.add('drag')});
+ document.addEventListener('pointermove',e=>{if(!d)return;e.preventDefault();const p=$('#rpanel');if(d.sheet){const v=Math.max(innerHeight*.3,Math.min(innerHeight*.92,d.h-(e.clientY-d.y)));p.style.height=v+'px';d.v=v/innerHeight}else{const v=Math.max(240,Math.min(Math.min(600,innerWidth*.55),d.w-(e.clientX-d.x)));p.style.width=v+'px';d.v=v}});
+ document.addEventListener('pointerup',()=>{if(!d)return;const g=$('.rpgrip.drag');if(g)g.classList.remove('drag');if(d.v){if(d.sheet)SET.rpH=d.v;else SET.rpW=Math.round(d.v);saveSet()}d=null});
+})();
+function applyRpSize(){const p=$('#rpanel');if(!p)return;const sheet=!MID.matches&&ui.rpOver;p.style.width=!sheet&&SET.rpW?SET.rpW+'px':'';p.style.height=sheet&&SET.rpH?Math.round(SET.rpH*innerHeight)+'px':''}
+/* ---------- the Bible view ---------- */
+function bibleRef(){if(!ui.bib)ui.bib=LS.get('bibAt',{b:42,c:1});return ui.bib}
+function bibleTr(){return LS.get('bibTr',LS.get('lastTr','kjv'))}
+function versesInStudies(b,c){const m={};studyList().forEach(s=>{if(s.kind==='devotional')return;(s.passages||[]).forEach(p=>{const r=p.ref;if(!r||r.b!==b)return;for(let ch=r.c1;ch<=r.c2;ch++){if(ch!==c)continue;const a=ch===r.c1?r.v1:1,z=ch===r.c2?r.v2:999;for(let v=a;v<=z;v++){(m[v]=m[v]||[]).push({sid:s.id,pid:p.id,title:s.title})}}})});return m}
+function vBible(){
+ const {b,c}=bibleRef(),tr=bibleTr(),ch=chapter(tr,b,c),ins=versesInStudies(b,c);
+ const head=`<div class="hrow bhead"><div class="hl"><button class="hm strong" data-act="bpick">${esc(bname(b,true))} ${c} ▾</button><button class="hm" data-act="menu" data-m="btr">${esc(trName(tr))} ▾</button></div><div class="hr"><span class="sp"></span><button class="hq" data-act="bstep" data-d="-1" aria-label="Previous chapter">${ic('chevL',16)}</button><button class="hq" data-act="bstep" data-d="1" aria-label="Next chapter">${ic('chevR',16)}</button></div></div>`;
+ let rows='';
+ if(!ch)rows=`<p class="muted" style="padding:20px 24px">${CHERR[chKey(tr,b,c)]?'Couldn’t load this chapter. <button class="quiet" data-act="bretry">Try again</button>':'Loading…'}</p>`;
+ else{const para=curLayout()==='para';rows=`<div class="btext${para?' para':''}">`+ch.v.map((t,i)=>{const v=i+1,hit=ins[v];return `${para&&ch.p&&ch.p.includes(v)&&v>1?'</p><p class="vt">':''}${para?'':'<p class="vt">'}<span class="vn">${v}</span>${hit?`<button class="bdot" data-act="bstudy" data-v="${v}" aria-label="In ${hit.length} stud${hit.length===1?'y':'ies'}" title="${esc(hit.map(h=>h.title).join(', '))}"></button>`:''}<span class="vtx" data-p="bible" data-b="${b}" data-c="${c}" data-v="${v}">${esc(t)}</span> ${para?'':'</p>'}`}).join('');rows=para?rows.replace('<div class="btext para">','<div class="btext para"><p class="vt">')+'</p></div>':rows+'</div>'}
+ const body=`${banners()}<div class="studywrap bible"><div class="shd"><div class="ser">Bible</div><div class="ttl">${esc(bname(b))} ${c}</div><div class="ref">${esc(trName(tr))}</div></div>${head}${rows}<div style="height:140px"></div></div>`;
+ return {bar:topbar(WIDE.matches?'':`${esc(bname(b,true))} ${c}`,{focus:1}),body};
+}
+function bookPicker(){
+ const {b}=bibleRef();const sel=ui.bpickB!=null?ui.bpickB:null;
+ if(sel==null)return `<div class="bpk">${[['Old Testament',0,39],['New Testament',39,66]].map(([l,a,z])=>`<div class="gl" style="margin:8px 2px 6px">${l}</div><div class="bgrid">${BOOKS.slice(a,z).map((n,i)=>`<button class="${a+i===b?'on':''}" data-act="bbook" data-b="${a+i}">${esc(bname(a+i,true))}</button>`).join('')}</div>`).join('')}</div>`;
+ return `<div class="bpk"><div style="display:flex;align-items:center;gap:8px;margin:4px 2px 8px"><button class="quiet" data-act="bbook" data-b="-1">${ic('chevL',14)} Books</button><b>${esc(bname(sel))}</b></div><div class="cgrid">${Array.from({length:CHAPS[sel]},(_,i)=>`<button data-act="bgo" data-b="${sel}" data-c="${i+1}">${i+1}</button>`).join('')}</div></div>`;
+}
+/* ---------- notes as dots ---------- */
+if(!ui.dotOpen)ui.dotOpen=new Set();
+
 window.MarginaliaState=S;window.MarginaliaTest={selectWords,parseRef,verseMenu,state:()=>({sel:ui.sel,bar:ui.bar&&ui.bar.mode,edit:ui.edit,supp:suppressUntil-Date.now(),drag:!!ui.selDrag})};
 /* ---------- start ---------- */
 (async function start(){

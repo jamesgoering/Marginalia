@@ -1,5 +1,16 @@
 # Marginalia for iPad and phone: changelog
 
+## 1.6.1 (2026-10-28)
+Fixes (a review of 1.6's devotional and Bible views)
+- Devotional: the page's last closing tag was doubled when the writing area moved, so the controls, the overall thoughts pen and the hint sat outside the reading page. The pen then had the wrong colors (unreadable in the dark), and on a phone it covered the last lines and the Done row. The page is whole again, the pen has its own light and dark colors and a soft shadow, the reading leaves room under it, and the "Tap to show controls" hint moved to the right.
+- Devotional: See my notes (devotional home, done card) opens the overall thoughts (it used to scroll to the old writing area).
+- Read the whole chapter changed your Bible translation for good (to the reading's); it now only uses the reading's translation for that visit. It no longer scrolls the heading away for readings that start near verse 1, and moving to another chapter or translation ends the "today's reading" view.
+- Today's verses in the Bible are a soft warm wash instead of boxes with a bar.
+- Bible: no space after verse numbers; now there is.
+- Bible, Evening or Morning page: only the text area changed; the top bar and the space around the page now match.
+- Typing in the Bible's passage line, the devotional's passage box, or the share card's takeaway or name could be wiped by a sync redraw; the redraw now waits.
+- Share from the devotional switched the app's open study to the devotional reading; it no longer does.
+
 ## 1.6.0 (2026-10-28)
 New
 - Home (Start here): Marginalia opens to a greeting and the date, today's devotional (Begin / Continue / See my notes), Continue for the study you last had open, Continue reading for your place in the Bible (verse and a thin progress line), four doors (New study, Bible, Search, Devotional) and Recent across studies, Bible chapters and readings. Home sits at the top of the sidebar. On a wide iPad the devotional and Continue cards sit side by side and Recent runs in two columns.

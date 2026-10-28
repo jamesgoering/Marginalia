@@ -1,7 +1,7 @@
 'use strict';
 /* Marginalia for iPad and phone. Reads and writes the desktop app's study files in OneDrive. */
-const VERSION='1.6.0';
-const CSS_VER='160';
+const VERSION='1.6.1';
+const CSS_VER='161';
 const $=s=>document.querySelector(s);
 /* Older index.html files lack some parts; add any that are missing so a partial upload can't break menus. */
 [['mbar','toolbar'],['scrim',''],['menu','menu'],['ed','dialog'],['tx','dialog'],['toast','status'],['wn','dialog'],['pill','toolbar'],['sheet','dialog'],['selk',''],['tsug','listbox'],['biu','toolbar'],['fx',''],['share','dialog']].forEach(([id,role])=>{if(!document.getElementById(id)){const d=document.createElement('div');d.id=id;if(role)d.setAttribute('role',role);if(id==='scrim')d.dataset.act='scrim';document.body.appendChild(d)}});
@@ -513,7 +513,7 @@ async function devStart(date){
  if(!d){const ref=date===dkey(new Date())?(devProposal(date)||await devPick(date,ui.another)):await devPick(date,0);await webBook(ref.b);d=newDev(date,ref)}
  devOpen(d.id);
 }
-function devOpen(id,toNotes){ui.devSid=id;ui.view='devmode';closeEd(true);hideBar();closeMenu();lastKey='';ui.devCtl=false;render();const b=$('#body');b.scrollTop=0;if(toNotes){const n=document.getElementById('devwr');if(n)n.scrollIntoView({block:'start'})}}
+function devOpen(id,toNotes){ui.devSid=id;ui.view='devmode';closeEd(true);hideBar();closeMenu();lastKey='';ui.devCtl=false;ui.otOpen=!!toNotes;render();const b=$('#body');b.scrollTop=0}
 /* The desktop's devotional light: morning by day, dusk after 6 pm, the evening look in dark mode. */
 function devLight(){const dark=document.documentElement.dataset.theme==='dark'||(document.documentElement.dataset.theme!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);if(dark)return 'dark';if(SET.devLight==='day')return 'morn';const h=new Date().getHours();return h>=18||h<5?'eve':'morn'}
 const DEV_BG={morn:'#fbf8f2',eve:'#f5eff0',dark:'#14152a'};
@@ -564,7 +564,7 @@ function vDevMode(){
   ${err?`<p class="ph">${esc(err)}</p>`:loading?'<p class="ph">Loading the reading…</p>':rows}
   ${cp?`<p class="copy" style="padding:10px 0 0">${esc(cp)}</p>`:''}
   <div class="orn">· ❦ ·</div>
-  <div class="wr wr2" id="devwr"><div class="done"><span class="hint2">Select words to highlight, underline or comment; comments appear beside the verse</span><button class="dbtn" data-act="ddone">${st.dev.done?'Close':'Done'}</button></div></div></div>
+  <div class="wr wr2" id="devwr"><div class="done"><span class="hint2">Select words to highlight, underline or comment; comments appear beside the verse</span><button class="dbtn" data-act="ddone">${st.dev.done?'Close':'Done'}</button></div></div>
  </div>
  ${otHtml(st,tmpl)}
  <div class="dctl${ui.devCtl?' show':''}" id="dctl"><button class="cb" data-act="dexit">${ic('chevL',16)}Today</button><span class="sp"></span><button class="cb" data-act="share" aria-label="Share this reading">${ic('shareI',16)}</button><button class="cb aa2" data-act="txt" aria-label="Text and light">Aa</button><button class="cb" data-act="menu" data-m="dmore" aria-label="More">${ic('more',16)}</button></div>
@@ -625,7 +625,7 @@ function tabOf(v){return {studies:'Studies',study:'Studies',devo:'Devotional',de
 function tabsHtml(){const t=tabOf(ui.view);return [['Studies','book','studies'],['Devotional','cal','devo']].map(([l,i,v])=>`<button class="tab${t===l?' on':''}" data-act="nav" data-v="${v}">${ic(i,22)}${l}</button>`).join('')}
 let lastKey='';
 function render(){
- if(document.activeElement&&(document.activeElement.id==='devnotes'||document.activeElement.id==='enote'||document.activeElement.id==='etagin'||document.activeElement.id==='rpnotes')&&(ui.view==='devmode'||ui.view==='study')){ui.pendRender=true;return}
+ if(document.activeElement&&(['devnotes','enote','etagin','rpnotes'].includes(document.activeElement.id)&&(ui.view==='devmode'||ui.view==='study')||['bq','gopass','shtt','shnm'].includes(document.activeElement.id))){ui.pendRender=true;return}
  ui.pendRender=false;
  if(WIDE.matches&&ui.view==='studies'&&cur())ui.view='study';
  if(ui.view==='study'&&!cur())ui.view='studies';
@@ -636,7 +636,7 @@ function render(){
  const app=$('#app');app.classList.remove('noside');app.classList.toggle('under',SET.nlay==='under'||SET.nlay==='dots');app.classList.toggle('dots',SET.nlay==='dots');app.classList.toggle('notabs',!!['search','settings'].includes(ui.view)&&!WIDE.matches);app.classList.toggle('devfull',ui.view==='devmode');setThemeColor(ui.view==='devmode'?DEV_BG[devLight()]:null);document.documentElement.classList.toggle('edge',ui.view==='devmode'||focusOn());$('#body').style.background=ui.view==='devmode'?DEV_BG[devLight()]:'';document.documentElement.style.background=ui.view==='devmode'?DEV_BG[devLight()]:ui.view==='devo'?({morn:'#fbf8f2',aft:'#fbf8f2',eve:'#fbdcc2',night:'#3d2430'})[skyOf()]:'';
  if(ui.view!=='study')ui.rpOver=false;
  if(WIDE.matches&&!focusOn())ui.sideOver=false;
- app.classList.toggle('focus',focusOn());app.classList.toggle('sidedock',sideDocked());app.classList.toggle('sideover',!!ui.sideOver);app.classList.toggle('rpdock',rpDocked());app.classList.toggle('rpover',!!ui.rpOver&&ui.view==='study');
+ app.classList.toggle('focus',focusOn());app.classList.toggle('bpage-eve',ui.view==='bible'&&!ui.bibList&&LS.get('bibPage','paper')==='eve');app.classList.toggle('bpage-morn',ui.view==='bible'&&!ui.bibList&&LS.get('bibPage','paper')==='morn');app.classList.toggle('sidedock',sideDocked());app.classList.toggle('sideover',!!ui.sideOver);app.classList.toggle('rpdock',rpDocked());app.classList.toggle('rpover',!!ui.rpOver&&ui.view==='study');
  $('#scrim').classList.toggle('show',!!ui.sideOver||(!!ui.rpOver&&!rpDocked()&&ui.view==='study'));
  $('#side').innerHTML=sideHtml();$('#rpanel').innerHTML=rpShown()?rpanelHtml():'';applyRpSize();$('#pill').innerHTML=focusOn()?pillHtml():'';$('#fx').innerHTML=fxHtml();$('#fx').classList.toggle('on',focusOn());$('#pill').classList.toggle('on',focusOn());if(!focusOn())$('#pill').classList.remove('hide');
  body.scrollTop=top;lastKey=key;
@@ -892,11 +892,11 @@ const A={
   const m=$('#menu');m.dataset.k='bmark';m.innerHTML=`<div class="bmtip"><b>In “${esc(st.title||'Untitled')}”</b><span>${esc(KLABEL[a.kind]||a.kind)}${a.note?' · '+esc(plainMd(a.note).slice(0,120)):''}</span><button class="quiet" data-act="goto" data-s="${esc(st.id)}" data-p="${esc(p.id||'')}" data-c="${sp.c}" data-v="${sp.v}" data-m="${esc(a.id)}">Open the study →</button></div>`;m.classList.remove('asSheet');m.classList.add('open');const r=el.getBoundingClientRect(),w=m.offsetWidth||260;m.style.top=Math.min(r.bottom+6,innerHeight-(m.offsetHeight||120)-10)+'px';m.style.left=Math.max(8,Math.min(r.left,innerWidth-w-8))+'px'},
  bcontinue:()=>{const ba=LS.get('bibAt',null);if(!ba)return;ui.bib={b:ba.b,c:ba.c};ui.bibList=false;ui.view='bible';ui.bibToday=null;lastKey='';render();const go=(n)=>{const el=document.getElementById('bv-'+ba.v);if(el){el.scrollIntoView({block:'start'});const bd=$('#body');if(bd)bd.scrollTop-=70;toast(`Back where you left off · ${bname(ba.b,true)} ${ba.c}:${ba.v}`)}else if(n<20)setTimeout(()=>go(n+1),150)};if(ba.v>1)go(0)},
  hrec:el=>{const k=el.dataset.k,id=el.dataset.id;if(k==='study')return A.open({dataset:{s:id}});if(k==='devo')return A.devopen({dataset:{s:id}});if(k==='bible'){const [b,c]=id.split(':').map(Number);return A.bgo({dataset:{b,c}})}},
- dwhole:()=>{closeMenu();const st=S.studies[ui.devSid]&&S.studies[ui.devSid].d;const r=st&&devRef(st);if(!r)return;ui.bibToday={b:r.b,c:r.c1,v1:r.v1,v2:r.c2===r.c1?r.v2:999,sid:st.id};LS.set('bibTr',studyTr(st));ui.bib={b:r.b,c:r.c1};ui.bibList=false;ui.view='bible';lastKey='';render();setTimeout(()=>{const el=document.getElementById('bv-'+r.v1);if(el){el.scrollIntoView({block:'start'});const bd=$('#body');if(bd)bd.scrollTop-=90}},250)},
+ dwhole:()=>{closeMenu();const st=S.studies[ui.devSid]&&S.studies[ui.devSid].d;const r=st&&devRef(st);if(!r)return;ui.bibToday={b:r.b,c:r.c1,v1:r.v1,v2:r.c2===r.c1?r.v2:999,sid:st.id,tr:studyTr(st)};ui.bib={b:r.b,c:r.c1};ui.bibList=false;ui.view='bible';lastKey='';render();if(r.v1>3)setTimeout(()=>{const el=document.getElementById('bv-'+r.v1);if(el){el.scrollIntoView({block:'start'});const bd=$('#body');if(bd)bd.scrollTop-=90}},250)},
  devback:()=>{const sid=ui.bibToday&&ui.bibToday.sid;ui.bibToday=null;if(sid)A.devopen({dataset:{s:sid}})},
  otopen:()=>{ui.otOpen=true;render();setTimeout(()=>{const n=$('#devnotes');if(n){n.focus();const r=document.createRange();r.selectNodeContents(n);r.collapse(false);const g=getSelection();g.removeAllRanges();g.addRange(r)}},60)},
  otclose:()=>{const ae=document.activeElement;if(ae&&ae.id==='devnotes')ae.blur();ui.otOpen=false;ui.pendRender=false;render()},
- share:()=>{closeMenu();if(ui.view==='devmode'){ui.sid=ui.devSid}shStart()},
+ share:()=>{closeMenu();shStart()},
  shclose:()=>closeShare(),
  shstyle:el=>{ui.sh.style=el.dataset.v;shRemember();renderShare()},
  shsize:el=>{ui.sh.size=el.dataset.v;shRemember();renderShare()},
@@ -911,9 +911,9 @@ const A={
  bpick:()=>{ui.bibList=true;ui.bpickB=bibleRef().b;ui.bibTest=null;ui.sideOver=false;hideBar();clearOwnSel();render();setTimeout(()=>{const q=$('#bq');if(q&&!('ontouchstart' in window))q.focus()},50)},
  bbook:el=>{const b=+el.dataset.b;ui.bpickB=b<0?null:b;render()},
  bgo:el=>{ui.bib={b:+el.dataset.b,c:+el.dataset.c};LS.set('bibAt',Object.assign({},LS.get('bibAt',{}),ui.bib,{v:1,at:Date.now()}));ui.bpickB=null;ui.bibList=false;ui.view='bible';ui.sideOver=false;clearOwnSel();hideBar();lastKey='';render();const b=$('#body');if(b)b.scrollTop=0},
- bstep:el=>{const r=bibleRef();let b=r.b,c=r.c+(+el.dataset.d);if(c<1){b=Math.max(0,b-1);c=b===r.b?1:CHAPS[b]}else if(c>CHAPS[b]){if(b<65){b++;c=1}else c=CHAPS[b]}ui.bib={b,c};LS.set('bibAt',ui.bib);clearOwnSel();hideBar();lastKey='';render();const bd=$('#body');if(bd)bd.scrollTop=0},
+ bstep:el=>{ui.bibToday=null;const r=bibleRef();let b=r.b,c=r.c+(+el.dataset.d);if(c<1){b=Math.max(0,b-1);c=b===r.b?1:CHAPS[b]}else if(c>CHAPS[b]){if(b<65){b++;c=1}else c=CHAPS[b]}ui.bib={b,c};LS.set('bibAt',ui.bib);clearOwnSel();hideBar();lastKey='';render();const bd=$('#body');if(bd)bd.scrollTop=0},
  bretry:()=>{const r=bibleRef();delete CHERR[chKey(bibleTr(),r.b,r.c)];render()},
- bsettr:el=>{closeMenu();LS.set('bibTr',el.dataset.tr);render()},
+ bsettr:el=>{closeMenu();ui.bibToday=null;LS.set('bibTr',el.dataset.tr);render()},
  bstudy:el=>{const r=bibleRef(),hit=versesInStudies(r.b,r.c)[+el.dataset.v]||[];if(hit.length===1){A.goto({dataset:{s:hit[0].sid,p:hit[0].pid,c:r.c,v:el.dataset.v}});return}
   const m=$('#menu');m.dataset.k='bstudy';m.innerHTML=`<div class="msec">In your studies</div>`+hit.map(h=>`<button class="mi" data-act="goto" data-s="${esc(h.sid)}" data-p="${esc(h.pid)}" data-c="${r.c}" data-v="${el.dataset.v}"><span class="ck"></span><span>${esc(h.title)}</span></button>`).join('');m.classList.remove('asSheet');m.classList.add('open');const b=el.getBoundingClientRect();m.style.top=Math.min(b.bottom+6,innerHeight-(m.offsetHeight||160)-10)+'px';m.style.left=Math.max(8,Math.min(b.left,innerWidth-(m.offsetWidth||220)-8))+'px'},
  bnewsel:()=>{const r=bibleRef(),sl=ui.sel;hideBar();clearOwnSel();newStudyForm({ref:`${bname(r.b,true)} ${sl.c}:${sl.v}`,tr:bibleTr()})},
@@ -979,7 +979,7 @@ document.addEventListener('keydown',e=>{
 });
 let lastTop=0;
 $('#body').addEventListener('scroll',()=>{const b=$('#body');if(focusOn()){const p=$('#pill');if(p){const fx=$('#fx');if(b.scrollTop<=24){p.classList.remove('hide');fx&&fx.classList.remove('hide')}else if(Math.abs(b.scrollTop-lastTop)>2){p.classList.add('hide');fx&&fx.classList.add('hide')}}}lastTop=b.scrollTop;if(ui.selDrag)drawSel();if(ui.bar)placeBar();closeMenu();bibTrack();if(ui.view==='devmode'){const b=$('#body'),pr=$('#dprog');if(pr)pr.style.width=Math.min(100,b.scrollTop/Math.max(1,b.scrollHeight-b.clientHeight)*100)+'%'}},{passive:true});
-document.addEventListener('focusout',e=>{if(e.target&&(e.target.id==='devnotes'||e.target.id==='enote'||e.target.id==='rpnotes')&&ui.pendRender)setTimeout(()=>{if(document.activeElement.id!=='enote'&&document.activeElement.id!=='devnotes')render()},0)});
+document.addEventListener('focusout',e=>{if(e.target&&['devnotes','enote','rpnotes','bq','gopass','shtt','shnm'].includes(e.target.id)&&ui.pendRender)setTimeout(()=>{if(document.activeElement.id!=='enote'&&document.activeElement.id!=='devnotes')render()},0)});
 let swipeX=null;
 $('#body').addEventListener('touchstart',e=>{swipeX=ui.view==='devmode'&&e.touches[0].clientX<24?e.touches[0].clientX:null},{passive:true});
 $('#body').addEventListener('touchend',e=>{if(swipeX!=null&&e.changedTouches[0].clientX-swipeX>70)devExit();swipeX=null},{passive:true});
@@ -995,6 +995,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 /* ---------- What's new and keyboard shortcuts ---------- */
 const CHANGES={
+ '1.6.1':['Fixes in the devotional and the Bible: the overall thoughts pen is readable in the dark and no longer covers Done; Read the whole chapter keeps your Bible translation; verse numbers have their space again; the evening page darkens the top bar too; See my notes opens your thoughts.'],
  '1.6.0':['Home: Marginalia opens to today’s reading, the study you were in, your place in the Bible and everything recent.','The Bible: tap the reference for a simple book list; your study marks show softly on the text; it remembers where you stopped; next chapter at the end (or swipe); Aa adds a page color.','Devotional: Overall thoughts wait as a small pen at the side; Read the whole chapter; Share this reading as an image or text.','Focus: leave it from the same top-right spot you entered it.'],
  '1.5.0':['The Bible: a Bible tab in the sidebar opens any book and chapter. Dots by verses in your studies open them; select words to start a study there.','New study: in the sidebar’s Studies tab. Type a passage, then a title, series and translation.','Edit your Study notes in the right panel; drag its edge (or the sheet on a phone) to resize it.','Notes as dots: Margin ▾ > Dots shows a small colored dot for each note; tap it to open the note.'],
  '1.4.8':['iPad: the band at the bottom of the window should be gone: the app now fills the strip the iPad was leaving empty.'],
@@ -1391,7 +1392,7 @@ function rpNotesHtml(st){return `<div class="outline rpo rpedit" id="rpnotes" co
 function applyRpSize(){const p=$('#rpanel');if(!p)return;const sheet=!MID.matches&&ui.rpOver;p.style.width=!sheet&&SET.rpW?SET.rpW+'px':'';p.style.height=sheet&&SET.rpH?Math.round(SET.rpH*innerHeight)+'px':''}
 /* ---------- the Bible view ---------- */
 function bibleRef(){if(!ui.bib)ui.bib=LS.get('bibAt',{b:42,c:1});return ui.bib}
-function bibleTr(){return LS.get('bibTr',LS.get('lastTr','kjv'))}
+function bibleTr(){return ui.bibToday&&ui.bibToday.tr&&ui.view==='bible'?ui.bibToday.tr:LS.get('bibTr',LS.get('lastTr','kjv'))}
 function versesInStudies(b,c){const m={};studyList().forEach(s=>{if(s.kind==='devotional')return;(s.passages||[]).forEach(p=>{const r=p.ref;if(!r||r.b!==b)return;for(let ch=r.c1;ch<=r.c2;ch++){if(ch!==c)continue;const a=ch===r.c1?r.v1:1,z=ch===r.c2?r.v2:999;for(let v=a;v<=z;v++){(m[v]=m[v]||[]).push({sid:s.id,pid:p.id,title:s.title})}}})});return m}
 function bookPicker(){
  const {b}=bibleRef();const sel=ui.bpickB!=null?ui.bpickB:null;
@@ -1494,7 +1495,7 @@ function shTokens(style){
  return {bg:c,ink:dark?'#eef0f3':'#26303f',lab:dark?'#b8b2a5':'#857b69',num:dark?'#a9c1f6':'#4a6fc9',hl:dark?'rgba(255,214,120,.24)':'rgba(255,255,255,.55)',ul:dark?'#a9c1f6':'#4a6fc9',rule:dark?'rgba(255,255,255,.22)':'rgba(0,0,0,.14)',dark:dark?1:0};
 }
 function shStart(){
- const st=cur();if(!st||st.kind!=='devotional')return;const r=devRef(st);if(!r)return;const tr=studyTr(st);
+ const st=ui.view==='devmode'?(S.studies[ui.devSid]&&S.studies[ui.devSid].d):cur();if(!st||st.kind!=='devotional')return;const r=devRef(st);if(!r)return;const tr=studyTr(st);
  const marked=(st.annotations||[]).filter(a=>['highlight','underline','circle'].includes(a.kind)).flatMap(a=>(a.spans||[]).filter(s=>s.tr===tr).map(s=>s.v));
  const v1=marked.length?Math.min(...marked):r.v1,v2=marked.length?Math.max(...marked):r.v2;
  const p=LS.get('share',{});

@@ -767,7 +767,7 @@ html.edge #app.focus .studywrap{padding-top:calc(10px + env(safe-area-inset-top,
 #app.dots .vrow .cards:empty{display:none}
 
 /* ===================== 1.6 ===================== */
-:root{--mg-css:161}
+:root{--mg-css:163}
 /* home */
 .home{max-width:820px;margin:0 auto;padding:22px 20px calc(30px + env(safe-area-inset-bottom,0px))}
 .hgreet{font:italic 16px var(--serif);color:var(--muted)}
@@ -876,7 +876,7 @@ html.edge #app.focus .studywrap{padding-top:calc(10px + env(safe-area-inset-top,
 .shcap{font-size:12px;color:var(--muted);margin-top:8px}
 .shctl{padding:12px 16px}
 .shrow{display:flex;align-items:center;gap:8px;margin:8px 0;flex-wrap:wrap}
-.shrow select{border:0;border-radius:8px;background:var(--fill);color:var(--ink);font:14px var(--ui);padding:7px 8px}
+.shrow select{-webkit-appearance:none;appearance:none;border:0;border-radius:10px;background:var(--fill);color:var(--ink);font:600 16px var(--ui);padding:9px 30px 9px 12px;min-width:92px;min-height:40px;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;cursor:pointer}
 .lbl3{font:600 12px var(--ui);color:var(--muted)}.lbl3 small{font-weight:400;margin-left:6px}
 .shsw{display:flex;gap:8px;overflow-x:auto;padding:6px 2px 10px;scrollbar-width:none}
 .shst{width:34px;height:34px;border-radius:50%;flex:none;border:2px solid var(--card);box-shadow:0 0 0 1px var(--line2);cursor:pointer;padding:0}
@@ -916,3 +916,100 @@ html.edge #app.focus .studywrap{padding-top:calc(10px + env(safe-area-inset-top,
 .dvt.dark .otpill{background:rgba(36,35,64,.92);color:#ece6e0;box-shadow:0 0 0 1px rgba(255,255,255,.10),0 4px 14px rgba(0,0,0,.30)}
 .studywrap.bible.page-eve .today-v{background:color-mix(in srgb,#f0c98a 9%,transparent)}
 .today-v{background:color-mix(in srgb,#d9b878 14%,transparent)}
+
+/* ===================== 1.6.3 ===================== */
+/* slim lines */
+#bar .slimtr{border:0;background:none;font:500 13px var(--ui);color:var(--muted);padding:6px 4px;white-space:nowrap;cursor:pointer}
+#bar .slimref{border:0;background:none;cursor:pointer;font:600 16px var(--ui);color:var(--ink);padding:6px 4px}
+.plabel{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 24px 2px;font:600 12px var(--ui);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.plabel .hq{text-transform:none;letter-spacing:0}
+.fsticky{display:none}
+#app.focus .fsticky{display:flex;align-items:baseline;gap:10px;position:sticky;top:0;z-index:4;padding:calc(10px + env(safe-area-inset-top,0px)) 24px 16px;background:linear-gradient(var(--pagebg,var(--paper)) 62%,transparent)}
+.fsticky b{font:600 21px var(--serif);color:var(--ink)}.fsticky small{font:500 13px var(--ui);color:var(--muted)}
+#app.focus .plabel>span{display:none}
+#app.focus .studywrap{padding-top:0!important}
+/* Focus: one floating button, then a pill anchored at the same corner */
+#fx.on{display:block;position:fixed;z-index:31;right:14px;left:auto;top:auto;bottom:calc(18px + env(safe-area-inset-bottom,0px))}
+.pfx{width:44px;height:44px;border-radius:50%;border:0;display:grid;place-items:center;cursor:pointer;color:var(--ink2);background:var(--glass);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);box-shadow:0 0 0 1px var(--line),0 4px 14px rgba(var(--shade),.14)}
+#pill .pfx{width:38px;height:38px;box-shadow:none;background:color-mix(in srgb,var(--ink) 13%,transparent);color:var(--ink)}
+#pill.on{left:auto;right:14px;transform:none}
+#pill.on.hide{transform:translateY(16px)}
+#pill .bcur{font-weight:600;color:var(--ink)}
+.dvt .pfx,#app.devfull .pfx{color:#4a4239;background:rgba(255,253,249,.9);box-shadow:0 0 0 1px rgba(43,38,32,.1),0 4px 14px rgba(0,0,0,.1)}
+#app.devfull.dkd .pfx{color:#ece6e0;background:rgba(36,35,64,.92)}
+#app.devfull #pill.on{background:rgba(255,253,249,.88)}
+#app.devfull.dkd #pill.on{background:rgba(36,35,64,.9)}
+#app.devfull #pill button{color:#4a4239}#app.devfull.dkd #pill button{color:#ece6e0}
+/* devotional: slim line inside the page; no tap-to-show controls */
+.dvt .dctl,.dvt .dhint{display:none!important}
+.dslim{position:sticky;top:0;z-index:6;display:flex;align-items:center;gap:6px;padding:calc(6px + env(safe-area-inset-top,0px)) 10px 6px;background:color-mix(in srgb,var(--dbg,#fbf8f2) 88%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid color-mix(in srgb,currentColor 10%,transparent)}
+.dslim button{border:0;background:none;color:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:8px;border-radius:9px;font:500 14px var(--ui)}
+.dslim .dslt{font:600 16px var(--ui);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.dslim .dsld{font:500 12.5px var(--ui);opacity:.6;white-space:nowrap;margin-left:4px}
+.dslim .sp{flex:1}
+.dvt.dark .dslim{--dbg:#191a2e}.dvt.eve .dslim{--dbg:#f5eff0}
+.dfsticky{display:none}
+#app.focus .dslim{display:none}
+#app.focus .dfsticky{display:block;position:sticky;top:0;z-index:6;padding:calc(10px + env(safe-area-inset-top,0px)) 0 14px;background:linear-gradient(var(--dbg,#fbf8f2) 62%,transparent)}
+.dvt.dark .dfsticky{--dbg:#191a2e}.dvt.eve .dfsticky{--dbg:#f5eff0}
+.dfsticky .dlab{display:block}.dfsticky b{font:600 21px var(--serif)}
+#app.focus .dvt .dvcol{padding-top:0}
+@media (max-width:979px){#app.focus .otpill{bottom:calc(76px + env(safe-area-inset-bottom,0px))}}
+.dvt .dvcol>.dlab:first-child,.dvt .dvcol>.dref{display:none}
+/* the Bible: chapter breaks */
+.chbrk{display:flex;align-items:baseline;gap:12px;margin:22px 24px 6px}
+.chbrk .bkn{font:600 13px var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.chbrk .chn{font:600 46px/1 var(--serif);color:var(--muted)}
+.chbrk i{flex:1;height:1px;background:var(--line);align-self:center}
+.bch:first-of-type .chbrk{margin-top:10px}
+.studywrap.bible .btext{padding:0 24px}
+/* page colors */
+.studywrap.bible[class*="page-"]{min-height:100%}
+.studywrap.bible.page-parch{--pagebg:#f3ead7;background:#f3ead7;--ink:#3a2f22;--ink2:#4c3f2e;--muted:#8a7a62;--line:#e0d3b8;--accent:#9a7444;--glass:rgba(243,234,215,.88);color:#3a2f22}
+.studywrap.bible.page-sage{--pagebg:#eef2ea;background:#eef2ea;--ink:#26332a;--ink2:#36463a;--muted:#6f8073;--line:#d7e0d2;--accent:#5f8a6a;--glass:rgba(238,242,234,.88);color:#26332a}
+.studywrap.bible.page-mist{--pagebg:#eef1f6;background:#eef1f6;--ink:#26303f;--ink2:#3a4558;--muted:#6f7a8c;--line:#d8dee8;--accent:#5b7fd6;--glass:rgba(238,241,246,.88);color:#26303f}
+.studywrap.bible.page-dusk{--pagebg:#2a2433;background:#2a2433;--ink:#ece4ea;--ink2:#d6cbd3;--muted:#a4949f;--line:#43384c;--accent:#d39a8a;--accent-ink:#e8b8aa;--glass:rgba(42,36,51,.88);color:#ece4ea}
+.studywrap.bible.page-night{--pagebg:#0f0f10;background:#0f0f10;--ink:#d8d8d8;--ink2:#bdbdbd;--muted:#7b7b80;--line:#26262a;--accent:#7f8ea8;--accent-ink:#a5b2c8;--glass:rgba(15,15,16,.88);color:#d8d8d8}
+.studywrap.bible.page-morn{--pagebg:#fbf8f2}.studywrap.bible.page-eve{--pagebg:#1c1a33}.studywrap.bible.page-paper{--pagebg:var(--paper)}
+.studywrap.bible.page-parch .vt,.studywrap.bible.page-sage .vt,.studywrap.bible.page-mist .vt,.studywrap.bible.page-dusk .vt,.studywrap.bible.page-night .vt{color:var(--ink)}
+#app.bpage-dark #body{background:var(--bpagebg)}
+.pgsw{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.pgsw button{flex:none;width:34px;height:34px;padding:0;border-radius:50%;border:0;box-shadow:0 0 0 1px var(--line2);cursor:pointer}
+.pgsw button.on{box-shadow:0 0 0 2.5px var(--accent)}
+/* sidebar: the Bible list; Home at the bottom right */
+#side .sbl{padding:0 0 10px}
+#side .sbq{width:100%;box-sizing:border-box;border:0;border-radius:10px;background:var(--card);box-shadow:0 0 0 1px var(--line);font:15px var(--ui);color:var(--ink);padding:8px 10px;margin:2px 0 6px;outline:none}
+#side .sbl .tabs2{margin:4px 2px}
+#side .sbl .bk2{font-size:15px;line-height:1.95;padding-left:2px}
+#side .sbl .chrow button{width:32px;height:32px;font-size:12.5px}
+#side .sbl .grp2{margin:10px 0 0}
+.sfoot2{display:flex;align-items:flex-end;gap:6px}
+.sfoot2 .sfl{flex:1;min-width:0}
+.homeic{width:42px;height:42px;border:0;border-radius:12px;display:grid;place-items:center;background:none;color:var(--ink2);cursor:pointer;flex:none}
+.homeic.on{background:var(--tint);color:var(--accent-ink)}
+/* chapter circles centred (also the sidebar copy) */
+.pl2 .chrow button{display:grid;place-items:center;text-align:center;padding:0;line-height:1;font-variant-numeric:tabular-nums}
+/* gentle animations */
+@keyframes chNext{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+@keyframes chPrev{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+@keyframes chFade{from{opacity:0}to{opacity:1}}
+@keyframes unfold{from{opacity:0;max-height:0}to{opacity:1;max-height:600px}}
+.studywrap.bible.anim-next .bch:first-of-type{animation:chNext .22s ease-out}
+.studywrap.bible.anim-prev .bch:first-of-type{animation:chPrev .22s ease-out}
+.studywrap.bible.anim-fade .bch:first-of-type{animation:chFade .2s ease-out}
+.pl2 .chrow{animation:unfold .2s ease-out;overflow:hidden}
+.pl2 .cols2,#side .sbl .grp2{animation:chFade .18s ease-out}
+@media (prefers-reduced-motion:reduce){.studywrap.bible .bch,.pl2 .chrow,.pl2 .cols2,#side .sbl .grp2{animation:none!important}}
+/* share sheet alignment */
+#share button{text-align:center}
+.shsw{padding:6px 6px 10px;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
+.shrow .seg{display:flex;width:100%}.shrow .seg button{flex:1;justify-content:center}
+.shnav{justify-content:flex-start}.shnav small{text-align:left}
+.shbar .btn{justify-content:center}
+.shctl{padding-bottom:20px}
+@media (max-width:979px){.shpv canvas{max-height:34vh}}
+
+.dvt .dvcol>.dlab{display:none}
+#side .sbody{overflow:auto;-webkit-overflow-scrolling:touch}
+#side .sfoot2{background:var(--panel)}
+@media (max-width:420px){.dslim .dsld{display:none}}

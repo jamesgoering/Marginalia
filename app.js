@@ -1,7 +1,7 @@
 'use strict';
 /* Marginalia for iPad and phone. Reads and writes the desktop app's study files in OneDrive. */
-const VERSION='1.6.1';
-const CSS_VER='161';
+const VERSION='1.6.3';
+const CSS_VER='163';
 const $=s=>document.querySelector(s);
 /* Older index.html files lack some parts; add any that are missing so a partial upload can't break menus. */
 [['mbar','toolbar'],['scrim',''],['menu','menu'],['ed','dialog'],['tx','dialog'],['toast','status'],['wn','dialog'],['pill','toolbar'],['sheet','dialog'],['selk',''],['tsug','listbox'],['biu','toolbar'],['fx',''],['share','dialog']].forEach(([id,role])=>{if(!document.getElementById(id)){const d=document.createElement('div');d.id=id;if(role)d.setAttribute('role',role);if(id==='scrim')d.dataset.act='scrim';document.body.appendChild(d)}});
@@ -331,7 +331,7 @@ const TDEF={font:'source',size:1,lh:'1.75',vn:true,layout:'verse'};
 const tset=()=>Object.assign({},TDEF,LS.get('text',{}));
 const curLayout=()=>ui.view==='devmode'?LS.get('devLayout',tset().layout):ui.view==='bible'?LS.get('bibLayout',tset().layout):tset().layout;
 function applyText(){const t=tset(),r=document.documentElement.style,f=FONTS.find(x=>x[0]===t.font)||FONTS[0];r.setProperty('--sfont',f[2]);r.setProperty('--tsz',t.size);r.setProperty('--tlh',t.lh);$('#app').classList.toggle('novn',!t.vn);$('#tx').classList.toggle('novn',!t.vn)}
-function txtHtml(){const t=tset();return `<div class="grab"></div><div style="display:flex;align-items:center;margin-bottom:8px"><b style="font-size:16px;flex:1">${ui.view==='bible'?'Reading':'Scripture text'}</b>${ib('x','txtx','Close')}</div><p class="vt tpv"><span class="vn">1</span>In the beginning was the Word, and the Word was with God…</p><div class="lbl">Font</div><div class="tfs">${FONTS.map(([k,l,f])=>`<button class="${t.font===k?'on':''}" style="font-family:${f.replace(/"/g,'&quot;')}" data-act="tfont" data-k="${k}">${l}</button>`).join('')}</div><div class="lbl">Size</div><div class="trw"><button class="btn2" style="padding:6px 12px" data-act="tsize" data-d="-1" aria-label="Smaller">A−</button><input type="range" id="tsz" min="0.8" max="1.6" step="0.05" value="${t.size}" aria-label="Text size"><button class="btn2" style="padding:6px 12px;font-size:17px" data-act="tsize" data-d="1" aria-label="Larger">A+</button><b id="tszv">${Math.round(t.size*100)}%</b></div><div class="lbl">Line spacing</div><div class="seg" style="margin-bottom:12px">${LH.map(([v,l])=>`<button class="${t.lh===v?'on':''}" data-act="tlh" data-v="${v}">${l}</button>`).join('')}</div>${ui.view==='bible'?`<div class="lbl">Layout</div><div class="seg" style="margin-bottom:12px">${[['verse','Verses'],['para','Paragraphs']].map(([v,l])=>`<button class="${curLayout()===v?'on':''}" data-act="tlay" data-v="${v}">${l}</button>`).join('')}</div><div class="lbl">Page</div><div class="pgsw">${[['paper','Paper'],['morn','Morning'],['eve','Evening']].map(([v,l])=>`<button class="pg-${v}${LS.get('bibPage','paper')===v?' on':''}" data-act="bpage" data-v="${v}">${l}</button>`).join('')}</div>`:''}<div class="lbl">Verse numbers</div><div class="seg" style="margin-bottom:14px"><button class="${t.vn?'on':''}" data-act="tvn" data-v="1">Show</button><button class="${t.vn?'':'on'}" data-act="tvn" data-v="0">Hide</button></div>${ui.view==='devmode'?`<div class="lbl">Layout</div><div class="seg" style="margin-bottom:12px">${[['verse','Verses'],['para','Paragraphs']].map(([v,l])=>`<button class="${curLayout()===v?'on':''}" data-act="tlay" data-v="${v}">${l}</button>`).join('')}</div><div class="lbl">Comments beside the text</div><div class="seg" style="margin-bottom:8px"><button class="${SET.devMargin!==false?'on':''}" data-act="dmargin" data-v="1">Show</button><button class="${SET.devMargin===false?'on':''}" data-act="dmargin" data-v="0">Hide</button></div><div class="lbl">Light</div><div class="seg" style="margin-bottom:14px"><button class="${SET.devLight!=='day'?'on':''}" data-act="dlight" data-v="hour">By the hour</button><button class="${SET.devLight==='day'?'on':''}" data-act="dlight" data-v="day">Always day</button></div>`:''}<div style="display:flex;justify-content:flex-start"><button class="quiet" data-act="treset">Reset to the defaults</button></div>`}
+function txtHtml(){const t=tset();return `<div class="grab"></div><div style="display:flex;align-items:center;margin-bottom:8px"><b style="font-size:16px;flex:1">${ui.view==='bible'?'Reading':'Scripture text'}</b>${ib('x','txtx','Close')}</div><p class="vt tpv"><span class="vn">1</span>In the beginning was the Word, and the Word was with God…</p><div class="lbl">Font</div><div class="tfs">${FONTS.map(([k,l,f])=>`<button class="${t.font===k?'on':''}" style="font-family:${f.replace(/"/g,'&quot;')}" data-act="tfont" data-k="${k}">${l}</button>`).join('')}</div><div class="lbl">Size</div><div class="trw"><button class="btn2" style="padding:6px 12px" data-act="tsize" data-d="-1" aria-label="Smaller">A−</button><input type="range" id="tsz" min="0.8" max="1.6" step="0.05" value="${t.size}" aria-label="Text size"><button class="btn2" style="padding:6px 12px;font-size:17px" data-act="tsize" data-d="1" aria-label="Larger">A+</button><b id="tszv">${Math.round(t.size*100)}%</b></div><div class="lbl">Line spacing</div><div class="seg" style="margin-bottom:12px">${LH.map(([v,l])=>`<button class="${t.lh===v?'on':''}" data-act="tlh" data-v="${v}">${l}</button>`).join('')}</div>${ui.view==='bible'?`<div class="lbl">Layout</div><div class="seg" style="margin-bottom:12px">${[['verse','Verses'],['para','Paragraphs']].map(([v,l])=>`<button class="${curLayout()===v?'on':''}" data-act="tlay" data-v="${v}">${l}</button>`).join('')}</div><div class="lbl">Page</div><div class="pgsw">${Object.entries(BPAGES).map(([v,[l,c]])=>`<button class="${LS.get('bibPage','paper')===v?'on':''}" style="background:${c}" data-act="bpage" data-v="${v}" aria-label="${l}" title="${l}"></button>`).join('')}</div>`:''}<div class="lbl">Verse numbers</div><div class="seg" style="margin-bottom:14px"><button class="${t.vn?'on':''}" data-act="tvn" data-v="1">Show</button><button class="${t.vn?'':'on'}" data-act="tvn" data-v="0">Hide</button></div>${ui.view==='devmode'?`<div class="lbl">Layout</div><div class="seg" style="margin-bottom:12px">${[['verse','Verses'],['para','Paragraphs']].map(([v,l])=>`<button class="${curLayout()===v?'on':''}" data-act="tlay" data-v="${v}">${l}</button>`).join('')}</div><div class="lbl">Comments beside the text</div><div class="seg" style="margin-bottom:8px"><button class="${SET.devMargin!==false?'on':''}" data-act="dmargin" data-v="1">Show</button><button class="${SET.devMargin===false?'on':''}" data-act="dmargin" data-v="0">Hide</button></div><div class="lbl">Light</div><div class="seg" style="margin-bottom:14px"><button class="${SET.devLight!=='day'?'on':''}" data-act="dlight" data-v="hour">By the hour</button><button class="${SET.devLight==='day'?'on':''}" data-act="dlight" data-v="day">Always day</button></div>`:''}<div style="display:flex;justify-content:flex-start"><button class="quiet" data-act="treset">Reset to the defaults</button></div>`}
 function setText(p){if('layout' in p&&(ui.view==='devmode'||ui.view==='bible')){LS.set(ui.view==='bible'?'bibLayout':'devLayout',p.layout);render();const x=$('#tx');if(x.classList.contains('open'))x.innerHTML=txtHtml();return}LS.set('text',Object.assign(tset(),p));applyText();if('layout' in p)render();const x=$('#tx');if(x.classList.contains('open'))x.innerHTML=txtHtml()}
 
 /* ---------- UI state ---------- */
@@ -560,7 +560,7 @@ function vDevMode(){
  const tmpl=(DTPL[st.dev.tmpl]?st.dev.tmpl:LS.get('devTpl','inductive'));
  const cp=copy||(TRS[tr]&&TRS[tr].copy)||'';
  const body=`<div class="dvt ${light}${ui.otOpen?' otopen':''}" id="dvt"><div class="dprog" id="dprog"></div><div class="dvcol">
-  <div class="dlab">${esc(dl)}</div><div class="dref">${esc(st.title||'')}</div><div class="dmeta">${vcount} verses · about ${Math.max(1,Math.round(words/200))} minute${Math.round(words/200)>1?'s':''}${st.dev.done?' · done':''}</div>
+  <div class="dslim"><button data-act="dexit">${ic('chevL',16)}Today</button><span class="dslt">${esc(st.title||'')}</span><span class="dsld">${esc(dl)}</span><span class="sp"></span><button data-act="share" aria-label="Share this reading">${ic('shareI',17)}</button><button data-act="menu" data-m="dmore" aria-label="More">${ic('more',17)}</button></div><div class="dfsticky"><span class="dlab">${esc(dl)}</span><b>${esc(st.title||'')}</b></div><div class="dlab">${esc(dl)}</div><div class="dref">${esc(st.title||'')}</div><div class="dmeta">${vcount} verses · about ${Math.max(1,Math.round(words/200))} minute${Math.round(words/200)>1?'s':''}${st.dev.done?' · done':''}</div>
   ${err?`<p class="ph">${esc(err)}</p>`:loading?'<p class="ph">Loading the reading…</p>':rows}
   ${cp?`<p class="copy" style="padding:10px 0 0">${esc(cp)}</p>`:''}
   <div class="orn">· ❦ ·</div>
@@ -631,20 +631,21 @@ function render(){
  if(ui.view==='study'&&!cur())ui.view='studies';
  const fn={home:vHome,studies:vStudies,study:vStudy,search:vSearch,devo:vDevo,devmode:vDevMode,settings:vSettings,bible:vBible}[ui.view]||vHome;
  const ae=document.activeElement,keepFocus=ae&&ae.id&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA')&&!ae.closest('#ed')?{id:ae.id,s:ae.selectionStart,e:ae.selectionEnd}:null;
- const V=fn(),body=$('#body'),key=ui.view+'|'+(ui.view==='devmode'?ui.devSid:ui.sid)+'|'+focusOn()+'|'+(ui.view==='bible'?(ui.bibList?'list':bibleRef().b+':'+bibleRef().c):''),top=key===lastKey?body.scrollTop:0;
+ const V=fn(),body=$('#body'),key=ui.view+'|'+(ui.view==='devmode'?ui.devSid:ui.sid)+'|'+focusOn()+'|'+(ui.view==='bible'?(ui.bibList?'list':(ui.bibChs&&ui.bibChs[0]?ui.bibChs[0].join(':'):bibleRef().b+':'+bibleRef().c)):''),top=key===lastKey?body.scrollTop:0;
  $('#bar').innerHTML=V.bar;body.innerHTML=V.body;
- const app=$('#app');app.classList.remove('noside');app.classList.toggle('under',SET.nlay==='under'||SET.nlay==='dots');app.classList.toggle('dots',SET.nlay==='dots');app.classList.toggle('notabs',!!['search','settings'].includes(ui.view)&&!WIDE.matches);app.classList.toggle('devfull',ui.view==='devmode');setThemeColor(ui.view==='devmode'?DEV_BG[devLight()]:null);document.documentElement.classList.toggle('edge',ui.view==='devmode'||focusOn());$('#body').style.background=ui.view==='devmode'?DEV_BG[devLight()]:'';document.documentElement.style.background=ui.view==='devmode'?DEV_BG[devLight()]:ui.view==='devo'?({morn:'#fbf8f2',aft:'#fbf8f2',eve:'#fbdcc2',night:'#3d2430'})[skyOf()]:'';
+ const app=$('#app');app.classList.remove('noside');app.classList.toggle('under',SET.nlay==='under'||SET.nlay==='dots');app.classList.toggle('dots',SET.nlay==='dots');app.classList.toggle('notabs',!!['search','settings'].includes(ui.view)&&!WIDE.matches);app.classList.toggle('devfull',ui.view==='devmode');setThemeColor(ui.view==='devmode'?DEV_BG[devLight()]:null);document.documentElement.classList.toggle('edge',ui.view==='devmode'||focusOn());$('#body').style.background=ui.view==='devmode'?DEV_BG[devLight()]:(ui.view==='bible'&&!ui.bibList&&LS.get('bibPage','paper')!=='paper'&&BPAGES[LS.get('bibPage','paper')])?BPAGES[LS.get('bibPage','paper')][1]:'';document.documentElement.style.background=ui.view==='devmode'?DEV_BG[devLight()]:ui.view==='devo'?({morn:'#fbf8f2',aft:'#fbf8f2',eve:'#fbdcc2',night:'#3d2430'})[skyOf()]:'';
  if(ui.view!=='study')ui.rpOver=false;
  if(WIDE.matches&&!focusOn())ui.sideOver=false;
- app.classList.toggle('focus',focusOn());app.classList.toggle('bpage-eve',ui.view==='bible'&&!ui.bibList&&LS.get('bibPage','paper')==='eve');app.classList.toggle('bpage-morn',ui.view==='bible'&&!ui.bibList&&LS.get('bibPage','paper')==='morn');app.classList.toggle('sidedock',sideDocked());app.classList.toggle('sideover',!!ui.sideOver);app.classList.toggle('rpdock',rpDocked());app.classList.toggle('rpover',!!ui.rpOver&&ui.view==='study');
+ app.classList.toggle('focus',focusOn());{const pg=LS.get('bibPage','paper'),onB=ui.view==='bible'&&!ui.bibList;app.classList.toggle('bpage-eve',onB&&['eve','dusk','night'].includes(pg));app.classList.toggle('bpage-morn',onB&&pg==='morn');const bc=onB&&pg!=='paper'&&BPAGES[pg]?BPAGES[pg][1]:'';$('#bar').style.background=bc?bc+'e6':'';$('#body').dataset.pg=bc;app.classList.toggle('dkd',ui.view==='devmode'&&devLight()==='dark')}app.classList.toggle('sidedock',sideDocked());app.classList.toggle('sideover',!!ui.sideOver);app.classList.toggle('rpdock',rpDocked());app.classList.toggle('rpover',!!ui.rpOver&&ui.view==='study');
  $('#scrim').classList.toggle('show',!!ui.sideOver||(!!ui.rpOver&&!rpDocked()&&ui.view==='study'));
- $('#side').innerHTML=sideHtml();$('#rpanel').innerHTML=rpShown()?rpanelHtml():'';applyRpSize();$('#pill').innerHTML=focusOn()?pillHtml():'';$('#fx').innerHTML=fxHtml();$('#fx').classList.toggle('on',focusOn());$('#pill').classList.toggle('on',focusOn());if(!focusOn())$('#pill').classList.remove('hide');
+ $('#side').innerHTML=sideHtml();$('#rpanel').innerHTML=rpShown()?rpanelHtml():'';applyRpSize();$('#pill').innerHTML=focusOn()?pillHtml():'';$('#fx').innerHTML=fxHtml();$('#fx').classList.toggle('on',!!fxHtml());$('#pill').classList.toggle('on',focusOn());if(!focusOn())$('#pill').classList.remove('hide');
  body.scrollTop=top;lastKey=key;
  if(keepFocus){const el=document.getElementById(keepFocus.id);if(el&&el!==ae){el.focus();try{el.setSelectionRange(keepFocus.s,keepFocus.e)}catch(e){}}}
  if(!['study','devmode'].includes(ui.view))$('#tx').classList.remove('open');
  if(!['study','devmode'].includes(ui.view)){hideBar();closeEd(true)}
  else if(ui.bar)placeBar();
  if(ui.view==='devmode')requestAnimationFrame(alignMargin);
+ setTimeout(navTrack,0);
  if(ui.view==='study'&&cur()&&ui._lastRec!=='s'+ui.sid){ui._lastRec='s'+ui.sid;LS.set('lastStudy',ui.sid);pushRecent({k:'study',id:ui.sid,t:cur().title||'Untitled'})}
  if(ui.view==='bible'&&!ui.bibList){const r=bibleRef();if(ui._lastRec!=='b'+r.b+':'+r.c){ui._lastRec='b'+r.b+':'+r.c;pushRecent({k:'bible',id:r.b+':'+r.c,t:`${bname(r.b,true)} ${r.c}`})}}
  if(ui.view==='devmode'){const ds=S.studies[ui.devSid]&&S.studies[ui.devSid].d;if(ds&&ui._lastRec!=='d'+ui.devSid){ui._lastRec='d'+ui.devSid;pushRecent({k:'devo',id:ui.devSid,t:ds.title||'Reading'})}}
@@ -662,7 +663,7 @@ function openMenu(btn,kind){
  else if(kind==='layout')items=[['verse','Verse by verse'],['para','Paragraphs and poetry']].map(([v,l])=>({act:'tlay',d:{v},label:l,on:curLayout()===v}));
  else if(kind==='nlay')items=[['margin','Margin','Notes beside the text'],['under','Under','Notes under each verse'],['dots','Dots','A small dot for each note']].map(([v,l,h])=>({act:'nlay',d:{v},label:`${l} <small>${h}</small>`,on:(SET.nlay||'margin')===v}));
  else if(kind==='dtpl'&&st){const curT=st.dev&&DTPL[st.dev.tmpl]?st.dev.tmpl:LS.get('devTpl','inductive');items=Object.entries(DTPL).map(([k,t])=>({act:'dtplset',d:{t:k},label:t.n,on:k===curT}))}
- else if(kind==='dmore'){items=[{act:'dmargin',d:{v:SET.devMargin===false?'1':'0'},label:SET.devMargin===false?'Show comments':'Hide comments',icon:'comment'},{act:'dwhole',d:{},label:'Read the whole chapter',icon:'bibleI'},{act:'share',d:{},label:'Share this reading…',icon:'shareI'},{hr:1},{act:'dexit',d:{},label:'Back to today',icon:'chevL'}]}
+ else if(kind==='dmore'){items=[{act:'dmargin',d:{v:SET.devMargin===false?'1':'0'},label:SET.devMargin===false?'Show comments':'Hide comments',icon:'comment'},{act:'txt',d:{},label:'Reading settings',icon:'sliders'},{act:'menu',d:{m:'dtpl'},label:'Template ›'},{act:'dwhole',d:{},label:'Read the whole chapter',icon:'bibleI'},{act:'share',d:{},label:'Share this reading…',icon:'shareI'},{hr:1},{act:'dexit',d:{},label:'Back to today',icon:'chevL'}]}
  if(kind==='card'){const a=findAnn(btn.dataset.id);if(!a)return;const lbl=(KLABEL[a.kind]||'mark').toLowerCase(),id=esc(a.id);const tags=a.tags||[];const cur=a.titleTag||tags[0];
   items=[{act:'cedit',d:{id:a.id},label:'Edit note',icon:'pencil'}];
   if(tags.length>1)tags.forEach(t=>items.push({act:'cpin',d:{id:a.id,t},label:'Pin #'+esc(t)+' as the title',icon:'pin',on:t===cur}));
@@ -671,6 +672,8 @@ function openMenu(btn,kind){
   else{if(a.note)items.push({act:'cdelnote',d:{id:a.id},label:`Delete the note <small>keeps the ${esc(lbl)}</small>`,icon:'note'});items.push({act:'cdelmark',d:{id:a.id},label:a.note?`Delete the ${esc(lbl)} and note`:`Delete the ${esc(lbl)}`,icon:'trash',red:1})}
  }
  if(kind==='dtplh'){const tk=dkey(new Date()),d=devFor(tk),curT=d&&d.dev&&DTPL[d.dev.tmpl]?d.dev.tmpl:LS.get('devTpl','inductive');items=Object.entries(DTPL).map(([k,t])=>({act:'dtplhome',d:{t:k},label:t.n,on:k===curT}))}
+ if(kind==='bmore')items=[{act:'txt',d:{},label:'Reading settings',icon:'sliders'},{act:'nav',d:{v:'search'},label:'Search the Bible',icon:'search'},{hr:1},{act:'sideopen',d:{t:'Studies'},label:'Studies',icon:'book'},{act:'nav',d:{v:'devo'},label:'Devotional',icon:'cal'}];
+ if(kind==='smore'){const nl={margin:'Margin',under:'Under',dots:'Dots'}[SET.nlay||'margin'];items=[{act:'menu',d:{m:'layout'},label:`${curLayout()==='para'?'Paragraphs':'Verses'} ›`},{act:'menu',d:{m:'nlay'},label:`Notes: ${nl} ›`},{act:'menu',d:{m:'filter'},label:'Filter ›',icon:'filter'},{act:'fold',d:{},label:SET.fold!==false?'Expand notes':'Collapse notes',icon:'collapse'},{hr:1},{act:'txt',d:{},label:'Reading settings',icon:'sliders'},{act:'nav',d:{v:'search'},label:'Search',icon:'search'}]}
  if(kind==='btr'){items=Object.keys(TRS).filter(trAvailable).map(k=>({act:'bsettr',d:{tr:k},label:TRS[k].n,on:bibleTr()===k}))}
  const heads={btr:'Translation',tr:'Translation',layout:'Layout',nlay:'Notes',dtpl:'Template',dtplh:'Template',dmore:'Reading'};
  if(kind==='fmore'){m.innerHTML=`<div class="mgrid"><button data-act="sideopen" data-t="Studies">${ic('book',20)}Studies</button><button data-act="nav" data-v="devo">${ic('cal',20)}Devotional</button><button data-act="nav" data-v="search">${ic('search',20)}Search</button><button data-act="rpopen" data-t="guide">${ic('guide',20)}Guide</button></div><div class="mhr"></div><button class="mi" data-act="fold"><span class="ck">${ic('collapse',16)}</span><span>${SET.fold!==false?'Expand notes':'Collapse notes'}</span></button><button class="mi" data-act="nav" data-v="settings"><span class="ck">${ic('sliders',16)}</span><span>Settings</span></button><div class="mhr"></div><button class="mi on" data-act="focus"><span class="ck">${ic('unfocus',16)}</span><span>Leave Focus <small>everything back</small></span></button>`}
@@ -825,13 +828,13 @@ const A={
  scrim:()=>{closeMenu();closeSheet();closeShare();if(ui.sideOver||ui.rpOver){ui.sideOver=false;ui.rpOver=false;render()}},
  sidebtn:()=>{if(WIDE.matches&&!focusOn()){SET.side=SET.side===false;saveSet();render();return}ui.sideOver=!ui.sideOver;ui.rpOver=false;render()},
  sideopen:el=>{closeMenu();ui.sideTab=el.dataset.t||null;ui.sideOver=true;ui.rpOver=false;render()},
- sidetab:el=>{if(el.dataset.t==='Bible'){ui.sideTab='Bible';ui.bpickB=null;ui.bibList=false;if(ui.view!=='bible'){ui.view='bible';lastKey=''}ui.sideOver=false;render();return}
+ sidetab:el=>{if(el.dataset.t==='Bible'){ui.sideTab='Bible';ui.sbOpen=null;ui.sbTest=null;if(!ui.sideOver&&!(WIDE.matches&&sideDocked())){ui.sideOver=true}render();return}
   ui.sideTab=el.dataset.t;if(el.dataset.t==='Devotional'&&ui.view!=='devo'&&ui.view!=='devmode'){ui.view='devo';ui.sideTab=null;ui.sideOver=false;closeSheet();clearOwnSel();lastKey=''}render()},
  rpbtn:()=>{if(WIDE.matches&&!focusOn()){SET.rp=SET.rp===false;saveSet();ui.rpOver=false}else{ui.rpOver=!ui.rpOver;ui.sideOver=false}render()},
  rpopen:el=>{closeMenu();ui.rpTab=el.dataset.t||'notes';if(!rpDocked())ui.rpOver=true;render()},
  rptab:el=>{ui.rpTab=el.dataset.t;render()},
  rpclose:()=>{ui.rpOver=false;render()},
- focus:()=>{closeMenu();if(ui.view==='bible'){SET.focus.__bible=!SET.focus.__bible;saveSet();hideBar();clearOwnSel();render();return}const st=cur();if(!st)return;SET.focus[st.id]=!SET.focus[st.id];if(!SET.focus[st.id])delete SET.focus[st.id];saveSet();ui.sideOver=false;ui.rpOver=false;hideBar();clearOwnSel();render()},
+ focus:()=>{closeMenu();if(ui.view==='bible'||ui.view==='devmode'){const k=ui.view==='bible'?'__bible':'__devo';SET.focus[k]=!SET.focus[k];saveSet();hideBar();clearOwnSel();render();return}const st=cur();if(!st)return;SET.focus[st.id]=!SET.focus[st.id];if(!SET.focus[st.id])delete SET.focus[st.id];saveSet();ui.sideOver=false;ui.rpOver=false;hideBar();clearOwnSel();render()},
  gtag:el=>{FS.tags.clear();FS.tags.add(el.dataset.t);ui.rpOver=false;render()},
  vnote:el=>{closeMenu();const st=cur();if(!st)return;const p=st.passages.find(x=>x.id===el.dataset.p)||st.passages[0],c=+el.dataset.c,v=+el.dataset.v,tr=studyTr(st);const t=((CH[chKey(tr,p.ref.b,c)]||{v:[]}).v[v-1])||'';const a={id:newId(),kind:'note',color:'#5b8afe',spans:[{tr,b:p.ref.b,c,v,s:0,e:t.length,text:t}],note:'',tags:[],created:new Date().toISOString()};commit({op:'add',sid:st.id,a});ui.justMade=a.id;openEd(a.id)},
  vcopy:el=>{closeMenu();const st=cur();if(!st)return;const p=st.passages.find(x=>x.id===el.dataset.p)||st.passages[0],c=+el.dataset.c,v=+el.dataset.v,tr=studyTr(st);const t=((CH[chKey(tr,p.ref.b,c)]||{v:[]}).v[v-1])||'';const ref=`${bname(p.ref.b,true)} ${c}:${v}`;const txt=el.dataset.ref?ref:`“${t}” ${ref} (${trName(tr)})`;(navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('Copied')).catch(()=>toast('Couldn’t copy here'))},
@@ -890,9 +893,9 @@ const A={
  bpage:el=>{LS.set('bibPage',el.dataset.v);render();const x=$('#tx');if(x&&x.classList.contains('open'))x.innerHTML=txtHtml()},
  bmark:el=>{const st=S.studies[el.dataset.sid]&&S.studies[el.dataset.sid].d;if(!st)return;const a=(st.annotations||[]).find(x=>x.id===el.dataset.m);if(!a)return;const sp=a.spans[0];const p=(st.passages||[]).find(p=>p.ref&&p.ref.b===sp.b)||{};
   const m=$('#menu');m.dataset.k='bmark';m.innerHTML=`<div class="bmtip"><b>In “${esc(st.title||'Untitled')}”</b><span>${esc(KLABEL[a.kind]||a.kind)}${a.note?' · '+esc(plainMd(a.note).slice(0,120)):''}</span><button class="quiet" data-act="goto" data-s="${esc(st.id)}" data-p="${esc(p.id||'')}" data-c="${sp.c}" data-v="${sp.v}" data-m="${esc(a.id)}">Open the study →</button></div>`;m.classList.remove('asSheet');m.classList.add('open');const r=el.getBoundingClientRect(),w=m.offsetWidth||260;m.style.top=Math.min(r.bottom+6,innerHeight-(m.offsetHeight||120)-10)+'px';m.style.left=Math.max(8,Math.min(r.left,innerWidth-w-8))+'px'},
- bcontinue:()=>{const ba=LS.get('bibAt',null);if(!ba)return;ui.bib={b:ba.b,c:ba.c};ui.bibList=false;ui.view='bible';ui.bibToday=null;lastKey='';render();const go=(n)=>{const el=document.getElementById('bv-'+ba.v);if(el){el.scrollIntoView({block:'start'});const bd=$('#body');if(bd)bd.scrollTop-=70;toast(`Back where you left off · ${bname(ba.b,true)} ${ba.c}:${ba.v}`)}else if(n<20)setTimeout(()=>go(n+1),150)};if(ba.v>1)go(0)},
+ bcontinue:()=>{const ba=LS.get('bibAt',null);if(!ba)return;ui.bib={b:ba.b,c:ba.c};ui.bibChs=null;ui.bibList=false;ui.view='bible';ui.bibToday=null;lastKey='';render();const go=(n)=>{const el=document.getElementById(`bv-${ba.b}-${ba.c}-${ba.v}`);if(el){el.scrollIntoView({block:'start'});const bd=$('#body');if(bd)bd.scrollTop-=70;toast(`Back where you left off · ${bname(ba.b,true)} ${ba.c}:${ba.v}`)}else if(n<20)setTimeout(()=>go(n+1),150)};if(ba.v>1)go(0)},
  hrec:el=>{const k=el.dataset.k,id=el.dataset.id;if(k==='study')return A.open({dataset:{s:id}});if(k==='devo')return A.devopen({dataset:{s:id}});if(k==='bible'){const [b,c]=id.split(':').map(Number);return A.bgo({dataset:{b,c}})}},
- dwhole:()=>{closeMenu();const st=S.studies[ui.devSid]&&S.studies[ui.devSid].d;const r=st&&devRef(st);if(!r)return;ui.bibToday={b:r.b,c:r.c1,v1:r.v1,v2:r.c2===r.c1?r.v2:999,sid:st.id,tr:studyTr(st)};ui.bib={b:r.b,c:r.c1};ui.bibList=false;ui.view='bible';lastKey='';render();if(r.v1>3)setTimeout(()=>{const el=document.getElementById('bv-'+r.v1);if(el){el.scrollIntoView({block:'start'});const bd=$('#body');if(bd)bd.scrollTop-=90}},250)},
+ dwhole:()=>{closeMenu();const st=S.studies[ui.devSid]&&S.studies[ui.devSid].d;const r=st&&devRef(st);if(!r)return;ui.bibToday={b:r.b,c:r.c1,v1:r.v1,v2:r.c2===r.c1?r.v2:999,sid:st.id,tr:studyTr(st)};ui.bib={b:r.b,c:r.c1};ui.bibChs=null;ui.bibList=false;ui.view='bible';lastKey='';render();if(r.v1>3)setTimeout(()=>{const el=document.getElementById(`bv-${r.b}-${r.c1}-${r.v1}`);if(el){el.scrollIntoView({block:'start'});const bd=$('#body');if(bd)bd.scrollTop-=90}},250)},
  devback:()=>{const sid=ui.bibToday&&ui.bibToday.sid;ui.bibToday=null;if(sid)A.devopen({dataset:{s:sid}})},
  otopen:()=>{ui.otOpen=true;render();setTimeout(()=>{const n=$('#devnotes');if(n){n.focus();const r=document.createRange();r.selectNodeContents(n);r.collapse(false);const g=getSelection();g.removeAllRanges();g.addRange(r)}},60)},
  otclose:()=>{const ae=document.activeElement;if(ae&&ae.id==='devnotes')ae.blur();ui.otOpen=false;ui.pendRender=false;render()},
@@ -910,11 +913,14 @@ const A={
  nscreate:()=>createStudy(),
  bpick:()=>{ui.bibList=true;ui.bpickB=bibleRef().b;ui.bibTest=null;ui.sideOver=false;hideBar();clearOwnSel();render();setTimeout(()=>{const q=$('#bq');if(q&&!('ontouchstart' in window))q.focus()},50)},
  bbook:el=>{const b=+el.dataset.b;ui.bpickB=b<0?null:b;render()},
- bgo:el=>{ui.bib={b:+el.dataset.b,c:+el.dataset.c};LS.set('bibAt',Object.assign({},LS.get('bibAt',{}),ui.bib,{v:1,at:Date.now()}));ui.bpickB=null;ui.bibList=false;ui.view='bible';ui.sideOver=false;clearOwnSel();hideBar();lastKey='';render();const b=$('#body');if(b)b.scrollTop=0},
- bstep:el=>{ui.bibToday=null;const r=bibleRef();let b=r.b,c=r.c+(+el.dataset.d);if(c<1){b=Math.max(0,b-1);c=b===r.b?1:CHAPS[b]}else if(c>CHAPS[b]){if(b<65){b++;c=1}else c=CHAPS[b]}ui.bib={b,c};LS.set('bibAt',ui.bib);clearOwnSel();hideBar();lastKey='';render();const bd=$('#body');if(bd)bd.scrollTop=0},
+ bgo:el=>{ui.bpickB=null;ui.bibList=false;ui.view='bible';ui.sideOver=false;bibJump(+el.dataset.b,+el.dataset.c,'fade')},
+ sbtest:el=>{ui.sbTest=el.dataset.t;ui.sbOpen=-1;render()},
+ sbbook:el=>{ui.sbOpen=+el.dataset.b;render()},
+ sbgo:el=>{ui.bibToday=null;ui.bibList=false;ui.view='bible';if(!WIDE.matches)ui.sideOver=false;bibJump(+el.dataset.b,+el.dataset.c,'fade')},
+ bstep:el=>{ui.bibToday=null;const r=bibleRef(),d=+el.dataset.d,n=d>0?bibNext(r.b,r.c):bibPrev(r.b,r.c);if(n)bibJump(n[0],n[1],d>0?'next':'prev')},
  bretry:()=>{const r=bibleRef();delete CHERR[chKey(bibleTr(),r.b,r.c)];render()},
  bsettr:el=>{closeMenu();ui.bibToday=null;LS.set('bibTr',el.dataset.tr);render()},
- bstudy:el=>{const r=bibleRef(),hit=versesInStudies(r.b,r.c)[+el.dataset.v]||[];if(hit.length===1){A.goto({dataset:{s:hit[0].sid,p:hit[0].pid,c:r.c,v:el.dataset.v}});return}
+ bstudy:el=>{const r=el.dataset.b?{b:+el.dataset.b,c:+el.dataset.c}:bibleRef(),hit=versesInStudies(r.b,r.c)[+el.dataset.v]||[];if(hit.length===1){A.goto({dataset:{s:hit[0].sid,p:hit[0].pid,c:r.c,v:el.dataset.v}});return}
   const m=$('#menu');m.dataset.k='bstudy';m.innerHTML=`<div class="msec">In your studies</div>`+hit.map(h=>`<button class="mi" data-act="goto" data-s="${esc(h.sid)}" data-p="${esc(h.pid)}" data-c="${r.c}" data-v="${el.dataset.v}"><span class="ck"></span><span>${esc(h.title)}</span></button>`).join('');m.classList.remove('asSheet');m.classList.add('open');const b=el.getBoundingClientRect();m.style.top=Math.min(b.bottom+6,innerHeight-(m.offsetHeight||160)-10)+'px';m.style.left=Math.max(8,Math.min(b.left,innerWidth-(m.offsetWidth||220)-8))+'px'},
  bnewsel:()=>{const r=bibleRef(),sl=ui.sel;hideBar();clearOwnSel();newStudyForm({ref:`${bname(r.b,true)} ${sl.c}:${sl.v}`,tr:bibleTr()})},
  bcopysel:()=>{const r=bibleRef(),sl=ui.sel;const txt=`“${sl.w}” ${bname(r.b,true)} ${sl.c}:${sl.v} (${trName(bibleTr())})`;hideBar();clearOwnSel();(navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('Copied')).catch(()=>toast('Couldn’t copy here'))},
@@ -995,6 +1001,8 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 /* ---------- What's new and keyboard shortcuts ---------- */
 const CHANGES={
+ '1.6.3':['The Bible: one slim line, chapters that run on as you scroll, eight page colors, and the book list in the sidebar.','Studies and the devotional: one slim line too. Focus sits at the bottom right everywhere and turns into a small pill of tools.','Back on your phone now goes back inside the app.','Home is the house at the bottom right of the sidebar.'],
+ '1.6.2':['Share: the verse pickers work again, including readings that cross into the next chapter, and show their verses clearly.'],
  '1.6.1':['Fixes in the devotional and the Bible: the overall thoughts pen is readable in the dark and no longer covers Done; Read the whole chapter keeps your Bible translation; verse numbers have their space again; the evening page darkens the top bar too; See my notes opens your thoughts.'],
  '1.6.0':['Home: Marginalia opens to today’s reading, the study you were in, your place in the Bible and everything recent.','The Bible: tap the reference for a simple book list; your study marks show softly on the text; it remembers where you stopped; next chapter at the end (or swipe); Aa adds a page color.','Devotional: Overall thoughts wait as a small pen at the side; Read the whole chapter; Share this reading as an image or text.','Focus: leave it from the same top-right spot you entered it.'],
  '1.5.0':['The Bible: a Bible tab in the sidebar opens any book and chapter. Dots by verses in your studies open them; select words to start a study there.','New study: in the sidebar’s Studies tab. Type a passage, then a title, series and translation.','Edit your Study notes in the right panel; drag its edge (or the sheet on a phone) to resize it.','Notes as dots: Margin ▾ > Dots shows a small colored dot for each note; tap it to open the note.'],
@@ -1041,7 +1049,7 @@ Object.assign(ICO,{
 Object.assign(IC_ALIAS,{side:'mg-side',rside:'mg-rside',focus:'mg-focus',unfocus:'mg-unfocus',notesI:'mg-notes',calendar:'mg-calendar',guide:'@guide'});
 Object.assign(ui,{sideOver:false,rpOver:false,rpTab:'notes',sideTab:null,selDrag:null});
 SET.focus=SET.focus||{};
-const focusOn=()=>(ui.view==='study'&&!!SET.focus[ui.sid]&&!!cur())||(ui.view==='bible'&&!!SET.focus.__bible);
+const focusOn=()=>(ui.view==='study'&&!!SET.focus[ui.sid]&&!!cur())||(ui.view==='bible'&&!ui.bibList&&!!SET.focus.__bible)||(ui.view==='devmode'&&!!SET.focus.__devo);
 const sideDocked=()=>WIDE.matches&&SET.side!==false&&!focusOn();
 const rpDocked=()=>WIDE.matches&&SET.rp!==false&&ui.view==='study'&&!focusOn();
 const rpShown=()=>ui.view==='study'&&(rpDocked()||ui.rpOver);
@@ -1056,9 +1064,9 @@ function topbar(title,opt={}){
 /* ---------- sidebar: Studies · Devotional, like the desktop's ---------- */
 function sideHtml(){
  const t=ui.sideTab||(['devo','devmode'].includes(ui.view)?'Devotional':ui.view==='bible'?'Bible':'Studies');
- const tabs=`<button class="srow strong homei${ui.view==='home'?' on':''}" data-act="nav" data-v="home">${ic('homeI',16)}Home</button><div class="stabs"><button class="${t==='Studies'?'on':''}" data-act="sidetab" data-t="Studies">Studies</button><button class="${t==='Bible'?'on':''}" data-act="sidetab" data-t="Bible">Bible</button><button class="${t==='Devotional'?'on':''}" data-act="sidetab" data-t="Devotional">Devotional</button></div>`;
+ const tabs=`<div class="stabs"><button class="${t==='Studies'?'on':''}" data-act="sidetab" data-t="Studies">Studies</button><button class="${t==='Bible'?'on':''}" data-act="sidetab" data-t="Bible">Bible</button><button class="${t==='Devotional'?'on':''}" data-act="sidetab" data-t="Devotional">Devotional</button></div>`;
  let inner='';
- if(t==='Bible'){const ba=LS.get('bibAt',{b:42,c:1});inner=`<button class="srow strong" data-act="nav" data-v="bible">${ic('bibleI',16)}${esc(bname(ba.b,true))} ${ba.c}</button><button class="srow" data-act="bopenlist">Choose a book…</button>`}
+ if(t==='Bible'){inner=sideBibleHtml()}
  else if(t==='Studies'){
   const list=studyList(),open=ui.view==='study'?cur():null;
   inner=`<button class="newst" data-act="newstudy">${ic('plusI',16)}New study</button>`+(open?`<div class="scard"><b>${esc(open.title||'Untitled')}</b><small>${esc((open.passages||[]).map(p=>refStr(p.ref)).join(', '))} · ${(open.annotations||[]).length} marks</small>${(open.passages||[]).map(p=>`<div class="pchip">${esc(refStr(p.ref))}</div>`).join('')}</div>`:'')+
@@ -1066,7 +1074,7 @@ function sideHtml(){
  }else{
   inner=`<button class="srow strong" data-act="nav" data-v="devo">${ic('cal',17)}Today’s reading</button>${devCalCard()}${devPlanCard()}`;
  }
- return `${tabs}<div class="sbody">${inner}</div><div class="sfoot2"><button class="srow" data-act="nav" data-v="settings">${ic('sliders',16)}Settings</button>${syncLine()}</div>`;
+ return `${tabs}<div class="sbody">${inner}</div><div class="sfoot2"><div class="sfl"><button class="srow" data-act="nav" data-v="settings">${ic('sliders',16)}Settings</button>${syncLine()}</div><button class="homeic${ui.view==='home'?' on':''}" data-act="nav" data-v="home" aria-label="Home" title="Home">${ic('homeI',20)}</button></div>`;
 }
 function devPlanCard(){const n=devList().length;return `<div class="scard"><small style="margin:0">Plan</small><b>Surprise me</b><small>${Object.keys(DEV_POOLS).join(' · ')} · ${n} reading${n===1?'':'s'}</small></div>`}
 function devCalCard(){
@@ -1494,10 +1502,12 @@ function shTokens(style){
  const c=style.replace('solid:','');const n=parseInt(c.slice(1),16),l=(0.299*(n>>16)+0.587*(n>>8&255)+0.114*(n&255))/255;const dark=l<.5;
  return {bg:c,ink:dark?'#eef0f3':'#26303f',lab:dark?'#b8b2a5':'#857b69',num:dark?'#a9c1f6':'#4a6fc9',hl:dark?'rgba(255,214,120,.24)':'rgba(255,255,255,.55)',ul:dark?'#a9c1f6':'#4a6fc9',rule:dark?'rgba(255,255,255,.22)':'rgba(0,0,0,.14)',dark:dark?1:0};
 }
+function shVerseList(st){const r=devRef(st),tr=studyTr(st),out=[];if(!r)return out;const c2=r.c2||r.c1;for(let c=r.c1;c<=c2;c++){const ch=chapter(tr,r.b,c);const n=ch?ch.v.length:(c===c2&&r.v2<999?r.v2:0);const a=c===r.c1?r.v1:1,z=c===c2?Math.min(r.v2,n||r.v2):n;for(let v=a;v<=z&&v<=(n||z);v++)out.push({c,v})}return out}
 function shStart(){
  const st=ui.view==='devmode'?(S.studies[ui.devSid]&&S.studies[ui.devSid].d):cur();if(!st||st.kind!=='devotional')return;const r=devRef(st);if(!r)return;const tr=studyTr(st);
- const marked=(st.annotations||[]).filter(a=>['highlight','underline','circle'].includes(a.kind)).flatMap(a=>(a.spans||[]).filter(s=>s.tr===tr).map(s=>s.v));
- const v1=marked.length?Math.min(...marked):r.v1,v2=marked.length?Math.max(...marked):r.v2;
+ const L=shVerseList(st);if(!L.length){toast('The reading is still loading; try Share again in a moment');return}
+ const idx=(c,v)=>L.findIndex(x=>x.c===c&&x.v===v);const marked=(st.annotations||[]).filter(a=>['highlight','underline','circle'].includes(a.kind)).flatMap(a=>(a.spans||[]).filter(s=>s.tr===tr).map(s=>idx(s.c,s.v))).filter(i=>i>=0);
+ const v1=marked.length?Math.min(...marked):0,v2=marked.length?Math.max(...marked):L.length-1;
  const p=LS.get('share',{});
  ui.sh={sid:st.id,v1,v2,size:p.size||'portrait',style:p.style||'paper',beside:!!p.beside,marks:true,notes:new Set(),take:!!devBody(st.outline),takeFrom:null,takeText:'',name:p.name!==false,badge:p.badge!==false,page:'main'};
  ui.sh.takeText=shTakeDefault(st);
@@ -1506,10 +1516,13 @@ function shStart(){
 function shSections(st){const out=[];let cur=null;String(st.outline||'').split('\n').forEach(l=>{const m=l.match(/^#{1,6}\s+(.*)/);if(m){cur={h:m[1].trim(),t:[]};out.push(cur)}else if(l.trim()){if(!cur){cur={h:'Notes',t:[]};out.push(cur)}cur.t.push(plainMd(l))}});return out.filter(s=>s.t.length)}
 function shTakeDefault(st){const ss=shSections(st);if(!ss.length)return '';const s=ui.sh&&ui.sh.takeFrom?ss.find(x=>x.h===ui.sh.takeFrom)||ss[ss.length-1]:ss[ss.length-1];if(ui.sh)ui.sh.takeFrom=s.h;return s.t.join(' ').slice(0,180)}
 function shData(){
- const sh=ui.sh,st=S.studies[sh.sid]&&S.studies[sh.sid].d;const r=devRef(st),tr=studyTr(st),ch=chapter(tr,r.b,r.c1);if(!ch)return null;
- const verses=[];for(let v=sh.v1;v<=sh.v2;v++){const t=ch.v[v-1]||'';const marks=sh.marks?(st.annotations||[]).filter(a=>['highlight','underline','circle'].includes(a.kind)).flatMap(a=>(a.spans||[]).filter(s=>s.tr===tr&&s.v===v).map(s=>({s:s.s,e:s.e,k:a.kind}))):[];verses.push({v,t,marks})}
- const notes=(st.annotations||[]).filter(a=>a.kind==='note'&&a.note&&sh.notes.has(a.id)).map(a=>({v:(a.spans||[{}])[0].v,t:plainMd(a.note)})).filter(n=>n.v>=sh.v1&&n.v<=sh.v2).sort((x,y)=>x.v-y.v);
- const ref=`${bname(r.b,true)} ${r.c1}:${sh.v1}${sh.v2>sh.v1?'–'+sh.v2:''}`;
+ const sh=ui.sh,st=S.studies[sh.sid]&&S.studies[sh.sid].d;const r=devRef(st),tr=studyTr(st);
+ const L=shVerseList(st);if(!L.length)return null;const i1=Math.max(0,Math.min(sh.v1,L.length-1)),i2=Math.max(i1,Math.min(sh.v2,L.length-1));const pick=L.slice(i1,i2+1);
+ if(pick.some(x=>!chapter(tr,r.b,x.c)))return null;
+ const verses=pick.map(({c,v})=>{const t=(chapter(tr,r.b,c).v[v-1])||'';const marks=sh.marks?(st.annotations||[]).filter(a=>['highlight','underline','circle'].includes(a.kind)).flatMap(a=>(a.spans||[]).filter(s=>s.tr===tr&&s.c===c&&s.v===v).map(s=>({s:s.s,e:s.e,k:a.kind}))):[];return {v,c,t,marks}});
+ const inPick=(c,v)=>pick.some(x=>x.c===c&&x.v===v);
+ const notes=(st.annotations||[]).filter(a=>a.kind==='note'&&a.note&&sh.notes.has(a.id)).map(a=>{const sp=(a.spans||[{}])[0];return {v:sp.v,c:sp.c,t:plainMd(a.note)}}).filter(n=>inPick(n.c,n.v)).sort((x,y)=>(x.c-y.c)||(x.v-y.v));
+ const f=pick[0],l=pick[pick.length-1];const ref=`${bname(r.b,true)} ${f.c}:${f.v}${l.c!==f.c?'–'+l.c+':'+l.v:l.v!==f.v?'–'+l.v:''}`;
  const trl=(TRS[tr]&&TRS[tr].copy)?TRS[tr].copy:tr==='web'?'World English Bible (public domain)':tr==='kjv'?'King James Version (public domain)':trName(tr);
  return {ref,verses,notes,take:sh.take&&sh.takeText?sh.takeText:'',name:sh.name?(SET.shareName||''):'',badge:sh.badge,trl,copyLocked:!!(TRS[tr]&&TRS[tr].copy),tr};
 }
@@ -1559,12 +1572,12 @@ function shDraw(cv){
  ctx.textAlign='left';
  return {fits};
 }
-function shPreview(){const cv=$('#shcv');if(!cv)return;const r=shDraw(cv);const sv=$('#shsave'),sb=$('#shshare'),msg=$('#shmsg');const ok=!r||r.fits;[sv,sb].forEach(b=>b&&(b.disabled=!ok));if(msg)msg.textContent=ok?'':'Too long for this size: choose fewer verses, or Portrait or Story.'}
+function shPreview(n){const cv=$('#shcv');if(!cv)return;if(!shData()){if((n||0)<15)setTimeout(()=>shPreview((n||0)+1),300);return}const r=shDraw(cv);const sv=$('#shsave'),sb=$('#shshare'),msg=$('#shmsg');const ok=!r||r.fits;[sv,sb].forEach(b=>b&&(b.disabled=!ok));if(msg)msg.textContent=ok?'':'Too long for this size: choose fewer verses, or Portrait or Story.'}
 function renderShare(){
  const sh=ui.sh;if(!sh)return;const st=S.studies[sh.sid].d,r=devRef(st);const s=$('#share');
  const notes=(st.annotations||[]).filter(a=>a.kind==='note'&&a.note);const sections=shSections(st);
  const nNotes=notes.filter(a=>sh.notes.has(a.id)).length;const markCount=(st.annotations||[]).filter(a=>['highlight','underline','circle'].includes(a.kind)).length;
- const vopts=(sel)=>Array.from({length:r.v2-r.v1+1},(_,i)=>r.v1+i).map(v=>`<option value="${v}"${v===sel?' selected':''}>${r.c1}:${v}</option>`).join('');
+ const L=shVerseList(st);const vopts=(sel)=>L.map((x,i)=>`<option value="${i}"${i===sel?' selected':''}>${x.c}:${x.v}</option>`).join('');
  const sw=`<div class="shsw">${SH_STYLES.map(([k,l])=>`<button class="shst${sh.style===k?' on':''} st-${k}" data-act="shstyle" data-v="${k}" aria-label="${l}" title="${l}"></button>`).join('')}<span class="shdv"></span>${SH_SOLIDS.map(c=>`<button class="shst${sh.style==='solid:'+c?' on':''}" style="background:${c}" data-act="shstyle" data-v="solid:${c}" aria-label="Solid color"></button>`).join('')}</div>`;
  const main=`<div class="shrow"><span class="lbl3">Verses</span><select id="shv1">${vopts(sh.v1)}</select><span class="muted">to</span><select id="shv2">${vopts(sh.v2)}</select></div>
  <div class="shrow"><div class="seg">${[['square','Square'],['portrait','Portrait'],['story','Story']].map(([k,l])=>`<button class="${sh.size===k?'on':''}" data-act="shsize" data-v="${k}">${l}</button>`).join('')}</div></div>
@@ -1597,8 +1610,90 @@ document.addEventListener('change',e=>{
  else if(t.id==='shbadge'){sh.badge=t.checked;shRemember();shPreview()}
 });
 document.addEventListener('input',e=>{if(!ui.sh)return;const t=e.target;if(t.id==='shtt'){ui.sh.takeText=t.value;shPreview()}else if(t.id==='shnm'){SET.shareName=t.value.trim();saveSet();shPreview()}});
+/* ===================== 1.6.3: slim lines, Focus pills, continuous Bible, back gesture ===================== */
+const BPAGES={paper:['Paper','#ffffff'],morn:['Morning','#fbf8f2'],parch:['Parchment','#f3ead7'],sage:['Sage','#eef2ea'],mist:['Mist','#eef1f6'],dusk:['Dusk','#2a2433'],eve:['Evening','#1c1a33'],night:['Night','#0f0f10']};
+const fxBtn=(on)=>`<button class="pfx${on?' on':''}" data-act="focus" aria-label="${on?'Leave Focus':'Focus'}" title="${on?'Leave Focus':'Focus: just the page'}">${ic('focus',18)}</button>`;
+function fxHtml(){return ['study','bible','devmode'].includes(ui.view)&&!(ui.view==='bible'&&ui.bibList)&&!focusOn()?fxBtn(false):''}
+function pillHtml(){
+ const tail=`<button data-act="menu" data-m="${ui.view==='bible'?'bmore':ui.view==='devmode'?'dmore':'smore'}" aria-label="More">${ic('more',17)}</button>${fxBtn(true)}`;
+ if(ui.view==='bible'){const r=bibleRef();return `<button data-act="nav" data-v="home" aria-label="Home">${ic('homeI',17)}</button><button class="bcur" data-act="bpick">${esc(bname(r.b,true))} ${r.c} ▾</button><button data-act="menu" data-m="btr">${esc(trName(bibleTr()))} ▾</button>${tail}`}
+ if(ui.view==='devmode')return `<button data-act="dexit">${ic('chevL',16)}Today</button><button class="aa" data-act="txt" aria-label="Reading settings">Aa</button><button data-act="share" aria-label="Share this reading">${ic('shareI',16)}</button>${tail}`;
+ const st=cur();if(!st)return '';
+ return `<button data-act="rpopen" data-t="notes">${ic('notesI',16)}Notes</button><button data-act="menu" data-m="tr">${esc(trName(studyTr(st)))} ▾</button><button data-act="menu" data-m="filter" aria-label="Filter" class="${filterOn()||FS.just?'on':''}">${ic('filter',16)}</button>${tail}`;
+}
+/* ---------- study: one slim line ---------- */
+function vStudy(){
+ const st=cur();if(!st){ui.view='studies';return vStudies()}
+ const tr=studyTr(st);ui.tab='passage';const refs=(st.passages||[]).map(p=>refStr(p.ref)).join(', ');
+ const fchip=FS.just?`<button class="hq on fchip" data-act="fjust">${ic('eyeoff',14)}Just the text<span class="fx2">${ic('x',12)}</span></button>`:filterOn()?`<span class="fchip2"><button class="hq on" data-act="menu" data-m="filter">${ic('solid/filter',14)}${esc(filterLabel())} · ${filterCount(st)}</button><button class="hq on fx3" data-act="fclear" aria-label="Clear the filter">${ic('x',12)}</button></span>`:'';
+ let body=`${banners()}<div class="studywrap"${ncolStyle()}><div class="fsticky"><b>${esc(st.title||'Untitled')}</b><small>${esc(refs)}</small></div><div class="plabel"><span>${esc(refs)}</span>${fchip}</div>`;
+ (st.passages||[]).forEach(p=>{if((st.passages||[]).length>1)body+=`<div class="pref">${esc(refStr(p.ref))}</div>`;body+=passageRows(st,p,tr)});
+ body+=`<div style="height:140px"></div>${MID.matches&&SET.nlay!=='under'&&SET.nlay!=='dots'?'<div class="coldiv" id="coldiv" role="separator" aria-orientation="vertical" aria-label="Scripture and notes width" title="Drag to change the width; double-tap to reset"><span class="knob"></span><span class="wtip"></span></div>':''}</div>`;
+ const bar=`<button class="ib" data-act="sidebtn" aria-label="Sidebar" title="Sidebar">${ic('side',18)}</button><div class="bt">${esc(st.title||'Untitled')}</div><button class="slimtr" data-act="menu" data-m="tr">${esc(trName(tr))} ▾</button>${(account||CFG.clientId)?syncDot():''}<span class="sp"></span><button class="ib${rpShown()?' on':''}" data-act="rpbtn" aria-label="Study notes and Guide" title="Study notes and Guide">${ic('rside',18)}</button><button class="ib" data-act="menu" data-m="smore" aria-label="More" title="More">${ic('more',18)}</button>`;
+ return {bar,body};
+}
+/* ---------- the Bible: one slim line, continuous chapters ---------- */
+function bibNext(b,c){return c<CHAPS[b]?[b,c+1]:b<65?[b+1,1]:null}
+function bibPrev(b,c){return c>1?[b,c-1]:b>0?[b-1,CHAPS[b-1]]:null}
+function bibSection(b,c,tr,first){
+ const ch=chapter(tr,b,c),ins=versesInStudies(b,c),mk=bibleMarks(b,c,tr),today=ui.bibToday&&ui.bibToday.b===b&&ui.bibToday.c===c?ui.bibToday:null;
+ const head=`<div class="chbrk">${c===1||first?`<span class="bkn">${esc(bname(b))}</span>`:''}<span class="chn">${c}</span><i></i></div>`;
+ if(!ch)return `<section class="bch" data-b="${b}" data-c="${c}">${head}<p class="muted" style="padding:10px 0">${CHERR[chKey(tr,b,c)]?'Couldn’t load this chapter. <button class="quiet" data-act="bretry">Try again</button>':'Loading…'}</p></section>`;
+ const para=curLayout()==='para';const vt=(t,v)=>{const tv=today&&v>=today.v1&&v<=today.v2;return `<span class="vn" id="bv-${b}-${c}-${v}"${first?` data-first="${v}"`:''}>${v}</span>${ins[v]?`<button class="bdot" data-act="bstudy" data-b="${b}" data-c="${c}" data-v="${v}" aria-label="In ${ins[v].length} stud${ins[v].length===1?'y':'ies'}"></button>`:''}<span class="vtx${tv?' today-v':''}" data-p="bible" data-b="${b}" data-c="${c}" data-v="${v}">${markedVerse(t,mk[v])}</span> `};
+ let rows;if(para){let h='<p class="vt">';ch.v.forEach((t,i)=>{const v=i+1;if(ch.p&&ch.p.includes(v)&&v>1)h+='</p><p class="vt">';h+=vt(t,v)});rows=`<div class="btext para">${h}</p></div>`}
+ else rows=`<div class="btext">${ch.v.map((t,i)=>`<p class="vt">${vt(t,i+1)}</p>`).join('')}</div>`;
+ return `<section class="bch" data-b="${b}" data-c="${c}">${head}${rows}</section>`;
+}
+function vBible(){
+ if(ui.bibList)return vBibleList();
+ const r=bibleRef(),tr=bibleTr(),page=LS.get('bibPage','paper');
+ if(!ui.bibChs||!ui.bibChs.length)ui.bibChs=[[r.b,r.c]];
+ const anim=ui.bibAnim?` anim-${ui.bibAnim}`:'';ui.bibAnim=null;
+ const back=ui.bibToday?`<button class="bback" data-act="devback">← Back to today’s reading</button>`:'';
+ const body=`${banners()}<div class="studywrap bible page-${page}${anim}"><div class="fsticky bsticky"><b class="bcur">${esc(bname(r.b))} ${r.c}</b></div>${back}${ui.bibChs.map(([b,c],i)=>bibSection(b,c,tr,i===0)).join('')}<div style="height:140px"></div></div>`;
+ const bar=`<button class="ib" data-act="sidebtn" aria-label="Sidebar" title="Sidebar">${ic('side',18)}</button><button class="bt bcur slimref" data-act="bpick">${esc(bname(r.b,true))} ${r.c} ▾</button><button class="slimtr" data-act="menu" data-m="btr">${esc(trName(tr))} ▾</button><span class="sp"></span><button class="ib" data-act="menu" data-m="bmore" aria-label="More" title="More">${ic('more',18)}</button>`;
+ return {bar,body};
+}
+function bibJump(b,c,dir){ui.bib={b,c};ui.bibChs=[[b,c]];ui.bibAnim=dir||'fade';LS.set('bibAt',Object.assign({},LS.get('bibAt',{}),{b,c,v:1,at:Date.now()}));clearOwnSel();hideBar();lastKey='';render();const bd=$('#body');if(bd)bd.scrollTop=0}
+/* as you scroll: the current chapter follows; the next chapter loads below, the one before above */
+let bibBusy=false;
+function bibTrack(){
+ if(ui.view!=='bible'||ui.bibList)return;const bd=$('#body');if(!bd)return;const top=bd.getBoundingClientRect().top+70;
+ const secs=[...document.querySelectorAll('.bch')];if(!secs.length)return;
+ let cur=secs[0];for(const s of secs){if(s.getBoundingClientRect().top<=top)cur=s;else break}
+ const b=+cur.dataset.b,c=+cur.dataset.c;
+ if(!ui.bib||ui.bib.b!==b||ui.bib.c!==c){ui.bib={b,c};document.querySelectorAll('.bcur').forEach(el=>{el.textContent=el.classList.contains('slimref')||el.closest('#pill')?`${bname(b,true)} ${c} ▾`:`${bname(b)} ${c}`});ui._lastRec=null}
+ const vs=[...cur.querySelectorAll('.vn')];let v=1;for(const el of vs){if(el.getBoundingClientRect().top<=top)v=+el.textContent;else break}
+ clearTimeout(bibSaveT);bibSaveT=setTimeout(()=>{LS.set('bibAt',{b,c,v,n:vs.length,at:Date.now()});if(cur.getBoundingClientRect().bottom<=bd.getBoundingClientRect().bottom+40){const rd=LS.get('bibRead',{});rd[b]=[...new Set([...(rd[b]||[]),c])];LS.set('bibRead',rd)}pushRecent({k:'bible',id:b+':'+c,t:`${bname(b,true)} ${c}`})},300);
+ if(bibBusy)return;const tr=bibleTr();
+ if(bd.scrollTop+bd.clientHeight>bd.scrollHeight-900){const [lb,lc]=ui.bibChs[ui.bibChs.length-1];const n=bibNext(lb,lc);if(n&&chapter(tr,lb,lc)){bibBusy=true;ui.bibChs.push(n);if(ui.bibChs.length>8){const h0=document.querySelector('.bch').offsetHeight;ui.bibChs.shift();render();bd.scrollTop-=h0}else render();bibBusy=false}}
+ else if(bd.scrollTop<250){const [fb,fc]=ui.bibChs[0];const p=bibPrev(fb,fc);if(p){if(!chapter(tr,p[0],p[1]))return;bibBusy=true;const h=bd.scrollHeight,t0=bd.scrollTop;ui.bibChs.unshift(p);if(ui.bibChs.length>8)ui.bibChs.pop();lastKey='';render();bd.scrollTop=t0+(bd.scrollHeight-h);bibBusy=false}}
+}
+/* ---------- the Bible list in the sidebar ---------- */
+function sideBibleHtml(){
+ const at=bibleRef(),read=LS.get('bibRead',{}),marked=booksMarked(),test=ui.sbTest||(at.b>=39?'nt':'ot'),open=ui.sbOpen!=null?ui.sbOpen:at.b;
+ return `<div class="pl2 sbl"><input id="sbq" class="sbq" placeholder="Type a passage" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go"><div class="tabs2"><button class="${test==='ot'?'on':''}" data-act="sbtest" data-t="ot">Old Testament</button><button class="${test==='nt'?'on':''}" data-act="sbtest" data-t="nt">New Testament</button></div>${BGROUPS.filter(g=>g[0]===test).map(([,l,a,z])=>`<div class="grp2">${l}</div>${Array.from({length:z-a},(_,i)=>a+i).map(b=>`<button class="bk2${open===b?' on':''}" data-act="sbbook" data-b="${open===b?-1:b}">${marked.has(b)&&open!==b?'<span class="rd"></span>':''}${esc(BOOKS[b])}</button>${open===b?`<div class="chrow">${Array.from({length:CHAPS[b]},(_,i)=>i+1).map(c=>`<button class="${b===at.b&&c===at.c&&ui.view==='bible'?'on':(read[b]||[]).includes(c)?'rd':''}" data-act="sbgo" data-b="${b}" data-c="${c}">${c}</button>`).join('')}</div>`:''}`).join('')}`).join('')}</div>`;
+}
+/* ---------- the back gesture ---------- */
+let navSnap=null,navLayer=false,ignorePop=0;
+const snapNow=()=>({view:ui.view,sid:ui.sid,devSid:ui.devSid,bib:ui.view==='bible'?Object.assign({},bibleRef()):null,bibList:!!ui.bibList});
+const layerOpen=()=>!!(ui.sideOver||ui.rpOver||ui.sh||ui.otOpen||($('#sheet')&&$('#sheet').classList.contains('open'))||($('#tx')&&$('#tx').classList.contains('open'))||($('#menu')&&$('#menu').classList.contains('open')));
+function navTrack(){
+ if(ignorePop)return;const s=snapNow(),k=JSON.stringify(s);
+ if(!navSnap){history.replaceState({mg:s},'');navSnap=k;return}
+ if(k!==navSnap){if(navLayer){navLayer=false;history.replaceState({mg:s},'')}else history.pushState({mg:s},'');navSnap=k}
+ const lo=layerOpen();if(lo&&!navLayer){history.pushState({mg:s,layer:1},'');navLayer=true}
+ else if(!lo&&navLayer){navLayer=false;ignorePop++;history.back()}
+}
+function closeLayers(){closeMenu();closeSheet();closeShare();const tx=$('#tx');if(tx&&tx.classList.contains('open')&&A.txtx)A.txtx();ui.sideOver=false;ui.rpOver=false;if(ui.otOpen){const ae=document.activeElement;if(ae&&ae.id==='devnotes')ae.blur();ui.otOpen=false;ui.pendRender=false}}
+addEventListener('popstate',e=>{
+ if(ignorePop){ignorePop--;return}
+ if(navLayer||layerOpen()){navLayer=false;closeLayers();ignorePop++;render();ignorePop--;return}
+ const s=e.state&&e.state.mg;if(!s)return;
+ ignorePop++;ui.view=s.view;ui.sid=s.sid;ui.devSid=s.devSid;ui.bibList=s.bibList;if(s.bib){ui.bib=s.bib;ui.bibChs=[[s.bib.b,s.bib.c]]}clearOwnSel();hideBar();closeEd(true);lastKey='';render();ignorePop--;navSnap=JSON.stringify(snapNow());
+});
 
-window.MarginaliaState=S;window.MarginaliaTest={shText:()=>shText(),selectWords,parseRef,verseMenu,state:()=>({sel:ui.sel,bar:ui.bar&&ui.bar.mode,edit:ui.edit,supp:suppressUntil-Date.now(),drag:!!ui.selDrag})};
+window.MarginaliaState=S;window.MarginaliaTest={bstep:d=>A.bstep({dataset:{d:String(d)}}),shText:()=>shText(),selectWords,parseRef,verseMenu,state:()=>({sel:ui.sel,bar:ui.bar&&ui.bar.mode,edit:ui.edit,supp:suppressUntil-Date.now(),drag:!!ui.selDrag})};
 /* ---------- start ---------- */
 (async function start(){
  applyTheme();applyText();
@@ -1617,4 +1712,4 @@ window.MarginaliaState=S;window.MarginaliaTest={shText:()=>shText(),selectWords,
 })();
 /* 1.6: the Bible's passage line */
 document.addEventListener('input',e=>{if(e.target.id!=='bq')return;const r=parseRef(e.target.value),h=$('#bqhint');if(h)h.textContent=r?'→ '+bname(r.b,true)+' '+r.c1+(r.whole?'':':'+r.v1):''});
-document.addEventListener('keydown',e=>{if(e.target.id!=='bq'||e.key!=='Enter')return;e.preventDefault();const r=parseRef(e.target.value);if(!r){toast('Type a passage like Romans 8 or John 3:16');return}A.bgo({dataset:{b:r.b,c:r.c1}});if(!r.whole&&r.v1>1)setTimeout(()=>{const el=document.getElementById('bv-'+r.v1);if(el){el.scrollIntoView({block:'start'});const bd=$('#body');if(bd)bd.scrollTop-=70}},300)});
+document.addEventListener('keydown',e=>{if(e.target.id==='sbq'&&e.key==='Enter'){e.preventDefault();const r=parseRef(e.target.value);if(!r){toast('Type a passage like Romans 8 or John 3:16');return}A.sbgo({dataset:{b:r.b,c:r.c1}});return}if(e.target.id!=='bq'||e.key!=='Enter')return;e.preventDefault();const r=parseRef(e.target.value);if(!r){toast('Type a passage like Romans 8 or John 3:16');return}A.bgo({dataset:{b:r.b,c:r.c1}});if(!r.whole&&r.v1>1)setTimeout(()=>{const el=document.getElementById(`bv-${r.b}-${r.c1}-${r.v1}`);if(el){el.scrollIntoView({block:'start'});const bd=$('#body');if(bd)bd.scrollTop-=70}},300)});

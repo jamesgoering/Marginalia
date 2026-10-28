@@ -1,5 +1,22 @@
 # Marginalia for iPad and phone: changelog
 
+## 1.6.3 (2026-10-28)
+Tweaks
+- The Bible: one slim line (sidebar · "Exodus 5 ▾" · translation ▾ · ⋯) instead of the bar, heading and column header; Focus floats at the bottom right. Chapters run on as you scroll (the next one loads below, the one before above), each starting with a large chapter number; the slim line follows the chapter you're in. Focus: the line goes away, a modest chapter heading sticks at the top, and one pill (Home · passage · translation · ⋯ · Focus) sits in the Focus corner and fades while you read. ⋯: Reading settings, Search the Bible, Studies, Devotional. Swiping still jumps a chapter.
+- Eight page colors for the Bible (Paper, Morning, Parchment, Sage, Mist, Dusk, Evening, Night), a row of circles in Aa; the screen and the slim line take the color.
+- Studies: one slim line (sidebar · title · translation ▾ · Study notes panel · ⋯), the passage as a small label, the filter chip beside it when on; ⋯ holds Verses/Paragraphs, Notes layout, Filter, Collapse, Reading settings, Search. Focus: a small sticky heading and the pill Notes · translation · Filter · ⋯ · Focus.
+- Devotional: a slim line in the reading's colors (‹ Today · passage · date · Share · ⋯) replaces the tap-to-show controls; Focus: a small sticky date and passage and the pill ‹ Today · Aa · Share · ⋯ · Focus; the pen sits above the pill.
+- Sidebar: the Bible tab is the book and chapter list (with a passage line); Home is the house at the bottom right.
+- Gentle animations: chapters slide in (from the right going on, the left going back), a book's chapters unfold, the testaments fade; none with Reduce Motion.
+Fixes
+- Back on Android (and the iPhone/iPad edge swipe) closed the app: each move and each open sheet or sidebar now adds a back step; back closes what's open first, then goes to the previous screen, and leaves the app only from where you started.
+- The selected chapter's circle was off-center (buttons inherited left alignment).
+- Share sheet: the selected style's ring was clipped, the size and notes switches were uneven, the Include row hid behind the buttons, button labels sat left, and the preview filled the phone; all fixed.
+
+## 1.6.2 (2026-10-28)
+Fixes
+- Share: the From / To verse pickers could be empty and do nothing. They were built only from the reading's first chapter (verse v1 to v2), so a reading that crosses chapters (say 15:30–16:5) gave an empty list. They now list every verse of the reading across its chapters (16:1 … or 22:30, 22:31, 23:1 …), the card and Copy as text follow, and the preview waits for a second chapter to load. The pickers are also larger, with 16 px values (so the iPad doesn't zoom) and their own arrow.
+
 ## 1.6.1 (2026-10-28)
 Fixes (a review of 1.6's devotional and Bible views)
 - Devotional: the page's last closing tag was doubled when the writing area moved, so the controls, the overall thoughts pen and the hint sat outside the reading page. The pen then had the wrong colors (unreadable in the dark), and on a phone it covered the last lines and the Done row. The page is whole again, the pen has its own light and dark colors and a soft shadow, the reading leaves room under it, and the "Tap to show controls" hint moved to the right.

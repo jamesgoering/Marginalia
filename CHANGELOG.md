@@ -1,5 +1,22 @@
 # Marginalia for iPad and phone: changelog
 
+## 1.6.0 (2026-10-28)
+New
+- Home (Start here): Marginalia opens to a greeting and the date, today's devotional (Begin / Continue / See my notes), Continue for the study you last had open, Continue reading for your place in the Bible (verse and a thin progress line), four doors (New study, Bible, Search, Devotional) and Recent across studies, Bible chapters and readings. Home sits at the top of the sidebar. On a wide iPad the devotional and Continue cards sit side by side and Recent runs in two columns.
+- Bible: tap the reference ("John 1 ▾") and the page becomes a plain book list: the top bar turns into "Type a passage, or pick a book" (shows where it will go; Return opens it) with Cancel; Old Testament · New Testament; books grouped (Law, History, Poetry, Prophets / Gospels, History, Paul's letters, Other letters, Prophecy) in the Bible's serif; a soft dot by books you've read or studied; a tapped book opens its chapters as round numbers (current filled, read ones ringed); three columns on iPad. The sidebar's Bible tab no longer holds the book grids.
+- Bible: your study marks show softly on the text (highlights, underlines, circles, comments in a lighter shade of their color); tap one for which study, the note, and Open the study.
+- Bible: remembers the chapter and the verse you'd reached (and which chapters you've read to the end); Continue reading on the home page brings you back to that verse with "Back where you left off".
+- Bible: a quiet "← Luke 24 · John 2 →" at the end of each chapter, and swiping left or right moves between chapters.
+- Devotional: ⋯ > Read the whole chapter opens the chapter in the Bible with today's verses marked by a warm line, and "← Back to today's reading".
+- Devotional: Share this reading (share icon beside Aa, and ⋯): a sheet (phone, iPad portrait) or a two-pane dialog (iPad landscape) with a live card preview; verses From/To (default: the marked verses); Square / Portrait / Story; Notes below / beside; Paper, Plain, Dark, Sunset and ten solid colors; Include page (highlights and underlines, each note off until turned on, takeaway from a section of your writing and editable, your name, Marginalia badge); Share image… opens the device's share menu with the PNG (1080 wide), Save image downloads it, Copy as text follows the desktop's rules.
+Tweaks
+- Bible Aa: the devotional's text settings plus Layout and a Page color (Paper, Morning, Evening), kept for the Bible only.
+- Focus: leave it from the same top-right spot you entered it; that button fades with the pill. The pill keeps only reading tools.
+- Devotional: Overall thoughts no longer sit under the passage: a small pen pill (at the left on a wide iPad, bottom left elsewhere; with the first line once you've written) opens them as a pane at the left (wide iPad, the reading slides right) or a sheet; Close folds it back.
+Fixes
+- Selecting scripture while a note box had the caret: the colors disappeared at once (the note box's caret cancelled Marginalia's own selection).
+- Tapping a verse number to write beside it did nothing while the overall thoughts were open.
+
 ## 1.5.0 (2026-10-26)
 New
 - The Bible: a Bible tab in the sidebar (Studies · Bible · Devotional) with every book and its chapters; the chapter opens in its own translation (Translation ▾), with previous/next chapter, Verses or Paragraphs, and Focus. A dot by every verse that's in one of your studies opens that study at the verse (or lists them if several). Select words to "Start a study at" that verse, or Copy them.

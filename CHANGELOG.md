@@ -1,5 +1,19 @@
 # Marginalia for iPad and phone: changelog
 
+## 1.6.5 (2026-10-29)
+Tweaks
+- No top bar on Studies, the Bible and Home: each page starts with its own heading (study title and passage; the Bible's book and chapter with the translation, plain text; Home's greeting), with the sidebar button beside it; a small sticky title appears once you scroll. Studies keep the column header under the heading.
+- One settings button at the bottom right on every reading page, opening into icons: Studies — Study notes · Filter · Aa · Focus; the Bible — chapter ▾ · translation ▾ · Search · Aa · Focus; the devotional — back to Today · Aa · Share · Overall thoughts · ⋯. Focus is an expand icon; in Focus it becomes a collapse icon on the accent color. It closes when tapped, when you scroll, after a few seconds, or when you change pages. Replaces the Bible's floating Focus button and the Focus pills.
+- Studies: Aa now starts with Translation, Layout (Verses / Paragraphs) and Notes (Margin / Under / Dots / Hidden). Focus uses the full width (the text starts at the left edge, the notes keep their width).
+- Aa stays open while you change things, with the page updating behind it (also in the Bible); it closes when you tap outside it.
+- The Bible's passage lines (the list and the sidebar) fill in the book name as you type, list the matches, and understand abbreviations (Gen, Ps, Mt, Jn, 1co, 1 Thess…); Tab or → accepts.
+- No rings on chapters you've read.
+Fixes
+- Bible scrolling: chapters are now added in place at the end (and fill in when their text arrives) instead of rebuilding the page, and nothing is added above you; a quiet "↑ Luke 24" link at the top opens the chapter before. Scrolling across chapter breaks no longer jumps.
+- Selection runs across verses: in the Bible, New study and Copy use the whole range (e.g. John 7:11–15); in studies and the devotional one mark covers each verse (a span per verse, as the desktop saves it). Dragging near the top or bottom edge scrolls.
+- The Bible's "Start a study at…" button wrapped one word per line; it is now "+ New study" with the reference small underneath, on one line.
+- The dots beside read books were stretched into tall ovals on iPad (a clashing style name).
+
 ## 1.6.4 (2026-10-29)
 Tweaks
 - Devotional reading: always the calm, focused look (small date and passage at the top, no slim line, no Focus). One settings button at the bottom right opens into ‹ Today · Aa · Share · ✎ Overall thoughts · ⋯ and closes itself after a few seconds; the separate pen button is gone.

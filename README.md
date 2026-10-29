@@ -1,4 +1,4 @@
-# Marginalia for iPad and phone (version 1.6.4)
+# Marginalia for iPad and phone (version 1.6.5)
 
 Reads your Marginalia studies from OneDrive, lets you mark and annotate them, and saves the changes back into the same study files the desktop app uses. It also has a devotional that syncs between your phone and iPad.
 

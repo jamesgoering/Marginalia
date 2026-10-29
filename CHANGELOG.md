@@ -1,5 +1,18 @@
 # Marginalia for iPad and phone: changelog
 
+## 1.6.4 (2026-10-29)
+Tweaks
+- Devotional reading: always the calm, focused look (small date and passage at the top, no slim line, no Focus). One settings button at the bottom right opens into ‹ Today · Aa · Share · ✎ Overall thoughts · ⋯ and closes itself after a few seconds; the separate pen button is gone.
+- Studies: the desktop-style column header is back (Verses ▾ and the translation over the text; Margin ▾, Filter and Collapse over the notes). The top line is quiet (title, Study notes panel, ⋯) and takes the page's own color, with a hairline only once you scroll. Focus is in ⋯; no floating Focus button in studies (the Bible keeps its own).
+- Studies: drag the line between the scripture and the notes much further (the scripture down to about 240 px), also in Focus; the handle is just the hairline until you touch it.
+- The Bible on iPad: a comfortable centered reading column (about 680 px).
+Fixes
+- Share card: highlights and underlines keep their own colors; notes beside sit level with their verse; the notes to include are listed in verse order.
+- Bible: highlights were too faint on the light page colors; scrolling could race through chapters (chapters now load one at a time once the page has come to rest); the sidebar no longer jumps while you read or pick a chapter (it's redrawn only when it changes, keeps its scroll, and keeps the book you opened); read chapters' circles were drawn off to the side on iPad (a clashing style name).
+- Aa: picking a page color no longer jumps the panel back to the top.
+- Home: the finished-reading card was squeezed into one row and sat lower than the cards beside it (a clashing style name); Recent no longer fills with every chapter you scroll past (a chapter is added once you stop to read it or reach its end, one entry per book).
+- iPad bottom band: the fill now measures again after the page settles and when the iPad rotates; About this screen measures fresh each time.
+
 ## 1.6.3 (2026-10-28)
 Tweaks
 - The Bible: one slim line (sidebar · "Exodus 5 ▾" · translation ▾ · ⋯) instead of the bar, heading and column header; Focus floats at the bottom right. Chapters run on as you scroll (the next one loads below, the one before above), each starting with a large chapter number; the slim line follows the chapter you're in. Focus: the line goes away, a modest chapter heading sticks at the top, and one pill (Home · passage · translation · ⋯ · Focus) sits in the Focus corner and fades while you read. ⋯: Reading settings, Search the Bible, Studies, Devotional. Swiping still jumps a chapter.

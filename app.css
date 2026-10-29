@@ -729,7 +729,7 @@ html.edge #app.focus .studywrap{padding-top:calc(10px + env(safe-area-inset-top,
 .coldiv.drag{background:linear-gradient(var(--accent),var(--accent)) center/1px 100% no-repeat}
 .coldiv .wtip{position:sticky;top:calc(45% - 30px);display:none;font:600 11px var(--ui);color:var(--accent-ink);background:var(--tint);border-radius:6px;padding:3px 7px;white-space:nowrap;height:fit-content;margin-left:-60px}
 .coldiv.drag .wtip{display:block}
-#app.focus .coldiv{display:none!important}
+
 .scrinfo{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:13px;color:var(--ink2);margin-bottom:6px}
 .scrinfo b{font-weight:600;color:var(--ink)}
 
@@ -767,7 +767,7 @@ html.edge #app.focus .studywrap{padding-top:calc(10px + env(safe-area-inset-top,
 #app.dots .vrow .cards:empty{display:none}
 
 /* ===================== 1.6 ===================== */
-:root{--mg-css:163}
+:root{--mg-css:164}
 /* home */
 .home{max-width:820px;margin:0 auto;padding:22px 20px calc(30px + env(safe-area-inset-bottom,0px))}
 .hgreet{font:italic 16px var(--serif);color:var(--muted)}
@@ -815,7 +815,7 @@ html.edge #app.focus .studywrap{padding-top:calc(10px + env(safe-area-inset-top,
 .pl2 .chrow{display:flex;flex-wrap:wrap;gap:4px 6px;padding:4px 0 10px}
 .pl2 .chrow button{width:36px;height:36px;border:0;border-radius:50%;background:none;font:500 14px var(--ui);color:var(--ink2);cursor:pointer}
 .pl2 .chrow button.on{background:var(--accent);color:#fff}
-.pl2 .chrow button.rd{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--accent) 45%,transparent)}
+.pl2 .chrow button.chrd{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--accent) 45%,transparent)}
 @media (min-width:680px){.pl2 .cols2{columns:3;column-gap:44px}.pl2 .blk{break-inside:avoid}}
 /* the Bible's reading page */
 .studywrap.bible .refb{font-size:15px}
@@ -1013,3 +1013,33 @@ html.edge #app.focus .studywrap{padding-top:calc(10px + env(safe-area-inset-top,
 #side .sbody{overflow:auto;-webkit-overflow-scrolling:touch}
 #side .sfoot2{background:var(--panel)}
 @media (max-width:420px){.dslim .dsld{display:none}}
+
+/* ===================== 1.6.4 ===================== */
+:root{--mg-css:164}
+/* devotional: always the calm reading view, one settings pill */
+.dvt .dfsticky{display:block;position:sticky;top:0;z-index:6;padding:calc(10px + env(safe-area-inset-top,0px)) 0 14px;background:linear-gradient(var(--dbg,#fbf8f2) 62%,transparent)}
+.dvt .dvcol{padding-top:0}
+.dvt .dslim{display:none!important}
+.dset{position:fixed;z-index:30;right:14px;bottom:calc(18px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:2px;border-radius:999px;padding:4px;background:rgba(255,253,249,.92);box-shadow:0 0 0 1px rgba(43,38,32,.10),0 4px 14px rgba(0,0,0,.10);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:#4a4239;animation:chFade .18s ease-out}
+.dvt.dark .dset{background:rgba(36,35,64,.92);color:#ece6e0;box-shadow:0 0 0 1px rgba(255,255,255,.10),0 4px 14px rgba(0,0,0,.3)}
+.dset button{border:0;background:none;color:inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:38px;height:38px;padding:0 10px;border-radius:999px;font:600 13.5px var(--ui)}
+.dset .aa{font:600 16px var(--serif)}
+.dset button.on,.dset .dsetb.on{background:color-mix(in srgb,currentColor 12%,transparent)}
+.dset .dsetb{width:38px;padding:0}
+@media (max-width:979px){.dvt .dvcol{padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}}
+/* studies: a quiet top line that is part of the page; the column header back */
+#app.v-study #bar,#app.v-bible #bar{background:var(--paper);border-bottom-color:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;transition:border-color .2s,box-shadow .2s}
+#app.v-study #bar.scrolled,#app.v-bible #bar.scrolled{border-bottom-color:var(--line);box-shadow:0 6px 16px rgba(var(--shade),.05)}
+#app.v-study .studywrap>.hrow{position:sticky;top:0;z-index:4;background:var(--paper)}
+/* the column divider: a hairline at rest, a small pill while touching */
+.coldiv .knob{width:4px;height:28px;border-radius:2px;opacity:0;transition:opacity .15s}
+.coldiv:hover .knob,.coldiv.drag .knob{opacity:1}
+/* the Bible: a comfortable reading column on iPad */
+@media (min-width:680px){.studywrap.bible .bch,.studywrap.bible .bsticky>b,.studywrap.bible .bback{display:block;max-width:680px;margin-left:auto;margin-right:auto}.studywrap.bible .bch .btext{padding:0}.studywrap.bible .bch .chbrk{margin-left:0;margin-right:0}}
+/* stronger study marks on light pages */
+.bm-hl{background:color-mix(in srgb,var(--mc) 34%,transparent)}
+.bm-ul{text-decoration-color:color-mix(in srgb,var(--mc) 85%,transparent)}
+.studywrap.bible.page-dusk .bm-hl,.studywrap.bible.page-eve .bm-hl,.studywrap.bible.page-night .bm-hl{background:color-mix(in srgb,var(--mc) 30%,transparent)}
+/* home: the finished card stacks; the two columns line up */
+.htwo{align-items:stretch}
+.hday.hdone .row{margin-top:12px}

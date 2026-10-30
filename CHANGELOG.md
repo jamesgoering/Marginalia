@@ -1,5 +1,14 @@
 # Marginalia for iPad and phone: changelog
 
+## 1.7.1 (2026-10-30)
+Tweaks
+- Reading settings open just above the Aa button on the iPad, lined up with the settings button, which stays open. On the phone they open from the bottom and the settings button slides away underneath until you close them.
+- Translation and Font open as small lists on top of reading settings, which stay open underneath; picking one closes the list, and a tap elsewhere in the panel closes just the list.
+- The Bible remembers one page color for light mode and one for dark, and switches when the iPad does. Your earlier choice moves into the matching mode.
+- On the phone, a note's ••• pop-up opens by the note (as on the iPad) instead of as a sheet at the bottom.
+Fixes
+- The study title at the top was cut off or hidden until you scrolled (the column header painted a band over it). The band is now drawn only once the header sticks, and only as tall as the space above it.
+
 ## 1.7.0 (2026-10-30)
 New
 - The command box. ⌘K on an iPad keyboard (↑ ↓, Return, Esc), or the search icon that now starts every settings button; on a phone you can also pull down on a page's heading or hold the settings button. Before you type: your recent commands and the main places. As you type: Go to (passages with autofill and abbreviations — "rom 8" → Romans 8 — books, studies by title, Home, Bible, Devotional, Today's reading, Settings), Studies on that passage, Actions (Focus, New study / New study at a passage, Share this reading, Filter, Study notes, Overall thoughts, Reading settings), Settings (page color, translation, notes display, layout, font, appearance) and, always last, Search for "…". This also gives studies their Search back.

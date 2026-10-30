@@ -1,7 +1,7 @@
 'use strict';
 /* Marginalia for iPad and phone. Reads and writes the desktop app's study files in OneDrive. */
-const VERSION='1.7.0';
-const CSS_VER='170';
+const VERSION='1.7.1';
+const CSS_VER='171';
 const $=s=>document.querySelector(s);
 /* Older index.html files lack some parts; add any that are missing so a partial upload can't break menus. */
 [['mbar','toolbar'],['scrim',''],['menu','menu'],['ed','dialog'],['tx','dialog'],['toast','status'],['wn','dialog'],['pill','toolbar'],['sheet','dialog'],['selk',''],['tsug','listbox'],['biu','toolbar'],['fx',''],['share','dialog'],['cmd','']].forEach(([id,role])=>{if(!document.getElementById(id)){const d=document.createElement('div');d.id=id;if(role)d.setAttribute('role',role);if(id==='scrim')d.dataset.act='scrim';document.body.appendChild(d)}});
@@ -331,7 +331,7 @@ const TDEF={font:'source',size:1,lh:'1.75',vn:true,layout:'verse'};
 const tset=()=>Object.assign({},TDEF,LS.get('text',{}));
 const curLayout=()=>ui.view==='devmode'?LS.get('devLayout',tset().layout):ui.view==='bible'?LS.get('bibLayout',tset().layout):tset().layout;
 function applyText(){const t=tset(),r=document.documentElement.style,f=FONTS.find(x=>x[0]===t.font)||FONTS[0];r.setProperty('--sfont',f[2]);r.setProperty('--tsz',t.size);r.setProperty('--tlh',t.lh);$('#app').classList.toggle('novn',!t.vn);$('#tx').classList.toggle('novn',!t.vn)}
-function refreshTx(x){if(!x)return;const t=x.scrollTop;x.innerHTML=txtHtml();x.scrollTop=t}
+function refreshTx(x){if(!x)return;clearTimeout(refreshTx.t);refreshTx.t=setTimeout(()=>{if(!x.classList.contains('open')&&!x.innerHTML)return;const t=x.scrollTop;x.innerHTML=txtHtml();x.scrollTop=t;placeTx()},0)}
 function setText(p){if('layout' in p&&(ui.view==='devmode'||ui.view==='bible')){LS.set(ui.view==='bible'?'bibLayout':'devLayout',p.layout);render();const x=$('#tx');if(x.classList.contains('open'))refreshTx(x);return}LS.set('text',Object.assign(tset(),p));applyText();if('layout' in p)render();const x=$('#tx');if(x.classList.contains('open'))refreshTx(x)}
 
 /* ---------- UI state ---------- */
@@ -680,7 +680,7 @@ function openMenu(btn,kind){
  if(kind==='fmore'){m.innerHTML=`<div class="mgrid"><button data-act="sideopen" data-t="Studies">${ic('book',20)}Studies</button><button data-act="nav" data-v="devo">${ic('cal',20)}Devotional</button><button data-act="nav" data-v="search">${ic('search',20)}Search</button><button data-act="rpopen" data-t="guide">${ic('guide',20)}Guide</button></div><div class="mhr"></div><button class="mi" data-act="fold"><span class="ck">${ic('collapse',16)}</span><span>${SET.fold!==false?'Expand notes':'Collapse notes'}</span></button><button class="mi" data-act="nav" data-v="settings"><span class="ck">${ic('sliders',16)}</span><span>Settings</span></button><div class="mhr"></div><button class="mi on" data-act="focus"><span class="ck">${ic('unfocus',16)}</span><span>Leave Focus <small>everything back</small></span></button>`}
  else if(kind==='filter'&&st){m.innerHTML=filterPane(st)}else m.innerHTML=(heads[kind]?`<div class="msec">${heads[kind]}</div>`:'')+items.map(it=>it.hr?'<div class="mhr"></div>':`<button class="mi${it.on?' on':''}${it.off?' off':''}${it.red?' red':''}" data-act="${it.act}" ${Object.entries(it.d).map(([k,v])=>`data-${k}="${esc(v)}"`).join(' ')}><span class="ck">${it.icon?ic(it.icon,16):it.on?ic('check',15):''}</span><span>${it.label}</span></button>`).join('')+(kind==='layout'?`<div class="mhr"></div><button class="mi" data-act="txt"><span class="ck"></span><span>Text size, font and spacing…</span></button>`:'');
  m.dataset.k=kind;
- const sheet=!MID.matches&&(kind==='card'||kind==='filter');m.classList.toggle('asSheet',sheet);$('#scrim').classList.toggle('show',sheet);
+ const sheet=!MID.matches&&kind==='filter';m.classList.toggle('asSheet',sheet);$('#scrim').classList.toggle('show',sheet);
  m.classList.add('open');
  if(sheet)return;
  const r=btn.getBoundingClientRect(),w=m.offsetWidth||220;
@@ -891,7 +891,7 @@ const A={
  bopenlist:()=>{ui.view='bible';ui.bibList=true;ui.bpickB=bibleRef().b;ui.bibTest=null;ui.sideOver=false;lastKey='';render()},
  blistx:()=>{ui.bibList=false;render()},
  btest:el=>{ui.bibTest=el.dataset.t;ui.bpickB=null;render()},
- bpage:el=>{LS.set('bibPage',el.dataset.v);render();const x=$('#tx');if(x&&x.classList.contains('open'))refreshTx(x)},
+ bpage:el=>{LS.set(bibPageKey(),el.dataset.v);render();const x=$('#tx');if(x&&x.classList.contains('open'))refreshTx(x)},
  bmark:el=>{const st=S.studies[el.dataset.sid]&&S.studies[el.dataset.sid].d;if(!st)return;const a=(st.annotations||[]).find(x=>x.id===el.dataset.m);if(!a)return;const sp=a.spans[0];const p=(st.passages||[]).find(p=>p.ref&&p.ref.b===sp.b)||{};
   const m=$('#menu');m.dataset.k='bmark';m.innerHTML=`<div class="bmtip"><b>In “${esc(st.title||'Untitled')}”</b><span>${esc(KLABEL[a.kind]||a.kind)}${a.note?' · '+esc(plainMd(a.note).slice(0,120)):''}</span><button class="quiet" data-act="goto" data-s="${esc(st.id)}" data-p="${esc(p.id||'')}" data-c="${sp.c}" data-v="${sp.v}" data-m="${esc(a.id)}">Open the study →</button></div>`;m.classList.remove('asSheet');m.classList.add('open');const r=el.getBoundingClientRect(),w=m.offsetWidth||260;m.style.top=Math.min(r.bottom+6,innerHeight-(m.offsetHeight||120)-10)+'px';m.style.left=Math.max(8,Math.min(r.left,innerWidth-w-8))+'px'},
  bcontinue:()=>{const ba=LS.get('bibAt',null);if(!ba)return;ui.bib={b:ba.b,c:ba.c};ui.bibChs=null;ui.bibList=false;ui.view='bible';ui.bibToday=null;lastKey='';render();const go=(n)=>{const el=document.getElementById(`bv-${ba.b}-${ba.c}-${ba.v}`);if(el){el.scrollIntoView({block:'start'});const bd=$('#body');if(bd)bd.scrollTop-=70;toast(`Back where you left off · ${bname(ba.b,true)} ${ba.c}:${ba.v}`)}else if(n<20)setTimeout(()=>go(n+1),150)};if(ba.v>1)go(0)},
@@ -919,7 +919,7 @@ const A={
  cmdopen:()=>openCmd(),
  cmdclose:()=>closeCmd(),
  cmdpick:el=>{const it=cmdList[+el.dataset.i];if(it)cmdRun(it)},
- txpage:el=>{ui.txPage=el.dataset.p;refreshTx($('#tx'))},
+ txpage:el=>{ui.txPage=ui.txPage===el.dataset.p?null:el.dataset.p;refreshTx($('#tx'))},
  txback:()=>{ui.txPage=null;refreshTx($('#tx'))},
  dsettr:el=>{const t=el.dataset.tr,st=S.studies[ui.devSid]&&S.studies[ui.devSid].d;if(!st)return;if(!trAvailable(t)){toast(`Add the key in Settings to read ${trName(t)}`);return}commit({op:'set',sid:st.id,patch:{translations:[t,...(st.translations||[]).filter(x=>x!==t)]}});ui.txPage=null;render()},
  dcm:el=>{const v=el.dataset.v;SET.devHide=v==='hidden';if(v!=='hidden')SET.devMargin=v==='beside';saveSet();render()},
@@ -1014,6 +1014,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 /* ---------- What's new and keyboard shortcuts ---------- */
 const CHANGES={
+ '1.7.1':['Reading settings open just above the Aa button (on the phone, from the bottom over the settings button); Translation and Font open on top of them.','The Bible remembers one page color for light mode and one for dark.','A note’s ••• pop-up opens by the note on the phone; the study title at the top is no longer cut off.'],
  '1.7.0':['The command box: ⌘K on the iPad, or the search icon in any settings button (pull down on a heading, or hold the settings button), to go anywhere, do things and change settings.','Reading settings (Aa) in one light style on every page: this page’s choices first, the text look below; translation and font open as lists.','Devotional: “Devotional › date” with nearby days at the top; sunrise and journal icons; its settings button fades while you read.'],
  '1.6.7':['Fix: selected text shows its tint and handles again (1.6.5 drew them on a hidden layer).'],
  '1.6.6':['Georgia, Charter and Palatino now look like themselves on every device.','The Bible’s page colors are Light, Sepia, Dark and Black.','Fixes: the notes display switch, every translation in Aa, devotional word comments beside their verse, text no longer showing above the toolbar; the devotional’s progress line is gone.'],
@@ -1781,7 +1782,8 @@ let bibIdleT2=0;
 function bibTrack2(){if(ui.view!=='bible'||ui.bibList)return;const bd=$('#body');if(!bd)return;clearTimeout(bibIdleT2);bibIdleT2=setTimeout(()=>{if(bd.scrollTop+bd.clientHeight<bd.scrollHeight-2*bd.clientHeight)return;const [lb,lc]=ui.bibChs[ui.bibChs.length-1];const n=bibNext(lb,lc);if(!n||ui.bibChs.length>=40)return;const wrap=document.querySelector('.studywrap.bible');const spacer=wrap&&wrap.lastElementChild;if(!spacer)return;ui.bibChs.push(n);chapter(bibleTr(),n[0],n[1]);spacer.insertAdjacentHTML('beforebegin',bibSection(n[0],n[1],bibleTr(),false))},120)}
 function isDarkTheme(){const t=document.documentElement.dataset.theme;return t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches)}
 const BPAGES={light:['Light','#ffffff'],sepia:['Sepia','#f4ecd8'],dark:['Dark','#1f2125'],black:['Black','#000000']};
-function bibPageGet(){const m={paper:'',morn:'sepia',parch:'sepia',sage:'light',mist:'light',dusk:'dark',eve:'dark',night:'black'};let v=LS.get('bibPage','');if(v in m){v=m[v];LS.set('bibPage',v)}return BPAGES[v]?v:''}/* ===================== 1.7: command box; reading settings in one light style; devotional navigation ===================== */
+function bibPageKey(){return isDarkTheme()?'bibPageDark':'bibPageLight'}
+function bibPageGet(){const m={paper:'',morn:'sepia',parch:'sepia',sage:'light',mist:'light',dusk:'dark',eve:'dark',night:'black'};let old=LS.get('bibPage',null);if(old!=null){if(old in m)old=m[old];if(BPAGES[old]){const dk=['dark','black'].includes(old);LS.set(dk?'bibPageDark':'bibPageLight',old)}LS.set('bibPage',null);localStorage.removeItem('mg-bibPage')}const v=LS.get(bibPageKey(),'');return BPAGES[v]?v:''}/* ===================== 1.7: command box; reading settings in one light style; devotional navigation ===================== */
 Object.assign(ICO,{
  'mg-sunrise':'<path d="M2.5 17.5h19M7 21h10M12 6.2v2.3M5.4 9.1l1.6 1.6M18.6 9.1L17 10.7M7 17.5a5 5 0 0 1 10 0z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>',
  'mg-journal':'<path d="M6 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" stroke="currentColor" stroke-linejoin="round"/><path d="M8 3v18M11 8h4M11 12h4" stroke="currentColor" stroke-linecap="round"/>'});
@@ -1793,8 +1795,8 @@ function curTr(){if(ui.view==='bible')return bibleTr();if(ui.view==='devmode'){c
 function txtHtml(){
  const t=tset(),v=ui.view;
  const head=(title,back)=>`<div class="grab"></div><div class="ahd">${back?`<button class="aback" data-act="txback">‹ Reading</button>`:''}<b>${title}</b><span class="sp"></span>${ib('x','txtx','Close')}</div>`;
- if(ui.txPage==='tr'){const act=v==='bible'?'bsettr':v==='devmode'?'dsettr':'settr';const cu=curTr();return head('Translation',1)+`<div class="alist">${trChoices().map(k=>`<button class="${k===cu?'on':''}" data-act="${act}" data-tr="${esc(k)}"><span class="ck">${k===cu?'✓':''}</span><b>${esc(trName(k))}</b><small>${esc(((TRS[k]&&TRS[k].n)||'')===trName(k)?'':((TRS[k]&&TRS[k].n)||''))}</small></button>`).join('')}</div>`}
- if(ui.txPage==='font')return head('Font',1)+`<div class="alist">${FONTS.map(([k,l,f])=>`<button class="${t.font===k?'on':''}" data-act="tfont" data-k="${k}"><span class="ck">${t.font===k?'✓':''}</span><b style="font-family:${f.replace(/"/g,'&quot;')};font-weight:500">${l}</b></button>`).join('')}</div>`;
+ const listHtml=()=>{if(ui.txPage==='tr'){const act=v==='bible'?'bsettr':v==='devmode'?'dsettr':'settr';const cu=curTr();return `<div class="alistpop tr"><div class="alh">Translation</div><div class="alist">${trChoices().map(k=>`<button class="${k===cu?'on':''}" data-act="${act}" data-tr="${esc(k)}"><span class="ck">${k===cu?'✓':''}</span><b>${esc(trName(k))}</b><small>${esc(((TRS[k]&&TRS[k].n)||'')===trName(k)?'':((TRS[k]&&TRS[k].n)||''))}</small></button>`).join('')}</div></div>`}
+if(ui.txPage==='font')return `<div class="alistpop font"><div class="alh">Font</div><div class="alist">${FONTS.map(([k,l,f])=>`<button class="${t.font===k?'on':''}" data-act="tfont" data-k="${k}"><span class="ck">${t.font===k?'✓':''}</span><b style="font-family:${f.replace(/"/g,'&quot;')};font-weight:500">${l}</b></button>`).join('')}</div></div>`;return ''};
  const opt=(act,list,on,attr='v')=>`<div class="alt">${list.map(([val,l])=>`<button class="${String(val)===String(on)?'on':''}" data-act="${act}" data-${attr}="${val}">${l}</button>`).join('')}</div>`;
  const row=(l,c)=>`<div class="arow"><span class="al">${l}</span>${c}</div>`;
  const link=(l,val,act,style)=>`<button class="arow alink" data-act="txpage" data-p="${act}"><span class="al">${l}</span><span class="av"${style?` style="${style}"`:''}>${val}</span><span class="ach">›</span></button>`;
@@ -1806,7 +1808,7 @@ function txtHtml(){
  else if(v==='devmode'){const cm=SET.devHide?'hidden':(SET.devMargin===false||!MID.matches)?'under':'beside';mine=`<div class="asec">This reading</div>${trRow}${lay}${row('Comments',opt('dcm',[['beside','Beside'],['under','Under'],['hidden','Hidden']].filter(([k])=>k!=='beside'||MID.matches),cm))}${row('Light',opt('dlight',[['hour','By the hour'],['day','Always day']],SET.devLight==='day'?'day':'hour'))}`}
  const fontName=(FONTS.find(f=>f[0]===t.font)||FONTS[0]);
  const text=`<div class="asec">Text</div>${link('Font',esc(fontName[1]),'font',`font-family:${fontName[2].replace(/"/g,'&quot;')}`)}${row('Size',`<div class="asz"><button data-act="tsize" data-d="-1" aria-label="Smaller">A</button><input type="range" id="tsz" min="0.8" max="1.6" step="0.05" value="${t.size}" aria-label="Text size"><button data-act="tsize" data-d="1" aria-label="Larger" style="font-size:18px">A</button></div>`)}${row('Spacing',opt('tlh',LH.map(([val,l])=>[val,l]),t.lh))}${row('Verse nos.',opt('tvn',[['1','Show'],['0','Hide']],t.vn?'1':'0'))}`;
- return head('Reading')+mine+text+`<div class="afoot"><button class="quiet" data-act="treset">Reset to the defaults</button></div>`;
+ return head('Reading')+mine+text+`<div class="afoot"><button class="quiet" data-act="treset">Reset to the defaults</button></div>`+listHtml();
 }
 /* any choice in the panel redraws it in place (the panel stays open) */
 document.addEventListener('click',e=>{const b=e.target.closest('#tx [data-act]');if(!b)return;const a=b.dataset.act;if(['txtx'].includes(a))return;setTimeout(()=>{const x=$('#tx');if(x&&x.classList.contains('open'))refreshTx(x)},0)});
@@ -1894,6 +1896,19 @@ function devNavHtml(st){
  return `<div class="dnav"><div class="dcrumb"><button data-act="dexit">${ic('sunrise',14)}Devotional</button><span class="sep">›</span><span>${esc(dl)}</span></div><div class="ddays">${days}</div></div>`;
 }
 
+/* a tap elsewhere in reading settings closes only the open list */
+document.addEventListener('click',e=>{if(!ui.txPage)return;const x=e.target;if(x.closest('#tx')&&!x.closest('.alistpop')&&!x.closest('[data-act=txpage]')){ui.txPage=null;refreshTx($('#tx'))}},true);
+/* reading settings: just above the Aa button on the iPad; from the bottom (over the settings button) on the phone */
+let placingTx=false;
+function placeTx(){if(placingTx)return;placingTx=true;try{placeTx2()}finally{placingTx=false}}
+function placeTx2(){const x=$('#tx');if(!x)return;const open=x.classList.contains('open');document.body.classList.toggle('txopen',open);if(!open){ui.txPage=null;return}
+ if(!MID.matches){x.style.right='';x.style.bottom='';if(x.classList.contains('pop'))x.classList.remove('pop');return}
+ const aa=$('#fx [data-act=txt]'),pill=$('#fx .spill');if(!aa||!pill){x.style.right='';x.style.bottom='';return}
+ const ar=aa.getBoundingClientRect(),pr=pill.getBoundingClientRect();x.style.right=Math.max(8,innerWidth-pr.right)+'px';x.style.bottom=(innerHeight-pr.top+12)+'px';if(!x.classList.contains('pop'))x.classList.add('pop')}
+function watchTx(){const x=$('#tx');if(!x||x._watched||!window.MutationObserver)return;x._watched=1;new MutationObserver(placeTx).observe(x,{attributes:true,attributeFilter:['class']})}
+watchTx();document.addEventListener('click',()=>{watchTx();setTimeout(placeTx,0)},true);
+addEventListener('resize',()=>placeTx());
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{lastKey='';render()})}catch(e){}
 window.MarginaliaState=S;window.MarginaliaTest={focus:()=>A.focus(),spill:()=>{if(!ui.spOpen)A.spill()},bstep:d=>A.bstep({dataset:{d:String(d)}}),shText:()=>shText(),selectWords,parseRef,verseMenu,state:()=>({sel:ui.sel,bar:ui.bar&&ui.bar.mode,edit:ui.edit,supp:suppressUntil-Date.now(),drag:!!ui.selDrag})};
 /* ---------- start ---------- */
 (async function start(){

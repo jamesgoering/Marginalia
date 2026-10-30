@@ -1,5 +1,29 @@
 # Marginalia for iPad and phone: changelog
 
+## 1.7.0 (2026-10-30)
+New
+- The command box. ⌘K on an iPad keyboard (↑ ↓, Return, Esc), or the search icon that now starts every settings button; on a phone you can also pull down on a page's heading or hold the settings button. Before you type: your recent commands and the main places. As you type: Go to (passages with autofill and abbreviations — "rom 8" → Romans 8 — books, studies by title, Home, Bible, Devotional, Today's reading, Settings), Studies on that passage, Actions (Focus, New study / New study at a passage, Share this reading, Filter, Study notes, Overall thoughts, Reading settings), Settings (page color, translation, notes display, layout, font, appearance) and, always last, Search for "…". This also gives studies their Search back.
+Tweaks
+- Reading settings (Aa) in one light style on every page: no filled buttons, the chosen option underlined. This page's choices first — studies: Translation, Layout, Notes; the Bible: Translation, Layout, Page (four colors with names); the devotional: Translation, Layout, Comments (Beside / Under / Hidden), Light — then Text: Font, Size, Spacing, Verse numbers. Translation and Font open as lists inside the panel (‹ Reading to go back). The panel follows dark mode (the devotional's uses its night colors), stays open while you change things, and redraws in place.
+- Devotional: "☀ Devotional › Friday, October 30" at the top (tap Devotional to go home) with the nearby days that have readings at the right (‹ › on the iPhone); it scrolls away with the page. In the settings button, the sunrise takes you to the devotional home and a journal opens your overall thoughts.
+Fixes
+- The devotional's settings button now fades while you read, like the Bible and studies; it comes back when you tap, scroll up a little, or reach the top or the end.
+
+## 1.6.7 (2026-10-30)
+Fixes
+- Selecting text showed no tint on iPad and no handles on Android, in studies, the Bible and the devotional: since 1.6.5 the tint and handles were drawn on a layer that was never shown. It shows again.
+
+## 1.6.6 (2026-10-30)
+Tweaks
+- The Bible's page colors are now four: Light, Sepia, Dark and Black (earlier choices move to the nearest: Morning and Parchment → Sepia, Sage and Mist → Light, Dusk and Evening → Dark, Night → Black). With none chosen, the page follows the app's light or dark look.
+- The devotional's scroll-progress line at the top is gone (code and styling).
+Fixes
+- Georgia, Charter and Palatino looked the same on most devices (the app asked the device for fonts it doesn't have). They now come with the app: Gelasio for Georgia, Charis SIL for Charter and Domitian for Palatino (a free Palatino revival; TeX Gyre Pagella isn't published in a form the app can include), all kept for offline use. Aa keeps the familiar names.
+- Studies Aa: Notes (Margin / Under / Dots / Hidden) didn't always switch; one action now sets it, redraws the page and Aa, and clears Hidden. No Margin on phones (a saved Margin shows as Under there).
+- Studies Aa listed only the study's own translations (often just KJV); it now lists every translation available.
+- Devotional: comments on a word or phrase were gathered at the bottom of the paragraph's margin; comments now go in verse order, each beside its own verse.
+- Studies and the Bible: text could show above the column header (and the sticky title) while scrolling, with margin notes showing through; the header now covers the space above it.
+
 ## 1.6.5 (2026-10-29)
 Tweaks
 - No top bar on Studies, the Bible and Home: each page starts with its own heading (study title and passage; the Bible's book and chapter with the translation, plain text; Home's greeting), with the sidebar button beside it; a small sticky title appears once you scroll. Studies keep the column header under the heading.

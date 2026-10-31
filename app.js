@@ -1,7 +1,7 @@
 'use strict';
 /* Marginalia for iPad and phone. Reads and writes the desktop app's study files in OneDrive. */
-const VERSION='1.7.1';
-const CSS_VER='171';
+const VERSION='1.7.2';
+const CSS_VER='172';
 const $=s=>document.querySelector(s);
 /* Older index.html files lack some parts; add any that are missing so a partial upload can't break menus. */
 [['mbar','toolbar'],['scrim',''],['menu','menu'],['ed','dialog'],['tx','dialog'],['toast','status'],['wn','dialog'],['pill','toolbar'],['sheet','dialog'],['selk',''],['tsug','listbox'],['biu','toolbar'],['fx',''],['share','dialog'],['cmd','']].forEach(([id,role])=>{if(!document.getElementById(id)){const d=document.createElement('div');d.id=id;if(role)d.setAttribute('role',role);if(id==='scrim')d.dataset.act='scrim';document.body.appendChild(d)}});
@@ -560,13 +560,13 @@ function vDevMode(){
  const tmpl=(DTPL[st.dev.tmpl]?st.dev.tmpl:LS.get('devTpl','inductive'));
  const cp=copy||(TRS[tr]&&TRS[tr].copy)||'';
  const body=`<div class="dvt ${light}${ui.otOpen?' otopen':''}" id="dvt"><div class="dvcol">
-  <div class="dslim" hidden><button data-act="dexit">${ic('chevL',16)}Today</button><span class="dslt">${esc(st.title||'')}</span><span class="dsld">${esc(dl)}</span><span class="sp"></span><button data-act="share" aria-label="Share this reading">${ic('shareI',17)}</button><button data-act="menu" data-m="dmore" aria-label="More">${ic('more',17)}</button></div><div class="dfsticky">${devNavHtml(st)}<b>${esc(st.title||'')}</b></div><div class="dlab">${esc(dl)}</div><div class="dref">${esc(st.title||'')}</div><div class="dmeta">${vcount} verses · about ${Math.max(1,Math.round(words/200))} minute${Math.round(words/200)>1?'s':''}${st.dev.done?' · done':''}</div>
+  <div class="dslim" hidden><button data-act="dexit">${ic('chevL',16)}Today</button><span class="dslt">${esc(st.title||'')}</span><span class="dsld">${esc(dl)}</span><span class="sp"></span><button data-act="share" aria-label="Share this reading">${ic('shareI',17)}</button><button data-act="menu" data-m="dmore" aria-label="More">${ic('more',17)}</button></div><div class="dfsticky">${devNavHtml(st)}<b>${esc(st.title||'')}</b></div>${devTipHtml()}<div class="dlab">${esc(dl)}</div><div class="dref">${esc(st.title||'')}</div><div class="dmeta">${vcount} verses · about ${Math.max(1,Math.round(words/200))} minute${Math.round(words/200)>1?'s':''}${st.dev.done?' · done':''}</div>
   ${err?`<p class="ph">${esc(err)}</p>`:loading?'<p class="ph">Loading the reading…</p>':rows}
   ${cp?`<p class="copy" style="padding:10px 0 0">${esc(cp)}</p>`:''}
   <div class="orn">· ❦ ·</div>
   <div class="wr wr2" id="devwr"><div class="done"><span class="hint2">Select words to highlight, underline or comment; comments appear beside the verse</span><button class="dbtn" data-act="ddone">${st.dev.done?'Close':'Done'}</button></div></div>
  </div>
- ${ui.otOpen?otHtml(st,tmpl):''}
+ ${ui.otOpen?otHtml(st,tmpl):''}${devPenHtml()}
  <div class="dset${ui.dsetOpen?' open':''}" id="dset">${ui.dsetOpen?`<button data-act="dexit">${ic('chevL',16)}Today</button><button class="aa" data-act="txt" aria-label="Reading settings">Aa</button><button data-act="share" aria-label="Share this reading">${ic('shareI',16)}</button><button data-act="otopen" class="${ui.otOpen?'on':''}" aria-label="Overall thoughts" title="Overall thoughts">${ic('pen',16)}</button><button data-act="menu" data-m="dmore" aria-label="More">${ic('more',17)}</button>`:''}<button class="dsetb${ui.dsetOpen?' on':''}" data-act="dset" aria-label="${ui.dsetOpen?'Close settings':'Settings'}">${DSETI}</button></div>
  <div class="dctl${ui.devCtl?' show':''}" id="dctl"><button class="cb" data-act="dexit">${ic('chevL',16)}Today</button><span class="sp"></span><button class="cb" data-act="share" aria-label="Share this reading">${ic('shareI',16)}</button><button class="cb aa2" data-act="txt" aria-label="Text and light">Aa</button><button class="cb" data-act="menu" data-m="dmore" aria-label="More">${ic('more',16)}</button></div>
  ${LS.get('devHint',0)?'':'<div class="dhint" id="dhint">Tap to show controls</div>'}</div>`;
@@ -645,7 +645,7 @@ function render(){
  if(!['study','devmode','bible'].includes(ui.view))$('#tx').classList.remove('open');
  if(!['study','devmode'].includes(ui.view)){hideBar();closeEd(true)}
  else if(ui.bar)placeBar();
- if(ui.view==='devmode')requestAnimationFrame(alignMargin);
+ if(ui.view==='devmode'){requestAnimationFrame(alignMargin);requestAnimationFrame(placePen)}
  setTimeout(navTrack,0);
  if(ui.view==='study'&&cur()&&ui._lastRec!=='s'+ui.sid){ui._lastRec='s'+ui.sid;LS.set('lastStudy',ui.sid);pushRecent({k:'study',id:ui.sid,t:cur().title||'Untitled'})}
  
@@ -664,7 +664,7 @@ function openMenu(btn,kind){
  else if(kind==='layout')items=[['verse','Verse by verse'],['para','Paragraphs and poetry']].map(([v,l])=>({act:'tlay',d:{v},label:l,on:curLayout()===v}));
  else if(kind==='nlay')items=[['margin','Margin','Notes beside the text'],['under','Under','Notes under each verse'],['dots','Dots','A small dot for each note']].map(([v,l,h])=>({act:'nlay',d:{v},label:`${l} <small>${h}</small>`,on:(SET.nlay||'margin')===v}));
  else if(kind==='dtpl'&&st){const curT=st.dev&&DTPL[st.dev.tmpl]?st.dev.tmpl:LS.get('devTpl','inductive');items=Object.entries(DTPL).map(([k,t])=>({act:'dtplset',d:{t:k},label:t.n,on:k===curT}))}
- else if(kind==='dmore'){items=[{act:'dmargin',d:{v:SET.devMargin===false?'1':'0'},label:SET.devMargin===false?'Show comments':'Hide comments',icon:'comment'},{act:'txt',d:{},label:'Reading settings',icon:'sliders'},{act:'menu',d:{m:'dtpl'},label:'Template ›'},{act:'dwhole',d:{},label:'Read the whole chapter',icon:'bibleI'},{act:'share',d:{},label:'Share this reading…',icon:'shareI'},{hr:1},{act:'dexit',d:{},label:'Back to today',icon:'chevL'}]}
+ else if(kind==='dmore'){const dst=S.studies[ui.devSid]&&S.studies[ui.devSid].d;const tn=dst&&dst.dev&&DTPL[dst.dev.tmpl]?DTPL[dst.dev.tmpl].n:'';items=[{act:'menu',d:{m:'dtpl'},label:`Template › <small>${esc(tn)}</small>`},{act:'dwhole',d:{},label:'Read the whole chapter',icon:'bibleI'}]}
  if(kind==='card'){const a=findAnn(btn.dataset.id);if(!a)return;const lbl=(KLABEL[a.kind]||'mark').toLowerCase(),id=esc(a.id);const tags=a.tags||[];const cur=a.titleTag||tags[0];
   items=[{act:'cedit',d:{id:a.id},label:'Edit note',icon:'pencil'}];
   if(tags.length>1)tags.forEach(t=>items.push({act:'cpin',d:{id:a.id,t},label:'Pin #'+esc(t)+' as the title',icon:'pin',on:t===cur}));
@@ -924,6 +924,7 @@ const A={
  dsettr:el=>{const t=el.dataset.tr,st=S.studies[ui.devSid]&&S.studies[ui.devSid].d;if(!st)return;if(!trAvailable(t)){toast(`Add the key in Settings to read ${trName(t)}`);return}commit({op:'set',sid:st.id,patch:{translations:[t,...(st.translations||[]).filter(x=>x!==t)]}});ui.txPage=null;render()},
  dcm:el=>{const v=el.dataset.v;SET.devHide=v==='hidden';if(v!=='hidden')SET.devMargin=v==='beside';saveSet();render()},
  devday:el=>{const s=devFor(el.dataset.k);if(s)A.devopen({dataset:{s:s.id}})},
+ devtipok:()=>{SET.devTipSeen=true;saveSet();const t=$('.dtip');if(t)t.remove()},
  bprevch:()=>{const p=bibPrev(ui.bibChs[0][0],ui.bibChs[0][1]);if(p)bibJump(p[0],p[1],'prev')},
  bqpick:el=>{const i=$('#'+el.dataset.for);if(i){i.value=BOOKS[+el.dataset.b]+' ';i.focus();autofill(i)}},
  sbtest:el=>{ui.sbTest=el.dataset.t;ui.sbOpen=-1;render()},
@@ -969,7 +970,7 @@ document.addEventListener('click',e=>{
  if(ui.bar&&ui.bar.mode==='edit'&&!inBar)hideBar();
  if(ui.selDrag&&!inBar&&!e.target.closest('#selk')){clearOwnSel();if(ui.bar&&ui.bar.mode==='new')hideBar()}
  if($('#tx').classList.contains('open')&&!e.target.closest('#tx')){$('#tx').classList.remove('open');return}
-if((focusOn()||ui.view==='devmode')&&!inMenu&&!e.target.closest('#pill,button,.nc,.vtx [data-m],#mbar')){const fx=$('#fx');if(fx)fx.classList.remove('hide')}
+if(['study','bible','devmode'].includes(ui.view)&&!inMenu&&!e.target.closest('#pill,button,.nc,.vtx [data-m],#mbar')){const fx=$('#fx');if(fx)fx.classList.remove('hide');const dp=$('.dpen');if(dp)dp.classList.remove('hide')}
  if(ui.view==='devmode'&&!inMenu&&!inBar&&!inEd&&!e.target.closest('#tx,.vtx,.mw,.copen,#devnotes,.dctl,button,input,a')){const s=getSelection();if(!s||s.isCollapsed)devShowCtl(!ui.devCtl)}
 });
 document.addEventListener('input',e=>{
@@ -997,7 +998,7 @@ document.addEventListener('keydown',e=>{
  if(e.key==='Escape'){if($('#menu').classList.contains('open'))closeMenu();else if($('#tx').classList.contains('open'))$('#tx').classList.remove('open');else if(ui.edit)closeEd();else if(ui.bar)hideBar();else if(ui.view==='devmode'&&!/INPUT|TEXTAREA/.test(e.target.tagName)&&e.target.id!=='devnotes')devExit();else if($('#wn').classList.contains('open'))$('#wn').classList.remove('open')}
 });
 let lastTop=0;
-$('#body').addEventListener('scroll',()=>{const b=$('#body');$('#bar').classList.toggle('scrolled',b.scrollTop>4);$('#app').classList.toggle('scrolled',b.scrollTop>70);if(ui.spOpen&&!$('#menu.open')&&!$('#tx.open')&&Math.abs(b.scrollTop-lastTop)>30){ui.spOpen=false;$('#fx').innerHTML=fxHtml()}if(focusOn()||ui.view==='devmode'){const fx=$('#fx');if(fx){if(b.scrollTop<=24||(b.scrollHeight>b.clientHeight+50&&b.scrollTop+b.clientHeight>=b.scrollHeight-8)||b.scrollTop<lastTop-14)fx.classList.remove('hide');else if(b.scrollTop>lastTop+2&&!ui.spOpen)fx.classList.add('hide')}}lastTop=b.scrollTop;if(ui.selDrag)drawSel();if(ui.bar)placeBar();closeMenu();bibTrack();},{passive:true});
+$('#body').addEventListener('scroll',()=>{const b=$('#body');$('#bar').classList.toggle('scrolled',b.scrollTop>4);$('#app').classList.toggle('scrolled',b.scrollTop>70);if(ui.spOpen&&!$('#menu.open')&&!$('#tx.open')&&Math.abs(b.scrollTop-lastTop)>30){ui.spOpen=false;$('#fx').innerHTML=fxHtml()}if(['study','bible','devmode'].includes(ui.view)){const fx=$('#fx'),dp=$('.dpen');if(fx){if(b.scrollTop<=24||(b.scrollHeight>b.clientHeight+50&&b.scrollTop+b.clientHeight>=b.scrollHeight-8)||b.scrollTop<lastTop-14){fx.classList.remove('hide');dp&&dp.classList.remove('hide')}else if(b.scrollTop>lastTop+2&&!ui.spOpen&&!$('#tx.open')&&!$('#menu.open')&&!$('#cmd.open')){fx.classList.add('hide');dp&&dp.classList.add('hide')}}}lastTop=b.scrollTop;if(ui.selDrag)drawSel();if(ui.bar)placeBar();closeMenu();bibTrack();},{passive:true});
 document.addEventListener('focusout',e=>{if(e.target&&['devnotes','enote','rpnotes','bq','gopass','shtt','shnm'].includes(e.target.id)&&ui.pendRender)setTimeout(()=>{if(document.activeElement.id!=='enote'&&document.activeElement.id!=='devnotes')render()},0)});
 let swipeX=null;
 $('#body').addEventListener('touchstart',e=>{swipeX=ui.view==='devmode'&&e.touches[0].clientX<24?e.touches[0].clientX:null},{passive:true});
@@ -1014,6 +1015,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 /* ---------- What's new and keyboard shortcuts ---------- */
 const CHANGES={
+ '1.7.2':['The sidebar button sits beside each page’s heading (and Study notes · Guide at the right in studies on the iPad); the settings button fades while you read on every page.','Devotional: a small pen at the bottom left for your overall thoughts; tap a verse for “+ Write beside” it; a Home button in the settings; a shorter ⋯.','Fixes: selections tint only the selected words and the pop-up sits by them; the New study button fits; a plain search icon.'],
  '1.7.1':['Reading settings open just above the Aa button (on the phone, from the bottom over the settings button); Translation and Font open on top of them.','The Bible remembers one page color for light mode and one for dark.','A note’s ••• pop-up opens by the note on the phone; the study title at the top is no longer cut off.'],
  '1.7.0':['The command box: ⌘K on the iPad, or the search icon in any settings button (pull down on a heading, or hold the settings button), to go anywhere, do things and change settings.','Reading settings (Aa) in one light style on every page: this page’s choices first, the text look below; translation and font open as lists.','Devotional: “Devotional › date” with nearby days at the top; sunrise and journal icons; its settings button fades while you read.'],
  '1.6.7':['Fix: selected text shows its tint and handles again (1.6.5 drew them on a hidden layer).'],
@@ -1626,7 +1628,7 @@ function pillHtml(){
 function vStudy(){
  const st=cur();if(!st){ui.view='studies';return vStudies()}
  const tr=studyTr(st);ui.tab='passage';const refs=(st.passages||[]).map(p=>refStr(p.ref)).join(', ');
- let body=`${banners()}<div class="studywrap"${ncolStyle()}><div class="fsticky"><b>${esc(st.title||'Untitled')}</b><small>${esc(refs)}</small></div>${pageHead(esc(st.title||'Untitled'),esc(refs))}${headerRow(st,tr)}`;
+ let body=`${banners()}<div class="studywrap"${ncolStyle()}><div class="fsticky"><b>${esc(st.title||'Untitled')}</b><small>${esc(refs)}</small></div>${pageHead(esc(st.title||'Untitled'),esc(refs),MID.matches?`<span class="sp"></span><button class="ib rpb${rpShown()?' on':''}" data-act="rpbtn" aria-label="Study notes and Guide" title="Study notes and Guide">${ic('rside',18)}</button>`:'')}${headerRow(st,tr)}`;
  (st.passages||[]).forEach(p=>{if((st.passages||[]).length>1)body+=`<div class="pref">${esc(refStr(p.ref))}</div>`;body+=passageRows(st,p,tr)});
  body+=`<div style="height:140px"></div>${MID.matches&&SET.nlay!=='under'&&SET.nlay!=='dots'?'<div class="coldiv" id="coldiv" role="separator" aria-orientation="vertical" aria-label="Scripture and notes width" title="Drag to change the width; double-tap to reset"><span class="knob"></span><span class="wtip"></span></div>':''}</div>`;
  const bar=`<button class="ib" data-act="sidebtn" aria-label="Sidebar" title="Sidebar">${ic('side',18)}</button><div class="bt">${esc(st.title||'Untitled')}</div>${(account||CFG.clientId)?syncDot():''}<span class="sp"></span><button class="ib${rpShown()?' on':''}" data-act="rpbtn" aria-label="Study notes and Guide" title="Study notes and Guide">${ic('rside',18)}</button><button class="ib" data-act="menu" data-m="smore" aria-label="More" title="More">${ic('more',18)}</button>`;
@@ -1707,10 +1709,12 @@ function pointAt(x,y,group){
  return {vtx,off:offIn(vtx,node,off)};
 }
 const before=(a,b)=>a.vtx===b.vtx?a.off<b.off:!!(a.vtx.compareDocumentPosition(b.vtx)&Node.DOCUMENT_POSITION_FOLLOWING);
+function selTextRects(r){const out=[];if(!r||!r.commonAncestorContainer)return out;const root=r.commonAncestorContainer.nodeType===1?r.commonAncestorContainer:r.commonAncestorContainer.parentNode;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())){if(!r.intersectsNode(n))continue;const pe=n.parentElement;if(!pe||pe.closest('.vn,.bdot,.mw,.nc,.cmk')||!pe.closest('.vtx'))continue;const a=n===r.startContainer?r.startOffset:0,b=n===r.endContainer?r.endOffset:n.data.length;if(b<=a||!n.data.slice(a,b).trim())continue;const sr=document.createRange();sr.setStart(n,a);sr.setEnd(n,b);[...(sr.getClientRects?(sr.getClientRects()||[]):[])].forEach(x=>{if(x.width>1&&x.height>1)out.push(x)})}return out}
+function selBox(rects){if(!rects.length)return null;const last=rects[rects.length-1];let top=Infinity,bottom=-Infinity,left=Infinity,right=-Infinity;rects.forEach(x=>{top=Math.min(top,x.top);bottom=Math.max(bottom,x.bottom);left=Math.min(left,x.left);right=Math.max(right,x.right)});return {top,bottom,left,right,width:right-left,height:bottom-top,last}}
 function drawSel(){
  const d=ui.selDrag;if(!d)return;const r=selRange(d);
  if(window.CSS&&CSS.highlights&&window.Highlight){CSS.highlights.set('mgsel',new Highlight(r))}
- const rects=r.getClientRects?[...r.getClientRects()].filter(x=>x.width>1):[];const k=$('#selk');if(!k)return;k.classList.add('show');if(!rects.length){k.innerHTML='';return}
+ const rects=selTextRects(r);const k=$('#selk');if(!k)return;k.classList.add('show');if(!rects.length){k.innerHTML='';return}
  const a=rects[0],b=rects[rects.length-1];
  k.innerHTML=rects.map(x=>`<b class="st" style="left:${x.left}px;top:${x.top}px;width:${x.width}px;height:${x.height}px"></b>`).join('')+`<i class="k1" style="left:${a.left-6}px;top:${a.top-8}px;height:${a.height+8}px"></i><i class="k2" style="left:${b.right-6}px;top:${b.top}px;height:${b.height+8}px"></i>`;k.classList.add('show');
 }
@@ -1722,7 +1726,7 @@ function finishOwnSel(){
  const f=parts[0];
  ui.sel={p:f.vtx.dataset.p,b:f.b,c:f.c,v:f.v,s:f.s,e:f.e,w:parts.map(x=>x.text).join(' '),multi:parts.length>1?parts.map(({vtx,...x})=>x):null};
  if(ui.edit)closeEd(true);
- ui.barMore=false;ui.bar={mode:'new'};const rr=selRange(d);showBar(rr.getBoundingClientRect?rr.getBoundingClientRect():f.vtx.getBoundingClientRect());
+ ui.barMore=false;ui.bar={mode:'new'};const bx=selBox(selTextRects(selRange(d)));showBar(bx?{top:bx.top,bottom:bx.bottom,left:bx.left,width:bx.width}:f.vtx.getBoundingClientRect());
 }
 function selectWords(vtx,s,e,vtx2,e2){ui.selDrag={vtx,s,vtx2:vtx2||vtx,e:vtx2?e2:e,anc:{vtx,s,e}};drawSel();finishOwnSel()}
 function startAt(x,y,target){
@@ -1749,8 +1753,8 @@ function spillItems(){
  const aa=`<button class="aa" data-act="txt" aria-label="Reading settings" title="Reading settings">Aa</button>`;
  const sq=`<button data-act="cmdopen" aria-label="Command box" title="Go to, do or change anything">${ic('search',17)}</button>`;
  if(ui.view==='bible'){const r=bibleRef();return `${sq}<button class="txtp" data-act="bpick">${esc(bname(r.b,true))} ${r.c} ▾</button><button class="txtp mut" data-act="menu" data-m="btr">${esc(trName(bibleTr()))} ▾</button>${aa}${fx}`}
- if(ui.view==='devmode')return `${sq}<button data-act="dexit" aria-label="Devotional home" title="Devotional home">${ic('sunrise',18)}</button>${aa}<button data-act="share" aria-label="Share this reading" title="Share this reading">${ic('shareI',17)}</button><button data-act="otopen" class="${ui.otOpen?'on':''}" aria-label="Overall thoughts" title="Overall thoughts">${ic('journal',17)}</button><button data-act="menu" data-m="dmore" aria-label="More" title="More">${ic('more',17)}</button>`;
- return `${sq}<button data-act="rpopen" data-t="notes" aria-label="Study notes" title="Study notes" class="${rpShown()?'on':''}">${ic('notesI',17)}</button><button data-act="menu" data-m="filter" aria-label="Filter" title="Filter" class="${filterOn()||FS.just?'on':''}">${ic('filter',17)}</button>${aa}${fx}`;
+ if(ui.view==='devmode')return `${sq}<button data-act="nav" data-v="home" aria-label="Home" title="Home">${ic('homeI',17)}</button><button data-act="dexit" aria-label="Devotional home" title="Devotional home">${ic('sunrise',18)}</button>${aa}<button data-act="share" aria-label="Share this reading" title="Share this reading">${ic('shareI',17)}</button><button data-act="menu" data-m="dmore" aria-label="More" title="More">${ic('more',17)}</button>`;
+ return `${sq}<button data-act="rpopen" aria-label="Study notes and Guide" title="Study notes" class="${rpShown()?'on':''}">${ic('notesI',17)}</button><button data-act="menu" data-m="filter" aria-label="Filter" title="Filter" class="${filterOn()||FS.just?'on':''}">${ic('filter',17)}</button>${aa}${fx}`;
 }
 function fxHtml(){
  if(!['study','bible','devmode'].includes(ui.view)||(ui.view==='bible'&&ui.bibList))return '';
@@ -1909,6 +1913,20 @@ function watchTx(){const x=$('#tx');if(!x||x._watched||!window.MutationObserver)
 watchTx();document.addEventListener('click',()=>{watchTx();setTimeout(placeTx,0)},true);
 addEventListener('resize',()=>placeTx());
 try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{lastKey='';render()})}catch(e){}
+/* ---------- 1.7.2 ---------- */
+Object.assign(ICO,{'mg-search':'<circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor"/><path d="M15.5 15.5L20.5 20.5" stroke="currentColor" stroke-linecap="round"/>'});
+Object.assign(IC_ALIAS,{search:'mg-search'});
+/* the overall-thoughts pen (bottom left); on the iPad its words stay in the margin */
+function devPenHtml(){const st=S.studies[ui.devSid]&&S.studies[ui.devSid].d;if(!st||ui.otOpen)return '';const fl=otFirstLine(st);return `<button class="dpen${fl?' has':''}" data-act="otopen" aria-label="Overall thoughts" title="Overall thoughts">${ic('pen',16)}${fl?`<span class="dpt">${esc(fl)}</span>`:''}</button>`}
+function placePen(){const p=$('.dpen');if(!p)return;if(!MID.matches){p.style.maxWidth='';p.style.left='';return}const col=$('.dvt .dvcol');if(!col)return;const cl=col.getBoundingClientRect().left;const room=cl-28;p.style.left='16px';if(room<60){p.classList.add('tight');p.style.maxWidth='44px'}else{p.classList.remove('tight');p.style.maxWidth=room+'px'}}
+/* tap a verse: a quiet "+ Write beside verse N"; a one-time tip the first time */
+function devPlusClear(){document.querySelectorAll('.dvt .vtint').forEach(x=>x.classList.remove('vtint'));document.querySelectorAll('.mwplus').forEach(x=>x.remove())}
+function devPlusShow(vtx){devPlusClear();const st=S.studies[ui.devSid]&&S.studies[ui.devSid].d;if(!st)return;const c=+vtx.dataset.c,v=+vtx.dataset.v;
+ const has=(st.annotations||[]).some(a=>a.kind==='note'&&(a.spans||[]).some(sp=>sp.c===c&&sp.v===v));if(has)return;
+ vtx.classList.add('vtint');const b=document.createElement('button');b.className='mw mwplus';b.dataset.act='vwrite';b.dataset.c=c;b.dataset.v=v;b.innerHTML=`<span class="pl">+</span>Write beside verse ${v}`;
+ const row=vtx.closest('.drow'),marg=row&&row.querySelector('.dmarg');if(marg&&MID.matches&&SET.devMargin!==false){marg.appendChild(b);if(typeof alignMargin==='function')alignMargin()}else{const blk=vtx.closest('p')||vtx;blk.insertAdjacentElement('afterend',b)}}
+function devTipHtml(){return (!SET.devTipSeen)?`<div class="dtip" role="note"><b>Write beside any verse</b>Tap a verse, then tap <b>+</b> ${MID.matches?'in the margin':'under it'} to start a note on it. <button data-act="devtipok">Got it</button></div>`:''}
+document.addEventListener('click',e=>{if(ui.view!=='devmode')return;if(e.target.closest('.mwplus'))return;const vtx=e.target.closest('.dvt .vtx');const sel=getSelection();if(vtx&&!e.target.closest('[data-act]')&&!ui.selDrag&&(!sel||sel.isCollapsed)){if(!SET.devTipSeen){SET.devTipSeen=true;saveSet();const t=$('.dtip');if(t)t.remove()}devPlusShow(vtx)}else if(!e.target.closest('.mw'))devPlusClear()});
 window.MarginaliaState=S;window.MarginaliaTest={focus:()=>A.focus(),spill:()=>{if(!ui.spOpen)A.spill()},bstep:d=>A.bstep({dataset:{d:String(d)}}),shText:()=>shText(),selectWords,parseRef,verseMenu,state:()=>({sel:ui.sel,bar:ui.bar&&ui.bar.mode,edit:ui.edit,supp:suppressUntil-Date.now(),drag:!!ui.selDrag})};
 /* ---------- start ---------- */
 (async function start(){

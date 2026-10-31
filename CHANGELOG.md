@@ -1,5 +1,16 @@
 # Marginalia for iPad and phone: changelog
 
+## 1.7.2 (2026-10-31)
+Tweaks
+- The sidebar button sits just left of each page's heading on Studies, the Bible and Home, tinted while the sidebar is open (tap again to close). In studies on the iPad, a Study notes · Guide button sits at the right end of the heading row; on the phone the settings button's notes icon opens the panel as a sheet on the tab you used last.
+- The settings button fades as soon as you scroll on every page (not only in Focus) and comes back when you tap, scroll up a little, or reach the top or the end.
+- Devotional: a small pen at the bottom left opens your overall thoughts; once you've written, it shows their start (on the iPad only within the margin, never over the scripture). The journal button left the settings button, which gains Home. ⋯ now holds just Template (with the current one) and Read the whole chapter.
+- Devotional: tap a verse and a quiet "+ Write beside verse N" appears in the margin (under the verse on the phone); a one-time tip explains it the first time.
+- A plain magnifying-glass search icon throughout the app.
+Fixes
+- Selecting text tinted stray pieces past the end (sometimes the whole rest of the last verse) and verse numbers, and the pop-up could land far below; the tint now covers only the selected words and the pop-up sits just under them.
+- The Bible's New study button in the selection pop-up spilled its label outside; it now fits.
+
 ## 1.7.1 (2026-10-30)
 Tweaks
 - Reading settings open just above the Aa button on the iPad, lined up with the settings button, which stays open. On the phone they open from the bottom and the settings button slides away underneath until you close them.
